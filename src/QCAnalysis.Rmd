@@ -17,12 +17,13 @@ library(scran)
 library(dplyr)
 library(knitr)
 library(ggplot2)
+rnd_seed <- 300
+library(Rtsne)
 source("functions.R")
 dataList <- readRDS("../data/Robjects/ExpressionList.rds")
 m <- dataList[["counts"]]
 pD <- dataList[["phenoData"]]
 fD <- dataList[["featureData"]]
-
 ```
 # Overview over the data
 
@@ -115,8 +116,8 @@ smryByGroup <- group_by(pD,Condition) %>%
 ```{r}
 #simple thresholds
 MitoCutOff <- 0.05
-genesDetectedCutOff <- 1000
-LibSizeCutOff <- 2000
+genesDetectedCutOff <- 500
+LibSizeCutOff <- 500
 ```
 Four different thresholds were applied:
 
@@ -158,56 +159,78 @@ cellViability
 
 kable(t(as.matrix(table(pD$Condition,pD$PassAll))),caption="Cells passing QC in different Conditions")
 #Apply Thresholds
-pD <- filter(pD, PassAll)
-m <- m[,as.character(pD$barcode)]
+pD.filtered <- filter(pD, PassAll)
+m.filtered <- m[,as.character(pD.filtered$barcode)]
 
 #Thresholding on lowly expressed genes
 expThreshold <- 0.1
-keep <- rowMeans(m) > expThreshold
-m <- m[keep,]
-fD <- fD[keep,]
+keep <- rowMeans(m.filtered) > expThreshold
+m.filtered <- m.filtered[keep,]
+fD.filtered <- fD[keep,]
 #Final matrix
-dim(m)
+dim(m.filtered)
 ```
 
 
 ## Normalization and first visualization
 ```{r}
-clusters <- quickCluster(m)
-pD$sf <- computeSumFactors(m,clusters=clusters,positive=TRUE)
-m.norm <- t(t(m)/pD$sf)
-# m.norm <- m.norm[,!is.na(colSums(m.norm))]
-pD <- filter(pD, barcode %in% colnames(m.norm))
+clusters <- quickCluster(m.filtered)
+pD.filtered$sf <- computeSumFactors(m.filtered,clusters=clusters,positive=TRUE)
+m.norm <- t(t(m.filtered)/pD.filtered$sf)
+m.norm <- m.norm[,!is.na(colSums(m.norm))]
+pD.filtered <- filter(pD.filtered, barcode %in% colnames(m.norm))
 # 
-fD <- mutate(fD, meanExpression=rowMeans(m.norm),
+fD.filtered <- mutate(fD.filtered, meanExpression=rowMeans(m.norm),
 	     CV2=apply(m.norm,1,cv2),
 	     dm=DM(meanExpression,CV2))
 
-highVar <- dplyr::arrange(fD,desc(dm)) %>% .$id
-fD$highVar <- fD$id %in% highVar[1:1000]
-VarPlot <- ggplot(fD, aes(x=log10(meanExpression),y=log10(CV2), color=highVar)) +
+highVar <- dplyr::arrange(fD.filtered,desc(dm)) %>% .$id
+topX <- 0.1*length(highVar)
+fD.filtered$highVar <- fD.filtered$id %in% highVar[1:topX]
+VarPlot <- ggplot(fD.filtered, aes(x=log10(meanExpression),y=log10(CV2), color=highVar)) +
     geom_point() +
     theme_bw()
+VarPlot
 
-fPCA <- m.norm[fD$highVar,]
-pc <- prcomp(log2(t(fPCA)+1))
-tsn <- Rtsne(log2(t(fPCA)+1),max_iter=5000)
+fPCA <- log2(t(m.norm[fD.filtered$highVar,])+1)
+fPCA <- scale(fPCA,scale=TRUE,center=TRUE)
+pc <- prcomp(fPCA)
+set.seed(rnd_seed)
+tsn <- Rtsne(fPCA,perplexity=floor(nrow(fPCA)/5))
 
-pD$PC1 <- pc$x[,1]
-pD$PC2 <- pc$x[,2]
-pD$tSNE1 <- tsn$Y[,1]
-pD$tSNE2 <- tsn$Y[,2]
+pD.filtered$PC1 <- pc$x[,1]
+pD.filtered$PC2 <- pc$x[,2]
+pD.filtered$tSNE1 <- tsn$Y[,1]
+pD.filtered$tSNE2 <- tsn$Y[,2]
 
-Acta2 <- filter(fD, symbol=="Acta2") %>% .$id
-pD$Acta2 <- t(m.norm)[,Acta2]
+Acta2 <- filter(fD.filtered, symbol=="Acta2") %>% .$id
+pD.filtered$Acta2 <- t(m.norm)[,Acta2]
 # 
-pcaPlot <- ggplot(pD, aes(x=PC1, y=PC2, color=Condition, shape=Replicate)) +
-    geom_point(alpha=0.8,size=4) +
+pcaPlot <- ggplot(pD.filtered, aes(x=PC1, y=PC2, color=Condition, shape=Replicate)) +
+    geom_point(alpha=0.8,size=2) +
     theme_bw() 
 pcaPlot
 
-tsnePlot <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=Condition, shape=Replicate)) +
-    geom_point(alpha=0.8,size=4) +
+pcaPlot <- ggplot(pD.filtered, aes(x=PC1, y=PC2, color=log2(Acta2+1), shape=Replicate)) +
+    geom_point(alpha=0.8,size=2) +
+    theme_bw() 
+pcaPlot
+
+tsnePlot <- ggplot(pD.filtered, aes(x=tSNE1, y=tSNE2, color=Condition, shape=Replicate)) +
+    geom_point(alpha=0.8,size=2) +
     theme_bw()
 tsnePlot
+
+tsnePlot <- ggplot(pD.filtered, aes(x=tSNE1, y=tSNE2, color=log2(Acta2+1), shape=Replicate)) +
+    geom_point(alpha=0.8,size=2) +
+    theme_bw()
+tsnePlot
+```
+## Save Data
+```{r}
+out <- list()
+out[[1]] <- m
+out[[2]] <- pD
+out[[3]] <- fD
+saveRDS(out,file="../data/Robjects/ExpressionList_QC.rds")
 ```
