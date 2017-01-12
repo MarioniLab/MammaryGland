@@ -1,0 +1,213 @@
+---
+title: "Mamary Gland Development Exploratory Data Analysis"
+author: "Karsten Bach"
+date: '`r Sys.Date()`'
+output:
+  html_notebook:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    theme: united
+    highlight: tango
+---
+***
+# Load Data and Packages
+```{r, message=FALSE}
+library(scran)
+library(dplyr)
+library(knitr)
+library(ggplot2)
+source("functions.R")
+dataList <- readRDS("../data/Robjects/ExpressionList.rds")
+m <- dataList[["counts"]]
+pD <- dataList[["phenoData"]]
+fD <- dataList[["featureData"]]
+
+```
+# Overview over the data
+
+## Number of Cells
+We sequenced less cells than expected, with a total of `r ncol(m)` cells.
+```{r}
+kable(t(as.matrix(table(pD$SampleID))))
+kable(t(as.matrix(table(pD$Condition))))
+```
+
+# Quality Meassures
+## Sequencing Depth and Genes detected
+```{r}
+pD$UmiSums<- colSums(m)
+pD$GenesDetected <- colSums(m!=0)
+genesDetected <- ggplot(pD, aes(x=SampleID,y=log10(GenesDetected),fill=Condition)) +
+    geom_violin(draw_quantiles=0.5)+
+    theme_bw()
+LibrarySize <- ggplot(pD, aes(x=SampleID,y=log10(UmiSums),fill=Condition)) +
+    geom_violin(draw_quantiles=0.5)+
+    theme_bw()
+gdLibSize <- ggplot(pD, aes(y=log10(GenesDetected), x=log10(UmiSums), color=Condition, shape=Replicate)) +
+    geom_point() +
+    geom_smooth(method=loess,inherit.aes=FALSE,aes(y=log10(GenesDetected),x=log10(UmiSums))) +
+    theme_bw()
+genesDetected
+LibrarySize
+gdLibSize
+```
+
+## Genewise QC
+```{r, fig.height=8}
+ntop <- 50 
+mRel <- t(t(m)/colSums(m))
+rownames(mRel)  <- fD$symbol
+topExpressed <- rowMedians(mRel)
+names(topExpressed) <- rownames(mRel)
+topExpressed <- topExpressed %>% sort(.,decreasing=TRUE) %>% names
+plotData <- t(mRel)[,topExpressed[1:ntop]] %>%
+    reshape2::melt() %>%
+    rename(Cell=Var1,
+	   Gene=Var2,
+	   RelativeExpression=value)
+topGenes <- ggplot(plotData, aes(x=Gene, y=RelativeExpression)) +
+    geom_boxplot() +
+    coord_flip() +
+    theme_bw()
+freqOfExp <- m!=0
+rownames(freqOfExp) <- fD$symbol
+freqOfExp <- sort(rowSums(freqOfExp)/ncol(freqOfExp),decreasing=TRUE)
+plotData <- data.frame("Gene"=names(freqOfExp),"Frequency"=freqOfExp)
+topFreq <- ggplot(plotData[1:ntop,], aes(x=factor(Gene,levels=Gene),y=Frequency)) +
+    geom_bar(stat="identity") +
+    coord_flip() +
+    xlab("Gene") +
+    theme_bw()
+topGenes
+topFreq
+```
+
+## Cell Viability
+```{r}
+topFreq20 <- filter(fD, symbol %in% plotData[1:20,1]) %>% .$id
+pD$prcntOfTop20 <- colSums(m[topFreq20,]!=0)/length(topFreq20)
+mMito <- m[fD$Mitochondrial,]
+pD$prcntMito <- colSums(mMito)/colSums(m)
+cellViability <- ggplot(pD, aes(x=prcntMito, y=GenesDetected, color=Condition, shape=Replicate))+
+    geom_point() +
+    theme_bw()
+cellViability
+```
+```{r}
+smry <- pD %>%
+    summarize(medianPrcntMito=median(prcntMito),
+	      madPrcntMito=mad(prcntMito),
+	      mGenesDetected=median(GenesDetected),
+	      madGenesDetected=mad(GenesDetected),
+	      mUmiSums=median(UmiSums),
+	      madUmiSums=mad(UmiSums))
+smryByGroup <- group_by(pD,Condition) %>%
+    summarize(medianPrcntMito=median(prcntMito),
+	      madPrcntMito=mad(prcntMito),
+	      mGenesDetected=median(GenesDetected),
+	      madGenesDetected=mad(GenesDetected),
+	      mUmiSums=median(UmiSums),
+	      madUmiSums=mad(UmiSums))
+```
+
+## QC Thresholding
+```{r}
+#simple thresholds
+MitoCutOff <- 0.05
+genesDetectedCutOff <- 1000
+LibSizeCutOff <- 2000
+```
+Four different thresholds were applied:
+
+1. Percentage of UMIs in Mitochondrial genes less than `r MitoCutOff`
+2. A minimum of `r genesDetectedCutOff` genes detected per cell
+3. A minimum of `r LibSizeCutOff` total UMIs per per cell
+4. Not more than four standard deviations away from the #Genes~#UMIcount trend away (see below)
+```{r}
+#remove outliers from the genes detected per UMI trend 
+fit <- loess(formula=log10(GenesDetected)~log10(UmiSums),data=pD)
+pD$distFromDetectionTrend <- fit$residuals
+upperL <- mean(fit$residuals)+4*sd(fit$residuals)
+lowerL <- mean(fit$residuals)-4*sd(fit$residuals)
+hist(fit$residuals, breaks=50, main="Histogramm of loess residuals \n and thresholds",
+     xlab="Residuals")
+abline(v=upperL,col="red")
+abline(v=lowerL,col="red")
+
+#Thresholding 
+pD <- mutate(pD,
+		  PassViability = prcntMito < MitoCutOff,
+		  PassGenesDet = GenesDetected > genesDetectedCutOff,
+		  PassLibSize = UmiSums > LibSizeCutOff,
+		  PassDetTrend = distFromDetectionTrend < upperL & 
+		      distFromDetectionTrend > lowerL,
+		  PassAll= PassViability & PassGenesDet &
+		      PassLibSize & PassDetTrend)
+#Update QC plots
+gdLibSize <- gdLibSize %+% pD 
+gdLibSize <- gdLibSize + aes(color=PassDetTrend,shape=NULL) + 
+    annotate("rect",xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=log10(genesDetectedCutOff), fill="grey", alpha=0.3) + 
+    annotate("rect",ymin=-Inf, ymax=Inf, xmin=-Inf, xmax=log10(LibSizeCutOff), fill="grey", alpha=0.3) 
+gdLibSize
+cellViability <- cellViability %+% pD
+cellViability <- cellViability + aes(color=PassViability) +
+    annotate("rect",ymin=-Inf, ymax=Inf, xmax=Inf, xmin=MitoCutOff
+	     ,fill="grey", alpha=0.3) 
+cellViability
+
+kable(t(as.matrix(table(pD$Condition,pD$PassAll))),caption="Cells passing QC in different Conditions")
+#Apply Thresholds
+pD <- filter(pD, PassAll)
+m <- m[,as.character(pD$barcode)]
+
+#Thresholding on lowly expressed genes
+expThreshold <- 0.1
+keep <- rowMeans(m) > expThreshold
+m <- m[keep,]
+fD <- fD[keep,]
+#Final matrix
+dim(m)
+```
+
+
+## Normalization and first visualization
+```{r}
+clusters <- quickCluster(m)
+pD$sf <- computeSumFactors(m,clusters=clusters,positive=TRUE)
+m.norm <- t(t(m)/pD$sf)
+# m.norm <- m.norm[,!is.na(colSums(m.norm))]
+pD <- filter(pD, barcode %in% colnames(m.norm))
+# 
+fD <- mutate(fD, meanExpression=rowMeans(m.norm),
+	     CV2=apply(m.norm,1,cv2),
+	     dm=DM(meanExpression,CV2))
+
+highVar <- dplyr::arrange(fD,desc(dm)) %>% .$id
+fD$highVar <- fD$id %in% highVar[1:1000]
+VarPlot <- ggplot(fD, aes(x=log10(meanExpression),y=log10(CV2), color=highVar)) +
+    geom_point() +
+    theme_bw()
+
+fPCA <- m.norm[fD$highVar,]
+pc <- prcomp(log2(t(fPCA)+1))
+tsn <- Rtsne(log2(t(fPCA)+1),max_iter=5000)
+
+pD$PC1 <- pc$x[,1]
+pD$PC2 <- pc$x[,2]
+pD$tSNE1 <- tsn$Y[,1]
+pD$tSNE2 <- tsn$Y[,2]
+
+Acta2 <- filter(fD, symbol=="Acta2") %>% .$id
+pD$Acta2 <- t(m.norm)[,Acta2]
+# 
+pcaPlot <- ggplot(pD, aes(x=PC1, y=PC2, color=Condition, shape=Replicate)) +
+    geom_point(alpha=0.8,size=4) +
+    theme_bw() 
+pcaPlot
+
+tsnePlot <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=Condition, shape=Replicate)) +
+    geom_point(alpha=0.8,size=4) +
+    theme_bw()
+tsnePlot
+```
