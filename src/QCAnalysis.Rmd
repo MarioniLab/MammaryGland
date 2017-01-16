@@ -86,8 +86,6 @@ topFreq
 
 ## Cell Viability
 ```{r}
-topFreq20 <- filter(fD, symbol %in% plotData[1:20,1]) %>% .$id
-pD$prcntOfTop20 <- colSums(m[topFreq20,]!=0)/length(topFreq20)
 mMito <- m[fD$Mitochondrial,]
 pD$prcntMito <- colSums(mMito)/colSums(m)
 cellViability <- ggplot(pD, aes(x=prcntMito, y=GenesDetected, color=Condition, shape=Replicate))+
@@ -96,79 +94,102 @@ cellViability <- ggplot(pD, aes(x=prcntMito, y=GenesDetected, color=Condition, s
 cellViability
 ```
 ```{r}
-smry <- pD %>%
-    summarize(medianPrcntMito=median(prcntMito),
-	      madPrcntMito=mad(prcntMito),
-	      mGenesDetected=median(GenesDetected),
-	      madGenesDetected=mad(GenesDetected),
-	      mUmiSums=median(UmiSums),
-	      madUmiSums=mad(UmiSums))
 smryByGroup <- group_by(pD,Condition) %>%
     summarize(medianPrcntMito=median(prcntMito),
 	      madPrcntMito=mad(prcntMito),
-	      mGenesDetected=median(GenesDetected),
-	      madGenesDetected=mad(GenesDetected),
-	      mUmiSums=median(UmiSums),
-	      madUmiSums=mad(UmiSums))
+	      threshold_PrcntMito=0.05,
+	      mGenesDetected=median(log10(GenesDetected)),
+	      madGenesDetected=mad(log10(GenesDetected)),
+	      threshold_GenesDetected=max(mGenesDetected-3*madGenesDetected,log10(500)),
+	      mUmiSums=median(log10(UmiSums)),
+	      madUmiSums=mad(log10(UmiSums)),
+	      threshold_UmiSums=max(mUmiSums-3*madUmiSums,log10(900))) %>%
+    select(Condition,starts_with("threshold")) 
+kable(smryByGroup)
 ```
 
 ## QC Thresholding
 ```{r}
 #simple thresholds
 MitoCutOff <- 0.05
-genesDetectedCutOff <- 500
-LibSizeCutOff <- 500
 ```
-Four different thresholds were applied:
-
-1. Percentage of UMIs in Mitochondrial genes less than `r MitoCutOff`
-2. A minimum of `r genesDetectedCutOff` genes detected per cell
-3. A minimum of `r LibSizeCutOff` total UMIs per per cell
-4. Not more than four standard deviations away from the #Genes~#UMIcount trend away (see below)
 ```{r}
-#remove outliers from the genes detected per UMI trend 
-fit <- loess(formula=log10(GenesDetected)~log10(UmiSums),data=pD)
-pD$distFromDetectionTrend <- fit$residuals
-upperL <- mean(fit$residuals)+4*sd(fit$residuals)
-lowerL <- mean(fit$residuals)-4*sd(fit$residuals)
-hist(fit$residuals, breaks=50, main="Histogramm of loess residuals \n and thresholds",
-     xlab="Residuals")
-abline(v=upperL,col="red")
-abline(v=lowerL,col="red")
-
-#Thresholding 
+#Thresholding per group
+#inititae Df
 pD <- mutate(pD,
-		  PassViability = prcntMito < MitoCutOff,
-		  PassGenesDet = GenesDetected > genesDetectedCutOff,
-		  PassLibSize = UmiSums > LibSizeCutOff,
-		  PassDetTrend = distFromDetectionTrend < upperL & 
-		      distFromDetectionTrend > lowerL,
-		  PassAll= PassViability & PassGenesDet &
-		      PassLibSize & PassDetTrend)
-#Update QC plots
-gdLibSize <- gdLibSize %+% pD 
-gdLibSize <- gdLibSize + aes(color=PassDetTrend,shape=NULL) + 
-    annotate("rect",xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=log10(genesDetectedCutOff), fill="grey", alpha=0.3) + 
-    annotate("rect",ymin=-Inf, ymax=Inf, xmin=-Inf, xmax=log10(LibSizeCutOff), fill="grey", alpha=0.3) 
-gdLibSize
+	     ThresholdViability = 0,
+	     ThresholdGenesDet = 0,
+	     ThresholdLibSize = 0)
+
+grps <- as.character(unique(pD$Condition))
+for (grp in grps) {
+    thrs <- filter(smryByGroup, Condition==grp) %>% select(-Condition) %>% t() %>% as.vector()
+    names(thrs) <- filter(smryByGroup, Condition==grp) %>% select(-Condition) %>% t() %>% rownames()
+    pD <- mutate(pD,
+		 ThresholdViability= ifelse(Condition==grp, MitoCutOff, ThresholdViability),
+		 ThresholdGenesDet= ifelse(Condition==grp, 10^thrs["threshold_GenesDetected"],ThresholdGenesDet),
+		 ThresholdLibSize= ifelse(Condition==grp, 10^thrs["threshold_UmiSums"],ThresholdLibSize))
+}
+
+pD <- mutate(pD,
+	     PassViability=prcntMito < ThresholdViability,
+	     PassGenesDet=GenesDetected > ThresholdGenesDet,
+	     PassLibSize=UmiSums > ThresholdLibSize,
+	     PassAll= PassViability & PassGenesDet & PassLibSize)
+
+
+gdHist <- ggplot(pD, aes(x=log10(GenesDetected),y=..density..)) +
+    geom_histogram(fill="white",color="black") +
+    geom_vline(data=smryByGroup,aes(xintercept=threshold_GenesDetected),color="red",lty="longdash") +
+    facet_wrap(~Condition) +
+    theme_bw()
+gdHist
+
+libSizeHist <- ggplot(pD, aes(x=log10(UmiSums),y=..density..)) +
+    geom_histogram(fill="white",color="black") +
+    geom_vline(data=smryByGroup,aes(xintercept=threshold_UmiSums),color="red",lty="longdash") +
+    facet_wrap(~Condition) +
+    theme_bw()
+libSizeHist
+
 cellViability <- cellViability %+% pD
 cellViability <- cellViability + aes(color=PassViability) +
     annotate("rect",ymin=-Inf, ymax=Inf, xmax=Inf, xmin=MitoCutOff
 	     ,fill="grey", alpha=0.3) 
 cellViability
 
-kable(t(as.matrix(table(pD$Condition,pD$PassAll))),caption="Cells passing QC in different Conditions")
+kable(t(as.matrix(table(pD$Condition,pD$PassGenesDet))),caption="Cells passing Gene Detection QC")
+kable(t(as.matrix(table(pD$Condition,pD$PassLibSize))),caption="Cells passing Library Size QC")
+kable(t(as.matrix(table(pD$Condition,pD$PassViability))),caption="Cells passing Viability QC")
+kable(t(as.matrix(table(pD$Condition,pD$PassAll))),caption="Cells passing all QC requirements")
 #Apply Thresholds
 pD.filtered <- filter(pD, PassAll)
 m.filtered <- m[,as.character(pD.filtered$barcode)]
 
 #Thresholding on lowly expressed genes
-expThreshold <- 0.1
-keep <- rowMeans(m.filtered) > expThreshold
-m.filtered <- m.filtered[keep,]
-fD.filtered <- fD[keep,]
+isexpThreshold <- 10
+expThreshold <- 100*isexpThreshold
+keep1 <- rowSums(m.filtered!=0) > isexpThreshold
+keep2 <- rowSums(m.filtered) > expThreshold
+fD$keep <- keep1 & keep2
+m.filtered <- m.filtered[fD$keep,]
+fD.filtered <- fD[fD$keep,]
 #Final matrix
 dim(m.filtered)
+
+qcPCA <- select(pD.filtered, GenesDetected, UmiSums, prcntMito) %>%
+    mutate(GenesDetected=log10(GenesDetected),
+	   UmiSums=log10(UmiSums))
+qcpc <- prcomp(qcPCA)
+qcpD <- pD.filtered %>%
+    mutate(PC1=qcpc$x[,1],
+	   PC2=qcpc$x[,2])
+qcpcaPlot <- ggplot(qcpD, aes(x=PC1, y=PC2, color=Condition, shape=Replicate)) +
+    geom_point(alpha=0.8,size=2) +
+    ggtitle("PCA plot on QC stats after QC") +
+    theme_bw() 
+qcpcaPlot
+
 ```
 
 
@@ -176,6 +197,7 @@ dim(m.filtered)
 ```{r}
 clusters <- quickCluster(m.filtered)
 pD.filtered$sf <- computeSumFactors(m.filtered,clusters=clusters,positive=TRUE)
+plot(log10(colSums(m.filtered))~log10(pD.filtered$sf),main="Library Size versus Size Factors")
 m.norm <- t(t(m.filtered)/pD.filtered$sf)
 m.norm <- m.norm[,!is.na(colSums(m.norm))]
 pD.filtered <- filter(pD.filtered, barcode %in% colnames(m.norm))
@@ -185,7 +207,8 @@ fD.filtered <- mutate(fD.filtered, meanExpression=rowMeans(m.norm),
 	     dm=DM(meanExpression,CV2))
 
 highVar <- dplyr::arrange(fD.filtered,desc(dm)) %>% .$id
-topX <- 0.1*length(highVar)
+topX <- floor(0.2*length(highVar))
+
 fD.filtered$highVar <- fD.filtered$id %in% highVar[1:topX]
 VarPlot <- ggplot(fD.filtered, aes(x=log10(meanExpression),y=log10(CV2), color=highVar)) +
     geom_point() +
@@ -200,11 +223,14 @@ tsn <- Rtsne(fPCA,perplexity=floor(nrow(fPCA)/5))
 
 pD.filtered$PC1 <- pc$x[,1]
 pD.filtered$PC2 <- pc$x[,2]
+pD.filtered$PC3 <- pc$x[,3]
 pD.filtered$tSNE1 <- tsn$Y[,1]
 pD.filtered$tSNE2 <- tsn$Y[,2]
 
 Acta2 <- filter(fD.filtered, symbol=="Acta2") %>% .$id
 pD.filtered$Acta2 <- t(m.norm)[,Acta2]
+Fcer1g <- filter(fD.filtered, symbol=="Fcer1g") %>% .$id
+pD.filtered$Fcer1g <- t(m.norm)[,Fcer1g]
 # 
 pcaPlot <- ggplot(pD.filtered, aes(x=PC1, y=PC2, color=Condition, shape=Replicate)) +
     geom_point(alpha=0.8,size=2) +
@@ -225,6 +251,21 @@ tsnePlot <- ggplot(pD.filtered, aes(x=tSNE1, y=tSNE2, color=log2(Acta2+1), shape
     geom_point(alpha=0.8,size=2) +
     theme_bw()
 tsnePlot
+
+
+```
+***
+## Heatmap on top50
+```{r, fig.height=10}
+gns <- highVar[1:50]
+m.ht <- log2(m.filtered[gns,]+1)
+rownames(fD) <- fD$id
+rownames(m.ht) <- fD[rownames(m.ht),"symbol"]
+colanno <- data.frame("Condition"=pD.filtered$Condition)
+rownames(colanno) <- as.character(pD.filtered$barcode)
+library(pheatmap)
+pheatmap(m.ht, show_colnames=FALSE, annotation_col=colanno, show_rownames=TRUE)
+
 ```
 ## Save Data
 ```{r}
