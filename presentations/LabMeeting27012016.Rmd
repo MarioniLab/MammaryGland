@@ -34,10 +34,16 @@ jont-family: 'Helvetica'
 \end{center}
 
 # Experimental Setup
+![](img/setup0.pdf)
+
+# Experimental Setup
 ![](img/setup1.pdf)
 
 # Experimental Setup
 ![](img/setup2.pdf)
+
+# Experimental Setup
+![](img/setup3.pdf)
 
 # Experimental part
 ## Conclusions
@@ -202,3 +208,16 @@ tsnePlot
 
 # Clustering
 ![](img/Clustering.pdf)
+
+# Outlook
+## Analysis
+- Identify clusters and relate them to cell types
+- Differentially expressed genes within each cell type
+- Differentiation trajectories
+    - e.g. in the luminal department
+- Testing specific hypotheses 
+
+## Future
+- Plan experiment for tumor development
+
+#
