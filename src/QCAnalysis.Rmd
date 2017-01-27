@@ -39,11 +39,13 @@ kable(t(as.matrix(table(pD$Condition))))
 ```{r}
 pD$UmiSums<- colSums(m)
 pD$GenesDetected <- colSums(m!=0)
-genesDetected <- ggplot(pD, aes(x=SampleID,y=log10(GenesDetected),fill=Condition)) +
+genesDetected <- ggplot(pD, aes(x=SampleID,y=GenesDetected,fill=Condition)) +
     geom_violin(draw_quantiles=0.5)+
+    scale_y_log10() +
     theme_bw()
-LibrarySize <- ggplot(pD, aes(x=SampleID,y=log10(UmiSums),fill=Condition)) +
+LibrarySize <- ggplot(pD, aes(x=SampleID,y=UmiSums,fill=Condition)) +
     geom_violin(draw_quantiles=0.5)+
+    scale_y_log10() +
     theme_bw()
 gdLibSize <- ggplot(pD, aes(y=log10(GenesDetected), x=log10(UmiSums), color=Condition, shape=Replicate)) +
     geom_point() +
@@ -153,16 +155,18 @@ pD <- mutate(pD,
 	     PassPrcntTop=prcntTop > ThresholdPrcntTop,
 	     PassAll= PassViability & PassGenesDet & PassLibSize & PassPrcntTop)
 
-gdHist <- ggplot(pD, aes(x=log10(GenesDetected),y=..density..)) +
+gdHist <- ggplot(pD, aes(x=GenesDetected,y=..density..)) +
     geom_histogram(fill="white",color="black") +
-    geom_vline(data=smryByGroup,aes(xintercept=threshold_GenesDetected),color="red",lty="longdash") +
+    geom_vline(data=smryByGroup,aes(xintercept=10^threshold_GenesDetected),color="red",lty="longdash") +
+    scale_x_log10() +
     facet_wrap(~Condition) +
     theme_bw()
 gdHist
 
-libSizeHist <- ggplot(pD, aes(x=log10(UmiSums),y=..density..)) +
+libSizeHist <- ggplot(pD, aes(x=UmiSums,y=..density..)) +
     geom_histogram(fill="white",color="black") +
-    geom_vline(data=smryByGroup,aes(xintercept=threshold_UmiSums),color="red",lty="longdash") +
+    geom_vline(data=smryByGroup,aes(xintercept=10^threshold_UmiSums),color="red",lty="longdash") +
+    scale_x_log10() +
     facet_wrap(~Condition) +
     theme_bw()
 libSizeHist
@@ -225,7 +229,7 @@ fD.lac$highVar <- fD.lac$id %in% highVar.lac[1:topX]
 fPCA.lac <- log2(t(m.lac.norm[fD.lac$highVar,])+1)
 fPCA.lac <- scale(fPCA.lac,scale=TRUE,center=TRUE)
 set.seed(rnd_seed)
-tsn.lac <- Rtsne(fPCA.lac,perplexity=floor(nrow(fPCA.lac)/5))
+tsn.lac <- Rtsne(fPCA.lac,perplexity=25)
 
 pD.lac$tSNE1 <- tsn.lac$Y[,1]
 pD.lac$tSNE2 <- tsn.lac$Y[,2]
@@ -234,7 +238,7 @@ pD.lac <- arrange(pD.lac, PassAll)
 
 tsnPlot <- ggplot(pD.lac, aes(x=tSNE1, y=tSNE2, color=PassAll, shape=Replicate)) +
     geom_point(alpha=0.8,size=3) +
-    scale_color_manual(values=c("dodgerblue","red")) +
+    scale_color_manual(values=c("grey50","black")) +
     theme_bw() 
 tsnPlot
 
@@ -252,12 +256,14 @@ fD.filtered <- mutate(fD.filtered, meanExpression=rowMeans(m.norm),
 	     CV2=apply(m.norm,1,cv2),
 	     dm=DM(meanExpression,CV2))
 
-highVar <- dplyr::arrange(fD.filtered,desc(dm)) %>% .$id
-topX <- floor(0.2*length(highVar))
+#HVG definition by Brennecke
+brennecke <- BrenneckeHVG(m.norm,fdr=0.1,minBiolDisp=0.25)
+fD.filtered$highVar <- fD.filtered$id %in% brennecke
 
-fD.filtered$highVar <- fD.filtered$id %in% highVar[1:topX]
-VarPlot <- ggplot(fD.filtered, aes(x=log10(meanExpression),y=log10(CV2), color=highVar)) +
+VarPlot <- ggplot(fD.filtered, aes(x=meanExpression,y=CV2, color=highVar)) +
     geom_point() +
+    scale_x_log10() +
+    scale_y_log10() +
     theme_bw()
 VarPlot
 
@@ -265,7 +271,7 @@ fPCA <- log2(t(m.norm[fD.filtered$highVar,])+1)
 fPCA <- scale(fPCA,scale=TRUE,center=TRUE)
 pc <- prcomp(fPCA)
 set.seed(rnd_seed)
-tsn <- Rtsne(fPCA,perplexity=floor(nrow(fPCA)/5))
+tsn <- Rtsne(fPCA,perplexity=25)
 
 pD.filtered$PC1 <- pc$x[,1]
 pD.filtered$PC2 <- pc$x[,2]
@@ -284,7 +290,7 @@ pcaPlot <- ggplot(pD.filtered, aes(x=PC1, y=PC2, color=Condition, shape=Replicat
     theme_bw() 
 pcaPlot
 
-pcaPlot <- ggplot(pD.filtered, aes(x=PC1, y=PC2, color=log2(Csn2+1), shape=Replicate)) +
+pcaPlot <- ggplot(pD.filtered, aes(x=PC1, y=PC3, color=log2(Csn2+1), shape=Replicate)) +
     geom_point(alpha=0.8,size=2) +
     theme_bw() 
 pcaPlot
