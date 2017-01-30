@@ -24,6 +24,8 @@ dataList <- readRDS("../data/Robjects/ExpressionList.rds")
 m <- dataList[["counts"]]
 pD <- dataList[["phenoData"]]
 fD <- dataList[["featureData"]]
+#relevel pD Condition to get it in logical sequence
+pD$Condition <- factor(pD$Condition,levels=c("V","P","L","I"))
 ```
 # Overview over the data
 
@@ -245,7 +247,7 @@ tsnPlot
 kable(table(pD.lac$PassAll,pD.lac$Replicate))
 ```
 
-# Normalization and first visualization
+# Normalization and Highly Variable Gene Selection
 ```{r}
 clusters <- quickCluster(m.filtered)
 pD.filtered$sf <- computeSumFactors(m.filtered,clusters=clusters)
@@ -266,7 +268,10 @@ VarPlot <- ggplot(fD.filtered, aes(x=meanExpression,y=CV2, color=highVar)) +
     scale_y_log10() +
     theme_bw()
 VarPlot
+```
 
+# First Visualization
+```{r}
 fPCA <- log2(t(m.norm[fD.filtered$highVar,])+1)
 fPCA <- scale(fPCA,scale=TRUE,center=TRUE)
 pc <- prcomp(fPCA)
@@ -320,6 +325,12 @@ tsnePlot
 ***
 ## Save Data
 ```{r}
+pD.add <- select(pD.filtered, barcode, sf, tSNE1, tSNE2)
+fD.add <- select(fD.filtered, id, highVar)
+pD <- left_join(pD,pD.add, by="barcode")
+fD <- left_join(fD,fD.add, by="id")
+stopifnot(identical(as.character(pD$barcode),colnames(m)))
+stopifnot(identical(as.character(fD$id),rownames(m)))
 out <- list()
 out[[1]] <- m
 out[[2]] <- pD
