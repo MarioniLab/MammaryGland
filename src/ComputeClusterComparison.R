@@ -19,33 +19,12 @@ pD <- pD[pD$PassAll,]
 fD <- fD[fD$keep,]
 
 #Normalization
-clusters <- quickCluster(m)
-pD$sf <- computeSumFactors(m,clusters=clusters)
 m <- t(t(m)/pD$sf)
 # 
-fD <- mutate(fD, meanExpression=rowMeans(m),
-	     vars=apply(m,1,var),
-	     CV2=apply(m,1,cv2),
-	     dm=DM(meanExpression,CV2))
-
-fit <- trendVar(log2(m+1))
-decVar <- decomposeVar(log2(m+1),fit)
-plot(decVar$total~decVar$mean)
-feat <- decVar[decVar$FDR < 0.1,] %>% rownames()
-
-highVar <- dplyr::arrange(fD,desc(dm)) %>% .$id
-topX <- floor(0.05*length(highVar))
-
-library(M3Drop)
-brennecke <- BrenneckeGetVariableGenes(m,fdr=0.1,minBiolDisp=0.25)
-
-fD$highDm <- fD$id %in% highVar[1:topX]
-fD$highVar <- fD$id %in% feat
-fD$brennecke <- fD$id %in% brennecke
 
 #Run various clustering combinations
 
-fss <- c("brennecke")
+fss <- c("highVar")
 dms <- c("pearson","spearman","euclidean")
 lks <- c("complete","average","ward.D2")
 dss <- c(0,1,2,3,4)
