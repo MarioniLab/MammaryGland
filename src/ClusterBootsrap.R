@@ -23,27 +23,19 @@ clusters <- quickCluster(m)
 pD$sf <- computeSumFactors(m,clusters=clusters)
 m <- t(t(m)/pD$sf)
 # 
-fD <- mutate(fD, meanExpression=rowMeans(m),
-	     vars=apply(m,1,var),
-	     CV2=apply(m,1,cv2),
-	     dm=DM(meanExpression,CV2))
-
-brennecke <- BrenneckeHVG(m,fdr=0.1,minBiolDisp=0.25)
-
-fD$brennecke <- fD$id %in% brennecke
 
 #Run various clustering combinations
 
 #Feature Selection
 library(fpc)
-m.sub <- m[fD$brennecke,]
-dms <- c("euclidean","pearson")
-lks <- c("average","ward.D2")
-dss <- c(0,1)
+m.sub <- t(m[fD$highVar,])
+dms <- c("euclidean","pearson","spearman")
+lks <- c("average","ward.D2","complete")
+dss <- c(0,1,2)
 require(doParallel)
 require(fpc)
 require(clValid)
-nCores <- 2
+nCores <- 3
 cl <-makeCluster(nCores, type="FORK")
 registerDoParallel(cl)
 result <- foreach(i=seq_along(dss), .combine=c) %dopar% {
