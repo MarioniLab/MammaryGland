@@ -52,24 +52,27 @@ normAndDimR <- function(m, pD, fD, top=0.1, scale_true=TRUE) {
 	return(out)
 }
 
-plotGeneDist <- function(m, pD, fD, genes) {
+plotGeneDist <- function(m, pD, fD, genes, colorBy="Condition") {
     require(reshape)
     stopifnot(identical(rownames(m),fD$id))
     rownames(m) <- fD$symbol
     feat <- filter(fD, id %in% genes) %>% .$symbol
-    if (is.null(feat)) {
+    if (length(feat)==0) {
 	feat <- genes
     }
     exps <- as.data.frame(cbind(t(m)[,feat],"barcode"=colnames(m)))
-    pltDat <- left_join(select(pD, barcode, Condition),exps) %>% melt(.,id=c("barcode","Condition"))
-    plt <- ggplot(pltDat, aes(x=as.factor(variable),y=log2(as.numeric(value)+1))) +
+    pltDat <- left_join(select_(pD, "barcode", colorBy),exps) %>% melt(.,id=c("barcode",colorBy))
+    pltDat$value <- log2(as.numeric(pltDat$value)+1)
+    pltDat[,colorBy] <- as.factor(pltDat[,colorBy])
+    plt <- ggplot(pltDat, aes_string(x=colorBy,y="value")) +
 	geom_violin() +
-	geom_point(position="jitter",alpha=0.3,shape=19,aes(color=Condition)) +
+	geom_point(position="jitter",alpha=0.3,shape=19) +
+	facet_wrap(~variable) +
 	theme_bw()
     return(plt)
 }
 
-compClustering <- function(m,fD,fs="brennecke",dm="spearman",lk="ward.D2",ds=0) {
+compClustering <- function(m,fD,fs="brennecke",dm="spearman",lk="ward.D2",ds=0,minSize=15) {
 
     #Feature Selection
     keep <- fD[,fs]
@@ -89,7 +92,7 @@ compClustering <- function(m,fD,fs="brennecke",dm="spearman",lk="ward.D2",ds=0) 
     #Hierarchical Clustering
     htree <- hclust(dis, method=lk)
     #Tree Cut
-    cluss <- cutreeDynamic(htree,distM=as.matrix(dis),deepSplit=ds,minClusterSize=10)
+    cluss <- cutreeDynamic(htree,distM=as.matrix(dis),deepSplit=ds,minClusterSize=minSize)
 
     #Compute Validation Statistics
     clstats <- cluster.stats(d=dis, cluss)
@@ -153,7 +156,7 @@ BrenneckeHVG <- function (m, suppress.plot = FALSE, fdr = 0.1,
 	}
 	return(names(meansGenes)[sig])
     }
-dynamicCluster <- function(m, dm="euclidean", lk="average", ds=0, output="ForBootstrap") {
+dynamicCluster <- function(m, dm="euclidean", lk="average", ds=0, output="ForBootstrap", minSize=15) {
     print("Clustering on n*p matrix")
     trafM <- log2(m+1)
 
@@ -165,14 +168,14 @@ dynamicCluster <- function(m, dm="euclidean", lk="average", ds=0, output="ForBoo
 	    dis <- as.dist((1-cor(t(trafM),method=dm))/2)
 	}
     } else {
-	dis <- dist(t(trafM),method=dm)
+	dis <- dist(trafM,method=dm)
     }
 
 
     #Hierarchical Clustering
     htree <- hclust(dis, method=lk)
     #Tree Cut
-    cluss <- cutreeDynamic(htree,distM=as.matrix(dis),deepSplit=ds,minClusterSize=10)
+    cluss <- cutreeDynamic(htree,distM=as.matrix(dis),deepSplit=ds,minClusterSize=minSize)
 
     if (output=="ForBootstrap") {
 	out <- list()
