@@ -77,7 +77,11 @@ compClustering <- function(m,fD,fs="brennecke",dm="spearman",lk="ward.D2",ds=0) 
 
     #Dissimilarity Measure
     if(dm!="euclidean") {
-    dis <- as.dist((1-cor(trafM,method=dm))/2)
+	if(lk=="ward.D2") {
+    dis <- as.dist(sqrt((1-cor(trafM,method=dm))/2))
+	}else {
+	    dis <- as.dist((1-cor(trafM,method=dm))/2)
+	}
     } else {
 	dis <- dist(t(trafM),method=dm)
     }
@@ -150,14 +154,20 @@ BrenneckeHVG <- function (m, suppress.plot = FALSE, fdr = 0.1,
 	return(names(meansGenes)[sig])
     }
 dynamicCluster <- function(m, dm="euclidean", lk="average", ds=0, output="ForBootstrap") {
+    print("Clustering on n*p matrix")
     trafM <- log2(m+1)
 
     #Dissimilarity Measure
     if(dm!="euclidean") {
-    dis <- as.dist((1-cor(trafM,method=dm))/2)
+	if(lk=="ward.D2") {
+    dis <- as.dist(sqrt((1-cor(t(trafM),method=dm))/2))
+	}else {
+	    dis <- as.dist((1-cor(t(trafM),method=dm))/2)
+	}
     } else {
 	dis <- dist(t(trafM),method=dm)
     }
+
 
     #Hierarchical Clustering
     htree <- hclust(dis, method=lk)
@@ -168,13 +178,11 @@ dynamicCluster <- function(m, dm="euclidean", lk="average", ds=0, output="ForBoo
 	out <- list()
 	#Sort cluster numbers so that the noise component (0) is always the last cluster (required for cllist)
 
-	csids <- sort(unique(cluss),decreasing=TRUE)
+	csids <- sort(unique(unname(cluss)),decreasing=FALSE)
 	out$nc <- length(csids)
-	if(min(cluss)==0){
-	    out$nccl <- out$nc-1
-	}
+
 	out$clusterlist <- lapply(csids, function(id) cluss %in% id)
-	names(out$clusterlist) <- csids
+	#         names(out$clusterlist) <- csids
 	out$partition <- unname(cluss)
 	out$clustermethod <- "DynamicTreeCut"
 	return(out)
@@ -185,4 +193,26 @@ dynamicCluster <- function(m, dm="euclidean", lk="average", ds=0, output="ForBoo
 	out$dis <- dis
 	return(out)
     }
+}
+
+htreeWithBars <- function(obj,pD)
+{
+    #takes an obj output from dynamicCluster
+    require(dendextend)
+    dend <- obj$tree %>% as.dendrogram %>% set("hang")
+    clusters <- obj$cluster[order.dendrogram(dend)]
+    clusters_numbers <- unique(clusters) - (0 %in% clusters)
+    n_clusters <- length(clusters_numbers)
+    clusters <- factor(clusters)
+    plot(dend,leaflab="none")
+    condition <- pD$Condition[order.dendrogram(dend)]
+    rplicate <- pD$Replicate[order.dendrogram(dend)]
+    levels(condition) <- c("#F8766D","#7CAE00","#00BFC4","#C77CFF")
+    colorBar <- data.frame(clusters,condition,rplicate)
+    colored_bars(colorBar, dend, sort_by_labels_order = FALSE, y_shift=-max(obj$tree$height)*0.05,
+	     y_scale=max(obj$tree$height)*0.1,rowLabels=c("Cluster","Condition","Animal"))
+}
+
+asSim <- function(distance) {
+    simMat <- 1-(distance-min(distance))/(max(distance)-min(distance))
 }
