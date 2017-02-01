@@ -60,14 +60,15 @@ plotGeneDist <- function(m, pD, fD, genes, colorBy="Condition") {
     if (length(feat)==0) {
 	feat <- genes
     }
-    exps <- as.data.frame(cbind(t(m)[,feat],"barcode"=colnames(m)))
+    exps <- data.frame(t(m)[,feat])
+    exps$barcode <- rownames(exps)
     pltDat <- left_join(select_(pD, "barcode", colorBy),exps) %>% melt(.,id=c("barcode",colorBy))
-    pltDat$value <- log2(as.numeric(pltDat$value)+1)
+    pltDat$value <- log2(pltDat$value+1)
     pltDat[,colorBy] <- as.factor(pltDat[,colorBy])
     plt <- ggplot(pltDat, aes_string(x=colorBy,y="value")) +
-	geom_violin() +
-	geom_point(position="jitter",alpha=0.3,shape=19) +
-	facet_wrap(~variable) +
+	geom_boxplot() +
+	geom_point(position="jitter",alpha=0.2,shape=19) +
+	facet_wrap(~variable, scales="free") +
 	theme_bw()
     return(plt)
 }
