@@ -117,7 +117,8 @@ clustering <- reactive({
     dynamicCluster(t(m.sub), dm=input$dm,
 				 lk=input$lk,
 				 ds=as.numeric(input$ds),
-				 output="Cluster")
+				 output="Cluster",
+				 minSize=15)
 })
 
 
@@ -192,6 +193,15 @@ renderPlot({
 	     annotation_col=annoCol,
 	     annotation_colors=ann_colors)
 }, width=1200, height=1200)
+
+renderPlot({
+    clust <- clustering()
+    pD$cluster <- clust$cluster
+
+    genes <- c("Acta2","Csn3","Epcam","Krt8")
+	 plotGeneDist(m, pD, fD, genes, colorBy="cluster")
+   }, width=1000, height=1000)
+
 
 inputPanel(
 	   selectInput("gene", label = "GeneOfInterest",
