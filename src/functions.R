@@ -61,6 +61,7 @@ plotGeneDist <- function(m, pD, fD, genes, colorBy="Condition") {
 	feat <- genes
     }
     exps <- data.frame(t(m)[,feat])
+    colnames(exps) <- feat
     exps$barcode <- rownames(exps)
     pltDat <- left_join(select_(pD, "barcode", colorBy),exps) %>% melt(.,id=c("barcode",colorBy))
     pltDat$value <- log2(pltDat$value+1)

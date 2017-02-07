@@ -1,18 +1,14 @@
-library(scran)
 library(shiny)
 library(dplyr)
 library(gtools)
 library(knitr)
 library(ggplot2)
-library(dynamicTreeCut)
 library(DT)
-library(Rtsne)
-library(pheatmap)
-source("functions.R")
+source(file.path("functions.R"))
 
 rnd_seed <- 300
-dataList <- readRDS("../data/Robjects/ExpressionList_Clustered.rds")
-deList <- readRDS("../data/Robjects/DEList.rds")
+dataList <- readRDS(file.path("../data/Robjects/ExpressionList_Clustered.rds"))
+deList <- readRDS(file.path("../data/Robjects/DEList.rds"))
 #Commence
 m <- dataList[[1]]
 pD <- dataList[[2]]
@@ -55,7 +51,8 @@ ui <- shinyUI(fluidPage(
 	       radioButtons("order", label = "Order DE-Table",
 			   choices= c("Up against all", "Down against all", "none"), selected="none")
 			   
-	  ),plotOutput("distPlot")
+	  ),plotOutput("distPlot1"),
+	    plotOutput("distPlot2")
 	
 
     ),
@@ -92,7 +89,7 @@ dataSet <- reactive({
 
 output$tSNE <- renderPlot({
 	tsnPlot <- ggplot(pD, aes_string(x="tSNE1", y="tSNE2", color=input$colorBy, shape="Replicate")) +
-	    geom_point(size=2) +
+	    geom_point(size=1.5) +
 	    scale_color_brewer(palette="Paired") +
 	    theme_bw()
 	tsnPlot
@@ -106,18 +103,28 @@ output$tSNE2 <- renderPlot({
 	gn <- filter(fD, symbol %in% gene) %>% .$id
 	expr <- log2(t(m)[,gn]+1)
 	pD[,gn] <- expr
+	pD <- arrange(pD, (pD[,gn]))
 	tsnPlot <- ggplot(pD, aes_string(x="tSNE1", y="tSNE2", color=gn, shape="Replicate")) +
-	    geom_point(size=2) +
+	    geom_point(size=1.5) +
 	    scale_color_viridis() +
 	    theme_bw()
 	tsnPlot
     })
 
-output$distPlot <- renderPlot({
+output$distPlot1 <- renderPlot({
 	s <- input$table_rows_selected
 	dat <- dataSet()
 	gene <- dat[s,"GeneSymbol"]
 	     plotGeneDist(m, pD, fD, gene, colorBy="cluster")
+       })
+
+output$distPlot2 <- renderPlot({
+	s <- input$table_rows_selected
+	dat <- dataSet()
+	pD <- filter(pD, cluster==input$cNumber)
+	m <- m[,as.character(pD$barcode)]
+	gene <- dat[s,"GeneSymbol"]
+	     plotGeneDist(m, pD, fD, gene, colorBy="Condition")
        })
 
 output$table <- renderDataTable({
