@@ -58,8 +58,10 @@ ui <- shinyUI(fluidPage(
     ),
   
     mainPanel(
-        splitLayout(plotOutput("tSNE"), plotOutput("tSNE2")),
-		tabPanel("Table", dataTableOutput("table"))
+        tabsetPanel(
+		    tabPanel("Plots",splitLayout(plotOutput("tSNE"), plotOutput("tSNE2")),
+		dataTableOutput("table")),
+		    tabPanel("Table",verbatimTextOutput("table2")))
       )
     )
   )
@@ -131,6 +133,10 @@ output$table <- renderDataTable({
         out <- dataSet()
 	datatable(out, filter="top", selection=list(mode="single",
 						    selected=1))
+       })
+
+output$table2 <- renderPrint({
+     table(pD$cluster,pD$Condition)
        })
 }
 
