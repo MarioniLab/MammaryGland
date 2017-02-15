@@ -16,7 +16,7 @@ fD <- dataList[[3]]
 
 #Pre-Filtering before DE-Analysis
 # Cells
-keepCells <- pD$PassAll & pD$cluster !=0
+keepCells <- pD$PassAll & !(pD$isImmuneCell | pD$isOutlier)
 m <- m[,keepCells]
 pD <- pD[keepCells,]
 
