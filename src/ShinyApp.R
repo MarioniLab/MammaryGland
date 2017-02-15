@@ -16,13 +16,13 @@ fD <- dataList[[3]]
 
 #Pre-Filtering before DE-Analysis
 # Cells
-keepCells <- pD$PassAll & pD$cluster !=0
+keepCells <- pD$PassAll & ! (pD$isImmuneCell | pD$isOutlier)
 m <- m[,keepCells]
 pD <- pD[keepCells,]
 
 # Genes
 keep1 <- rowSums(m!=0)>10
-keep2 <- rowSums(m)>50
+keep2 <- rowSums(m)>20
 keep <- keep1 & keep2
 m <- m[keep,]
 fD <- fD[keep,]
@@ -35,6 +35,7 @@ colnames(deAdd) <- c("Gene","GeneSymbol")
 deList <- lapply(deList, function(x) {
 		      nw <- left_join(x,deAdd)
 		      nw <- nw[,-2]})
+names(deList) <- c(1,2,3,4,5,6,7,9,10)
 
 ui <- shinyUI(fluidPage(
 
@@ -47,7 +48,7 @@ ui <- shinyUI(fluidPage(
 	       selectInput("colorBy", label = "Color By",
 			   choices= c("cluster","Condition"), selected="cluster"),
 	       selectInput("cNumber", label = "Cluster",
-			   choices= as.character(c(1,2,3,4,5,6,7,8,9,10)), selected="1"),
+			   choices= as.character(c(1,2,3,4,5,6,7,9,10)), selected="1"),
 	       radioButtons("order", label = "Order DE-Table",
 			   choices= c("Up against all", "Down against all", "none"), selected="none")
 			   
@@ -71,21 +72,21 @@ server <- function(input, output) {
 
 dataSet <- reactive({
         out <- deList[[input$cNumber]]
-	out[,2:10] <- round(out[,2:10],digits=2)
+	out[,2:9] <- round(out[,2:9],digits=2)
     if(input$order=="none") {
 	return(out)
     } else {
 	if(input$order=="Up against all") {
-	    sbst <- out[,2:10] 
+	    sbst <- out[,2:9] 
 	    allUp <- apply(sbst, 1, function(x) sum(x>0)==length(x))
 	    marker.up <- out[allUp,]
-	    marker.up <- marker.up[order(apply(marker.up[,2:10],1,min),decreasing=TRUE),]
+	    marker.up <- marker.up[order(apply(marker.up[,2:9],1,min),decreasing=TRUE),]
 	    return(marker.up) }
 	else {
-	    sbst <- out[,2:10] 
+	    sbst <- out[,2:9] 
 	    allDown <- apply(sbst, 1, function(x) sum(x<0)==length(x))
 	    marker.down <- out[allDown,]
-	    marker.down <- marker.down[order(apply(marker.down[,2:10],1,max),decreasing=FALSE),]
+	    marker.down <- marker.down[order(apply(marker.down[,2:9],1,max),decreasing=FALSE),]
 	    return(marker.down) }
     }})
 
