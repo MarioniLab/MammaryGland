@@ -320,8 +320,24 @@ tsnePlot <- ggplot(pD.filtered, aes(x=tSNE1, y=tSNE2, color=log2(Csn2+1), shape=
     theme_bw()
 tsnePlot
 
+#tsnePlot based on cell Cycle
+library(scLVM)
+ens_ids_cc <- getEnsembl('GO:0007049')
+sel <- rownames(m.norm) %in% ens_ids_cc
+fPCA <- log2(t(m.norm[sel,])+1)
+fPCA <- scale(fPCA,scale=TRUE,center=TRUE)
+set.seed(rnd_seed)
+tsn <- Rtsne(fPCA,perplexity=25)
 
+pD.filtered$cc_tSNE1 <- tsn$Y[,1]
+pD.filtered$cc_tSNE2 <- tsn$Y[,2]
+
+tsnePlot <- ggplot(pD.filtered, aes(x=cc_tSNE1, y=cc_tSNE2, color=Condition, shape=Replicate)) +
+    geom_point(alpha=0.8,size=2) +
+    theme_bw()
+tsnePlot
 ```
+
 ***
 ## Save Data
 ```{r}
