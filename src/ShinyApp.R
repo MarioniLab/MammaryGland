@@ -1,3 +1,5 @@
+library(topGO)
+library(org.Mm.eg.db)
 library(shiny)
 library(dplyr)
 library(gtools)
@@ -30,11 +32,19 @@ fD <- fD[keep,]
 #Normalization
 m <- t(t(m)/pD$sf)
 
+#Add cell surface annotation
+library(scLVM)
+surface <- getEnsembl("GO:0009986")
+
 deAdd <- select(fD, id,symbol) 
 colnames(deAdd) <- c("Gene","GeneSymbol")
 deList <- lapply(deList, function(x) {
 		      nw <- left_join(x,deAdd)
-		      nw <- nw[,-2]})
+		      nw$Surface <- nw$Gene %in% surface
+		      nw <- nw[,-2]
+		      cols <- c("GeneSymbol",grep("top",colnames(nw),value=TRUE, #reorder cols
+						  ignore.case=TRUE))
+		      nw <- nw[,c(cols,setdiff(colnames(nw), cols))]})
 names(deList) <- c(1,2,3,4,5,6,7,9,10)
 
 ui <- shinyUI(fluidPage(
@@ -49,8 +59,13 @@ ui <- shinyUI(fluidPage(
 			   choices= c("cluster","Condition"), selected="cluster"),
 	       selectInput("cNumber", label = "Cluster",
 			   choices= as.character(c(1,2,3,4,5,6,7,9,10)), selected="1"),
+	       selectInput("ontology", label = "Ontology",
+			   choices= c("BP","CC","MF"), selected="MF"),
 	       radioButtons("order", label = "Order DE-Table",
-			   choices= c("Up against all", "Down against all", "none"), selected="none")
+			   choices= c("Up", "Down", "none"), selected="none"),
+	       selectInput("against", label = "Compare Against",
+			   choices= as.character(c(1,2,3,4,5,6,7,9,10)),
+			   multiple=TRUE)
 			   
 	  ),plotOutput("distPlot1"),
 	    plotOutput("distPlot2")
@@ -62,7 +77,8 @@ ui <- shinyUI(fluidPage(
         tabsetPanel(
 		    tabPanel("Plots",splitLayout(plotOutput("tSNE"), plotOutput("tSNE2")),
 		dataTableOutput("table")),
-		    tabPanel("Table",verbatimTextOutput("table2")))
+		    tabPanel("Table",verbatimTextOutput("table2")),
+		    tabPanel("GO-Analysis",tableOutput("goTable")))
       )
     )
   )
@@ -72,21 +88,34 @@ server <- function(input, output) {
 
 dataSet <- reactive({
         out <- deList[[input$cNumber]]
-	out[,2:9] <- round(out[,2:9],digits=2)
+	cols <- grepl(".vs.",colnames(out))
+	out[,cols] <- round(out[,cols],digits=1)
     if(input$order=="none") {
+	if(length(input$against)!=0) {
+	cols <- paste0("logFC.vs.",input$against)
+	colsP <- paste0("top.vs.",input$against)
+	sbst <- out[,cols]
+	ordr <- order(rowMax(as.matrix(cbind(out[,colsP],out[,colsP]))))
+	out <- out[ordr,]
+	}
 	return(out)
     } else {
-	if(input$order=="Up against all") {
-	    sbst <- out[,2:9] 
-	    allUp <- apply(sbst, 1, function(x) sum(x>0)==length(x))
+	cols <- paste0("logFC.vs.",input$against)
+	colsP <- paste0("top.vs.",input$against)
+	sbst <- out[,cols]
+	if(input$order=="Up") {
+	    sbst <- cbind(sbst,sbst) # prevent apply to crash for single cluster comparison
+	    allUp <- apply(sbst, 1, function(x) sum(x>1)==length(x))
 	    marker.up <- out[allUp,]
-	    marker.up <- marker.up[order(apply(marker.up[,2:9],1,min),decreasing=TRUE),]
+	    ordr <- order(rowMax(as.matrix(cbind(marker.up[,colsP],marker.up[,colsP]))))
+	    marker.up <- marker.up[ordr,]
 	    return(marker.up) }
 	else {
-	    sbst <- out[,2:9] 
-	    allDown <- apply(sbst, 1, function(x) sum(x<0)==length(x))
+	    sbst <- cbind(sbst,sbst) # prevent apply to crash for single cluster comparison
+	    allDown <- apply(sbst, 1, function(x) sum(x<1)==length(x))
 	    marker.down <- out[allDown,]
-	    marker.down <- marker.down[order(apply(marker.down[,2:9],1,max),decreasing=FALSE),]
+	    ordr <- order(rowMax(as.matrix(cbind(marker.down[,colsP],marker.down[,colsP]))))
+	    marker.down <- marker.down[ordr,]
 	    return(marker.down) }
     }})
 
@@ -94,7 +123,7 @@ output$tSNE <- renderPlot({
 	tsnPlot <- ggplot(pD, aes_string(x="tSNE1", y="tSNE2", color=input$colorBy, shape="Replicate")) +
 	    geom_point(size=1.5) +
 	    scale_color_brewer(palette="Paired") +
-	    theme_bw()
+	    theme_void()
 	tsnPlot
     })
 
@@ -110,7 +139,7 @@ output$tSNE2 <- renderPlot({
 	tsnPlot <- ggplot(pD, aes_string(x="tSNE1", y="tSNE2", color=gn, shape="Replicate")) +
 	    geom_point(size=1.5) +
 	    scale_color_viridis() +
-	    theme_bw()
+	    theme_void()
 	tsnPlot
     })
 
@@ -138,6 +167,25 @@ output$table <- renderDataTable({
 
 output$table2 <- renderPrint({
      table(pD$cluster,pD$Condition)
+       })
+
+output$goTable <- renderTable({
+    univrs <- fD$symbol
+    out <- dataSet()
+    top100 <- out$Gene[1:100]
+    alG <- factor(as.numeric(univrs %in% top100))
+    names(alG) <- univrs
+
+    # ---- GOanalysis ----
+
+    ## prepare Data for topGO
+    ont <- input$ontology
+    GO.data <- new("topGOdata", description="Lib GO",ontology=ont, allGenes=alG, 
+		   annot=annFUN.org, mapping="org.Mm.eg.db",
+		   nodeSize=10, ID="symbol")
+    result.classic <- runTest(GO.data, algorithm="classic", statistic="Fisher")
+    output <- GenTable(GO.data, Fisher.classic=result.classic, orderBy="Fisher.classic", topNodes=50, numChar=10000)
+    return(output)
        })
 }
 
