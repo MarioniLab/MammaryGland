@@ -44,7 +44,7 @@ fit <- glmFit(y, de.design)
 #copy cat
 library(doParallel)
 nCores <- 3
-cl <-makeCluster(nCores, type="FORK")
+cl <-makeCluster(nCores, type="FORK"
 registerDoParallel(cl)
 result <- foreach (i=seq_along(levels(cluster))) %dopar% {
     result.logFC <- result.PValue <- list()
@@ -59,13 +59,15 @@ result <- foreach (i=seq_along(levels(cluster))) %dopar% {
 	res <- glmTreat(fit, contrast=contrast, lfc=1)
 	con.name <- paste0('vs.', levels(cluster)[clust])
 	result.logFC[[con.name]] <- res$table$logFC
-	result.PValue[[con.name]] <- res$table$PValue
+	result.PValue[[con.name]] <- rank(res$table$PValue, ties="first")
     }
 
     collected.ranks <- lapply(result.PValue, rank, ties="first")
     min.rank <- do.call(pmin, collected.ranks)
     marker.set <- data.frame(Top=min.rank, Gene=rownames(y),
-			     logFC=do.call(cbind, result.logFC), stringsAsFactors=FALSE)
+			     logFC=do.call(cbind, result.logFC),
+			     top=do.call(cbind, result.PValue),
+			     stringsAsFactors=FALSE)
     marker.set <- marker.set[order(marker.set$Top),]
     return(marker.set)
 }
