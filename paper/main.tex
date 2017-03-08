@@ -1,0 +1,166 @@
+\documentclass[oneside]{amsart}
+\usepackage{geometry}
+\usepackage{times}
+
+
+%% --for bibtex
+\bibliographystyle{unsrt}
+%\usepackage{cite}
+\usepackage{natbib}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts} %\mathbb
+\usepackage{bm}
+\usepackage{lineno}
+
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\usepackage{siunitx}
+
+\hypersetup{colorlinks=true,linkcolor=black,citecolor=black,urlcolor=black}
+\urlstyle{same}
+
+\newcommand{\fixme}[1]{\textit{\textcolor{red}{Fixme: #1}}}
+\newcommand{\comment}[1]{\textit{\textcolor{blue}{Comment: #1}}}
+%\DeclareSIUnit\Molar{\textsc{m}} % add molar as captial m to siunitx
+
+\title{Single-cell RNA-sequencing reveals cellular dynamics of the developing mammary gland}
+\author{Karsten Bach, Sara Pensa, Walid T. Khaled, John C. Marioni}
+\begin{document}
+\begin{abstract}
+    Bla bla bla
+\end{abstract}
+
+\maketitle
+\tableofcontents
+\newpage
+\section{Introduction}
+
+\section{Results}
+%------------------------------ Section 1 -------------------------------------------------------
+\subsection{Unbiased identification of mammary epithelial cells\label{sec:cluster}}
+\begin{itemize}
+    \item Experimental Setup, 4 stages of the development of an adult gland
+    \item Clustering into major cell types in the mammary gland
+    \item Luminal cells: Hormone sensing (HS) (progenitor and differentiated), Non-hormone sensing (NHS) progenitor and secretory cells
+    \item Basal cells: MaSCs, PROCR\textsuperscript{+} MaSCs and differentiated myoepithelial cells
+\end{itemize}
+
+%------------------------------ Figure 1 -------------------------------------------------------
+\begin{figure}[h]
+\begin{subfigure}{0.45\linewidth}
+\centering %\textbf{a}
+\fbox{\parbox{0.9\linewidth}{(Experimental overview)}}
+%\includegraphics[height=5cm]{../figures/ROC_Staurosporine.pdf}
+\caption{}
+\end{subfigure}
+\begin{subfigure}{0.45\linewidth}
+%\centering %\textbf{a}
+    \fbox{\parbox{0.9\linewidth}{(tSNE plot colored by Condition)}}
+%\includegraphics[height=5cm]{../figures/ROC_Panobinostat.pdf}
+\caption{}
+\end{subfigure}
+\begin{subfigure}{0.45\linewidth}
+\centering %\textbf{a}
+\fbox{\parbox{1\linewidth}{(Plot to illustrate clusters and marker genes)}}
+%\includegraphics[height=5cm]{../figures/ROC_ATP.pdf}
+\caption{}
+\end{subfigure}
+    \caption{Unbiased identification of mammary epithelial cells}
+      \label{fig:f1}
+  \end{figure}
+
+\newpage
+%------------------------------ Section 2 -------------------------------------------------------
+\subsection{The luminal compartment is defined by a continuous spectrum of differentiation\label{sec:LumDiff}}
+\comment{Here I would start with only looking at virgin and pregnancy arguing that here we would expect all celltypes. 
+I would then describe the parity effect in the next section. Maybe there is a more elegant way of disentagling the two.}
+\begin{itemize}
+    \item Basal cells are separate from the luminal compartment, suggesting either:
+	\begin{itemize}
+	    \item This is a rare event 
+	    \item Intermediate stages are highly unstable and the transdifferentation is rapid
+	\end{itemize}
+    \item In the virgin gland there is one ``branch'' of differentiation with NHS progenitors on one side and differentiated HS cells on the other end
+    \item In pregnancy another branch derives from the NHS progenitors with differentiated secretory cells at the tip
+    \item We conclude that there is a luminal hierarchy with NHS progenitors that can give rise to both HS progenitors/differentiated cells and secretory cells
+\end{itemize}
+
+%------------------------------ Figure 2 -------------------------------------------------------
+\begin{figure}[h]
+\begin{subfigure}{0.45\linewidth}
+\centering %\textbf{a}
+\fbox{\parbox{0.9\linewidth}{(3D scatterplot of DiffusionMap V/P)}}
+%\includegraphics[height=5cm]{../figures/ROC_Staurosporine.pdf}
+\caption{}
+\end{subfigure}
+\begin{subfigure}{0.45\linewidth}
+%\centering %\textbf{a}
+    \fbox{\parbox{0.9\linewidth}{(Only luminal cells in virgin and pregnancy)}}
+%\includegraphics[height=5cm]{../figures/ROC_Panobinostat.pdf}
+\caption{}
+\end{subfigure}
+\begin{subfigure}{0.45\linewidth}
+\centering %\textbf{a}
+\fbox{\parbox{1\linewidth}{(Multiple plots to show gene expression pattern along the two branches)}}
+%\includegraphics[height=5cm]{../figures/ROC_ATP.pdf}
+\caption{}
+\end{subfigure}
+\caption{Differentiation hierarchy in the mammary gland}
+      \label{fig:f2}
+  \end{figure}
+  
+
+\newpage
+%------------------------------ Section 3 -------------------------------------------------------
+\subsection{Parity exerts cell type specific effects on the transcriptional landscape of luminal cells\label{sec:ParityEffect}}
+\begin{itemize}
+    \item Effect is stronger on luminal than on basal cells (\% variance explained?) [as has been shown before on epigenitic level]
+    \item \fixme{Is it worth mentioning that the lactation sample FACS profile has completely lost its ``basal/luminal'' appearence, yet contains all cell types}
+    \item DE genes between e.g. HS differentiated in involution versus virgin
+    \item A ``new'' cell type arises after pregnancy that most likely derives from NHS progenitors 
+    \item Highlight importance of this cell type as it sits at the top of the hierarchy
+\end{itemize}
+
+
+%------------------------------ Figure 4 -------------------------------------------------------
+\begin{figure}[h]
+\begin{subfigure}{0.45\linewidth}
+\centering %\textbf{a}
+\fbox{\parbox{0.9\linewidth}{(Condition factor explains more variance in the luminal compartment)}}
+%\includegraphics[height=5cm]{../figures/ROC_Staurosporine.pdf}
+\caption{}
+\end{subfigure}
+\begin{subfigure}{0.45\linewidth}
+%\centering %\textbf{a}
+    \fbox{\parbox{0.9\linewidth}{(Cluster 4 is closest to 5 and is at the top of the hierarchy after parity)}}
+%\includegraphics[height=5cm]{../figures/ROC_Panobinostat.pdf}
+\caption{}
+\end{subfigure}
+\begin{subfigure}{0.45\linewidth}
+\centering %\textbf{a}
+\fbox{\parbox{1\linewidth}{(Gene expression differences between 4 and 5)}}
+%\includegraphics[height=5cm]{../figures/ROC_ATP.pdf}
+\caption{}
+\end{subfigure}
+\caption{Parity exerts cell type specific effects on the transcriptional landscape of luminal cells}
+      \label{fig:f3}
+  \end{figure}
+
+\section{Discussion}
+\section{Methods}
+
+\clearpage
+
+%% --for biblatex
+\bibliographystyle{unsrt}
+\bibliography{nonparatpp}
+
+%% --for biblatex
+%\printbibliography
+
+\end{document}
+
