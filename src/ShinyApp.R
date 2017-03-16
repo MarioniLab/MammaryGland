@@ -35,12 +35,18 @@ m <- t(t(m)/pD$sf)
 #Add cell surface annotation
 library(scLVM)
 surface <- getEnsembl("GO:0009986")
+cellCycle <- getEnsembl("GO:0007049")
+tfCheck <- read.table("../data/miscData/TFcheckpoint_WithENSID.tsv", header=TRUE,
+	  sep="\t")
+tfs <- tfCheck$ensembl_gene_id
 
 deAdd <- select(fD, id,symbol) 
 colnames(deAdd) <- c("Gene","GeneSymbol")
 deList <- lapply(deList, function(x) {
 		      nw <- left_join(x,deAdd)
 		      nw$Surface <- nw$Gene %in% surface
+		      nw$CC <- nw$Gene %in% cellCycle
+		      nw$TF <- nw$Gene %in% tfs
 		      nw <- nw[,-2]
 		      cols <- c("GeneSymbol",grep("top",colnames(nw),value=TRUE, #reorder cols
 						  ignore.case=TRUE))
