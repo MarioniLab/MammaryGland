@@ -16,6 +16,12 @@ m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
 
+#load transcription factors
+tfCheck <- read.table("../data/miscData/TFcheckpoint_WithENSID.tsv",
+		header=TRUE, sep="\t")
+
+tfs <- filter(fD, id %in% tfCheck$ensembl_gene_id) %>% .$symbol
+
 # Pre-Filtering  selecting only virgin and pregnancy
 # Cells
 keepCells <- pD$PassAll & !pD$isImmuneCell & !pD$isOutlier & !(pD$cluster %in% c(6,7,10)) &
@@ -118,6 +124,7 @@ for (gene in genes) {
     x <- fullDat$DPTRank
     y <- log2(fullDat[,gene]+1)
     mod1 <- lm(y ~ ns(x,df=5))
+    lmmod <- lm(y~x)
 
     # F-test only on alternative model
     fstat <- summary(mod1)$fstatistic
@@ -125,9 +132,11 @@ for (gene in genes) {
     names(cfs) <- paste0("c",c(0:(length(cfs)-1)))
     ## Create P-Value and coefficient matrix
     p <- pf(fstat[1],df1=fstat[2],df2=fstat[3], lower.tail=FALSE)
+    gradient <- lmmod$coefficients[2]
     
     tmp <- data.frame(Gene=gene,
-		      PValue=p)
+		      PValue=p,
+		      gradient=gradient)
     tmp <- cbind(tmp,t(cfs))
     res <- rbind(res,tmp)
     ##Update fitted Value gene expression matrix
@@ -136,18 +145,13 @@ for (gene in genes) {
 m.smooth <- t(m.smooth)
 
 res$PAdjust<- p.adjust(res$PValue, method="bonferroni")
-tfCheck <- read.table("../data/miscData/TFcheckpoint_WithENSID.tsv",
-		header=TRUE, sep="\t")
 
-tfs <- filter(fD, id %in% tfCheck$ensembl_gene_id) %>% .$symbol
-
-deGenes <- as.character(res$Gene[res$PAdjust< 0.001])
+deGenes <- as.character(res$Gene[res$PAdjust< 0.001 &
+			res$gradient > 0.0005])
 # deGenes <- deGenes[deGenes %in% tfs]
 
 
-
-
-
+#Prepare heatmap
 ord <- arrange(pD.sub, DPTRank) %>% .$barcode %>% as.character()
 m.smooth.ord <- m.smooth[deGenes,ord]
 rownames(m.sub) <- fD.sub$symbol
@@ -159,69 +163,88 @@ pheatmap(m.smooth.ord,
 	 show_colnames=FALSE,
 	 show_rownames=FALSE)
 
-# rownames(deGenes) <- deGenes$Gene
-# test <- deGenes[,grepl("^c",colnames(deGenes))]
-# dis <- (1-cor(t(test)))/2
-# hcls <- hclust(as.dist(dis))
-# result <- cutreeDynamic(hcls,distM=as.matrix(dis),deepSplit=0)
-# names(result) <- deGenes$Gene
-# result <- cmeans(test,centers=2)
-# 
-# cluster genes
-# rownames(m.sub) <- fD.sub$symbol
-# m.ord <- m.sub[as.character(deGenes$Gene),pD.sub$DPTRank]
-# dis <- (1-cor(t(m.ord)))/2
-# hcls <- hclust(as.dist(dis))
-# result <- cutreeDynamic(hcls,distM=as.matrix(dis),deepSplit=0)
-# result <- kmeans(m.ord,2)
-# result <- result$cluster
-# names(result) <- deGenes$Gene
-# 
-# 
-# Plot to explore expression of a few genes
-# c1 <- sample(names(result[result==1]),10)
-# c2 <- sample(names(result[result==1]),10)
-features <- c("Foxm1","Bcl11a","Rora", "Elf5", "Sox10","UmiSums","GenesDetected")
-forPlot <- fullDat[,c("DPTRank","barcode","cluster",features)]
-forPlot <- melt(forPlot,id=c("barcode","DPTRank","cluster"))
-ggplot(forPlot, aes(x=DPTRank, y=log2(value+1),color=cluster)) +
+features <- c("Bcl11a","Krt8","Aldh1a3",
+	      "Cd14")
+forPlot <- fullDat[,c("DPTRank","dpt","barcode","cluster",features)]
+forPlot <- melt(forPlot,id=c("barcode","DPTRank","dpt","cluster"))
+ggplot(forPlot, aes(x=DPTRank, y=log2(value+1))) +
     geom_point() +
     geom_smooth(method="lm",formula="y~ns(x,df=5)",aes(color=NULL)) +
     facet_wrap(~variable,scales="free") +
     theme_bw()
-# 
-# 
-# 
-# g <- filter(fD, symbol=="") %>% .$id
-# y <- log((t(m.norm)[,gn])+1)
-# dat <- data.frame(pseudot,y,cluster=pD$cluster,branch=factor(branch),
-#                   Condition=pD$Condition) %>%
-#     filter(!is.na(branch) & branch!=1) %>%
-#     group_by(branch) %>%
-#     mutate(DPTRank=rank(pseudot, ties.method="first")) %>%
-#     ungroup()
-# ggplot(dat, aes(DPTRank,y,col=cluster)) +
-#     geom_point() +
-#     geom_smooth(method="loess",aes(lty=branch),col="black") +
-#     theme_bw()
-# 
-# ggplot(dat, aes(pseudot, ..density..)) +
-#     geom_histogram(bins=100) +
-#     facet_wrap(~branch) +
-#     theme_bw()
-# 
-# library(pheatmap)
-# mat <- m.norm[,branch==3 & !is.na(branch)]
-# keep <- rowMeans(mat) > 0.1
-# mat <- mat[keep,]
-# brennecke <- BrenneckeHVG(mat,suppress.plot=TRUE,fdr=.01)
-# mat <- log2(mat[brennecke,order(pseudot[branch==3 & !is.na(branch)])]+1)
-# mat <- mat - rowMeans(mat)
-# rownames(mat) <- fD$symbol[fD$id %in% brennecke]
-# pheatmap(mat,
-#          cluster_cols=FALSE,
-# clustering_distance_rows="correlation",
-# clustering_method="ward.D2",
-#          show_rownames=TRUE,
-#          fontsize=6,
-#          show_colnames=FALSE)
+
+########################
+#
+# Two Branch comparison
+#
+########################
+
+pD.sub <- pD[(!pD$branch %in% c("Root","Decision stage")),] 
+pD.sub <- group_by(pD.sub, branch) %>%
+    mutate(dptNorm=dpt/max(dpt)) %>%
+    ungroup()
+			      
+m.sub <- m.norm[,as.character(pD.sub$barcode)]
+keep <- rowMeans(m.sub) > 0.01
+m.sub <- m.sub[keep,]
+fD.sub <- fD[keep,]
+ids <- colnames(pD.sub)
+yhet <- data.frame(t(m.sub))
+stopifnot(identical(rownames(m.sub),as.character(fD.sub$id)))
+colnames(yhet) <- fD.sub$symbol
+yhet$barcode <- colnames(m.sub)
+fullDat <- join(pD.sub,yhet, by="barcode")
+
+res <- data.frame()
+genes <- fD.sub$symbol
+m.smooth <- matrix(nrow=length(genes),ncol=nrow(fullDat))
+colnames(m.smooth) <- as.character(fullDat$barcode)
+rownames(m.smooth) <- genes
+# take m.smooth het to allow allocation of vectors for columns
+m.smooth <- t(m.smooth)
+for (gene in genes) {
+    x <- fullDat$dptNorm
+    y <- log2(fullDat[,gene]+1)
+    fctr <- fullDat$branch
+    mod0 <- lm(y ~ ns(x,df=5))
+    mod1 <- lm(y ~ ns(x,df=5)*fctr)
+    lrt <- lrtest(mod0,mod1)
+
+    ## Create P-Value and coefficient matrix
+    p <- lrt[5][2,]
+    
+    tmp <- data.frame(Gene=gene,
+		      PValue=p)
+    res <- rbind(res,tmp)
+    ##Update fitted Value gene expression matrix
+    #     m.smooth[,gene] <- mod1$fitted.values
+}
+# m.smooth <- t(m.smooth)
+
+res$PAdjust<- p.adjust(res$PValue, method="bonferroni")
+
+deGenes <- as.character(res$Gene[res$PAdjust< 0.001])
+deGenes <- arrange(res, PValue) %>% .$Gene %>% .[1:10]
+# deGenes <- deGenes[deGenes %in% tfs]
+
+
+#Prepare heatmap
+ord <- arrange(pD.sub, DPTRank) %>% .$barcode %>% as.character()
+m.smooth.ord <- m.smooth[deGenes,ord]
+rownames(m.sub) <- fD.sub$symbol
+m.sub.ord <- log2(m.sub[deGenes,ord]+1)
+m.smooth.ord <- m.smooth.ord/apply(m.smooth.ord,1,max)
+
+pheatmap(m.smooth.ord,
+	 cluster_cols=FALSE,
+	 show_colnames=FALSE,
+	 show_rownames=FALSE)
+
+features <- as.character(deGenes)
+forPlot <- fullDat[,c("dptNorm","barcode","branch",features)]
+forPlot <- melt(forPlot,id=c("barcode","dptNorm","branch"))
+ggplot(forPlot, aes(x=dptNorm, y=log2(value+1),lty=branch)) +
+    geom_point() +
+    geom_smooth(method="lm",formula="y~ns(x,df=5)",aes(color=NULL)) +
+    facet_wrap(~variable,scales="free") +
+    theme_bw()
