@@ -1,4 +1,5 @@
 library(plyr)
+library(pheatmap)
 library(reshape2)
 library(splines)
 library(dplyr)
@@ -6,10 +7,9 @@ library(destiny)
 library(ggplot2)
 source("functions.R")
 library(RColorBrewer)
-library(e1071)
-library(dynamicTreeCut)
-library(rgl)
+library(lmtest)
 
+#REad in data
 rnd_seed <- 300
 dataList <- readRDS("../data/Robjects/ExpressionList_Clustered.rds")
 m <- dataList[[1]]
@@ -35,14 +35,16 @@ m.norm <- t(t(m)/pD$sf)
 brennecke <- BrenneckeHVG(m.norm,suppress.plot=TRUE)
 fD$highVar <- fD$id %in% brennecke
 
+#Expression matrix for DiffusionMap
 exps <- m.norm[fD$highVar,]
 exps <- t(log(exps+1))
 
-# Compute Diffusion map)
+# Compute Diffusion map
 set.seed(rnd_seed)
 dm <- DiffusionMap(exps,n_eigs=20,k=50)
 plot(eigenvalues(dm)[1:20])
 
+# Pseudotime and branching
 set.seed(rnd_seed)
 dcs <- eigenvectors(dm)[,1:2]
 t1 <- which.min(dcs[,2])
@@ -84,13 +86,18 @@ boxp2 <- ggplot(pD, aes(branch, dpt)) +
     geom_boxplot() +
     theme_bw(base_size=14)
 
-#Analyse hormone-sensing lineage
+########################
+#
+# Hormone-sensing lineage
+#
+########################
+
 lin <- "Hormone-sensing lineage"
 pD.sub <- pD[pD$branch %in% c("Root","Decision stage", 
 			      lin),]
 pD.sub$DPTRank <- rank(pD.sub$dpt, ties.method="first")
 m.sub <- m.norm[,as.character(pD.sub$barcode)]
-keep <- rowSums(m.sub>0) > 10
+keep <- rowMeans(m.sub) > 0.01
 m.sub <- m.sub[keep,]
 fD.sub <- fD[keep,]
 ids <- colnames(pD.sub)
@@ -110,102 +117,111 @@ m.smooth <- t(m.smooth)
 for (gene in genes) {
     x <- fullDat$DPTRank
     y <- log2(fullDat[,gene]+1)
-    mod <- lm(y ~ ns(x,df=5))
-    fstat <- summary(mod)$fstatistic
-    cfs <- mod$coefficients
+    mod1 <- lm(y ~ ns(x,df=5))
+
+    # F-test only on alternative model
+    fstat <- summary(mod1)$fstatistic
+    cfs <- mod1$coefficients
     names(cfs) <- paste0("c",c(0:(length(cfs)-1)))
     ## Create P-Value and coefficient matrix
     p <- pf(fstat[1],df1=fstat[2],df2=fstat[3], lower.tail=FALSE)
+    
     tmp <- data.frame(Gene=gene,
 		      PValue=p)
     tmp <- cbind(tmp,t(cfs))
     res <- rbind(res,tmp)
     ##Update fitted Value gene expression matrix
-    m.smooth[,gene] <- mod$fitted.values
+    m.smooth[,gene] <- mod1$fitted.values
 }
 m.smooth <- t(m.smooth)
-res$PAdjust <- p.adjust(res$PValue,method="bonferroni")
-deGenes <- as.character(res$Gene[res$PAdjust < 0.001])
-deGenes <- as.character(arrange(res, PValue) %>% .$Gene %>% .[1:100])
+
+res$PAdjust<- p.adjust(res$PValue, method="bonferroni")
+tfCheck <- read.table("../data/miscData/TFcheckpoint_WithENSID.tsv",
+		header=TRUE, sep="\t")
+
+tfs <- filter(fD, id %in% tfCheck$ensembl_gene_id) %>% .$symbol
+
+deGenes <- as.character(res$Gene[res$PAdjust< 0.001])
+# deGenes <- deGenes[deGenes %in% tfs]
+
 
 
 
 
 ord <- arrange(pD.sub, DPTRank) %>% .$barcode %>% as.character()
 m.smooth.ord <- m.smooth[deGenes,ord]
+rownames(m.sub) <- fD.sub$symbol
+m.sub.ord <- log2(m.sub[deGenes,ord]+1)
 m.smooth.ord <- m.smooth.ord/apply(m.smooth.ord,1,max)
 
-library(pheatmap)
-cairo_pdf("test.pdf",width=12,height=12)
 pheatmap(m.smooth.ord,
 	 cluster_cols=FALSE,
 	 show_colnames=FALSE,
-	 show_rownames=TRUE)
-dev.off()
+	 show_rownames=FALSE)
 
-rownames(deGenes) <- deGenes$Gene
-test <- deGenes[,grepl("^c",colnames(deGenes))]
-dis <- (1-cor(t(test)))/2
-hcls <- hclust(as.dist(dis))
-result <- cutreeDynamic(hcls,distM=as.matrix(dis),deepSplit=0)
-names(result) <- deGenes$Gene
+# rownames(deGenes) <- deGenes$Gene
+# test <- deGenes[,grepl("^c",colnames(deGenes))]
+# dis <- (1-cor(t(test)))/2
+# hcls <- hclust(as.dist(dis))
+# result <- cutreeDynamic(hcls,distM=as.matrix(dis),deepSplit=0)
+# names(result) <- deGenes$Gene
 # result <- cmeans(test,centers=2)
-
-#cluster genes
-rownames(m.sub) <- fD.sub$symbol
-m.ord <- m.sub[as.character(deGenes$Gene),pD.sub$DPTRank]
-dis <- (1-cor(t(m.ord)))/2
-hcls <- hclust(as.dist(dis))
-result <- cutreeDynamic(hcls,distM=as.matrix(dis),deepSplit=0)
-result <- kmeans(m.ord,2)
-result <- result$cluster
-names(result) <- deGenes$Gene
-
-
+# 
+# cluster genes
+# rownames(m.sub) <- fD.sub$symbol
+# m.ord <- m.sub[as.character(deGenes$Gene),pD.sub$DPTRank]
+# dis <- (1-cor(t(m.ord)))/2
+# hcls <- hclust(as.dist(dis))
+# result <- cutreeDynamic(hcls,distM=as.matrix(dis),deepSplit=0)
+# result <- kmeans(m.ord,2)
+# result <- result$cluster
+# names(result) <- deGenes$Gene
+# 
+# 
 # Plot to explore expression of a few genes
-c1 <- sample(names(result[result==1]),10)
-c2 <- sample(names(result[result==1]),10)
-features <- c("Krt8")
-forPlot <- fullDat[,c("DPTRank","barcode",features)]
-forPlot <- melt(forPlot,id=c("barcode","DPTRank"))
-ggplot(forPlot, aes(x=DPTRank, y=log2(value+1))) +
+# c1 <- sample(names(result[result==1]),10)
+# c2 <- sample(names(result[result==1]),10)
+features <- c("Foxm1","Bcl11a","Rora", "Elf5", "Sox10","UmiSums","GenesDetected")
+forPlot <- fullDat[,c("DPTRank","barcode","cluster",features)]
+forPlot <- melt(forPlot,id=c("barcode","DPTRank","cluster"))
+ggplot(forPlot, aes(x=DPTRank, y=log2(value+1),color=cluster)) +
     geom_point() +
-    geom_smooth(method="lm",formula="y~ns(x,df=5)") +
-    facet_wrap(~variable) +
+    geom_smooth(method="lm",formula="y~ns(x,df=5)",aes(color=NULL)) +
+    facet_wrap(~variable,scales="free") +
     theme_bw()
-
-
-
-g <- filter(fD, symbol=="") %>% .$id
-y <- log((t(m.norm)[,gn])+1)
-dat <- data.frame(pseudot,y,cluster=pD$cluster,branch=factor(branch),
-		  Condition=pD$Condition) %>%
-    filter(!is.na(branch) & branch!=1) %>%
-    group_by(branch) %>%
-    mutate(DPTRank=rank(pseudot, ties.method="first")) %>%
-    ungroup()
-ggplot(dat, aes(DPTRank,y,col=cluster)) +
-    geom_point() +
-    geom_smooth(method="loess",aes(lty=branch),col="black") +
-    theme_bw()
-
-ggplot(dat, aes(pseudot, ..density..)) +
-    geom_histogram(bins=100) +
-    facet_wrap(~branch) +
-    theme_bw()
-
-library(pheatmap)
-mat <- m.norm[,branch==3 & !is.na(branch)]
-keep <- rowMeans(mat) > 0.1
-mat <- mat[keep,]
-brennecke <- BrenneckeHVG(mat,suppress.plot=TRUE,fdr=.01)
-mat <- log2(mat[brennecke,order(pseudot[branch==3 & !is.na(branch)])]+1)
-mat <- mat - rowMeans(mat)
-rownames(mat) <- fD$symbol[fD$id %in% brennecke]
-pheatmap(mat,
-	 cluster_cols=FALSE,
-	 #          clustering_distance_rows="correlation",
-	 #          clustering_method="ward.D2",
-	 show_rownames=TRUE,
-	 fontsize=6,
-	 show_colnames=FALSE)
+# 
+# 
+# 
+# g <- filter(fD, symbol=="") %>% .$id
+# y <- log((t(m.norm)[,gn])+1)
+# dat <- data.frame(pseudot,y,cluster=pD$cluster,branch=factor(branch),
+#                   Condition=pD$Condition) %>%
+#     filter(!is.na(branch) & branch!=1) %>%
+#     group_by(branch) %>%
+#     mutate(DPTRank=rank(pseudot, ties.method="first")) %>%
+#     ungroup()
+# ggplot(dat, aes(DPTRank,y,col=cluster)) +
+#     geom_point() +
+#     geom_smooth(method="loess",aes(lty=branch),col="black") +
+#     theme_bw()
+# 
+# ggplot(dat, aes(pseudot, ..density..)) +
+#     geom_histogram(bins=100) +
+#     facet_wrap(~branch) +
+#     theme_bw()
+# 
+# library(pheatmap)
+# mat <- m.norm[,branch==3 & !is.na(branch)]
+# keep <- rowMeans(mat) > 0.1
+# mat <- mat[keep,]
+# brennecke <- BrenneckeHVG(mat,suppress.plot=TRUE,fdr=.01)
+# mat <- log2(mat[brennecke,order(pseudot[branch==3 & !is.na(branch)])]+1)
+# mat <- mat - rowMeans(mat)
+# rownames(mat) <- fD$symbol[fD$id %in% brennecke]
+# pheatmap(mat,
+#          cluster_cols=FALSE,
+# clustering_distance_rows="correlation",
+# clustering_method="ward.D2",
+#          show_rownames=TRUE,
+#          fontsize=6,
+#          show_colnames=FALSE)
