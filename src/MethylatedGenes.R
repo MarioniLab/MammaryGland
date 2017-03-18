@@ -60,8 +60,8 @@ forPlot <- deResults[,c("Gene","logFC.vs.5","top.vs.5")]
 forPlot <- mutate(forPlot, isHypoMeth= Gene %in% deMethGenes) %>% 
 	   rename(foldChange=logFC.vs.5)
 
-x <- filter(forPlot, foldChange >0, top.vs.5 < 1000)
-y <- filter(forPlot, foldChange <0, top.vs.5 < 1000)
+x <- filter(forPlot, foldChange >0, top.vs.5 <= 1000)
+y <- filter(forPlot, foldChange <0, top.vs.5 <= 1000)
 
 p <- ggplot(forPlot, aes(y=foldChange, x=isHypoMeth)) +
     geom_boxplot() +
