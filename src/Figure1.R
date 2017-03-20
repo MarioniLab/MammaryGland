@@ -81,6 +81,7 @@ annoCol <- data.frame("Cluster"=as.factor(ord$cluster),
 # get colors from p1
 forcol <- ggplot_build(p1)
 clustColors <- unique(arrange(forcol$data[[1]],group) %>% .[["colour"]])
+clustColors <- clustColors[c(1,3,5,8,4,2,6,7,9)]
 names(clustColors) <- c(1,3,5,8,4,2,6,7,9)
 # get colors from p0
 forcol <- ggplot_build(p0)
