@@ -153,30 +153,10 @@ for (lin in lineages) {
     res$PAdjust<- p.adjust(res$PValue, method="bonferroni")
     res <- filter(res,!Gene %in% tooLow)
 
-    ## Heatmap of top500
-    deGenes <- as.character(res$Gene[order(res$PValue)][1:500])
-
-
-    #Prepare heatmap
-    ord <- arrange(pD.sub, DPTRank) %>% .$barcode %>% as.character()
-    m.smooth.ord <- m.smooth[deGenes,ord]
-    rownames(m.sub) <- fD.sub$symbol
-    m.sub.ord <- log2(m.sub[deGenes,ord]+1)
-    m.smooth.ord <- m.smooth.ord/apply(m.smooth.ord,1,max)
-
-    pAll <- pheatmap(m.smooth.ord,
-	 cluster_cols=FALSE,
-	 show_colnames=FALSE,
-	 clustering_distance_rows="euclidean",
-	 clustering_method="average",
-	 treeheight_row=0,
-	 legend=FALSE,
-	 show_rownames=FALSE,
-	 fontsize=6)
-
     ## Heatmap of all TF 
     deGenes <- as.character(res$Gene[res$PAdjust< 0.001])
     deGenes <- deGenes[deGenes %in% tfs]
+    #     deGenes <- as.character(res$Gene[order(res$PValue)][1:100])
 
     ord <- arrange(pD.sub, DPTRank) %>% .$barcode %>% as.character()
     m.smooth.ord <- m.smooth[deGenes,ord]
@@ -197,11 +177,11 @@ for (lin in lineages) {
 	 fontsize=6)
 
     if (lin=="Hormone-sensing lineage") {
-    features <- c("Jun","Krt8","Igfbp5")
-    lables <- c("a","b","c")
+    features <- c("Esr1","Hey1","Runx1")
+    lables <- c("a","b")
     } else{
-    features <- c("Ogfrl1","Cdkn3","Glycam1")
-    lables <- c("d","e","f")
+    features <- c("Elf5","Csn2","Glycam1")
+    lables <- c("c","d")
     }
 
     plList <- list()
@@ -211,23 +191,21 @@ for (lin in lineages) {
     p <- ggplot(forPlot, aes(x=dpt, y=log2(value+1))) +
 	geom_point(size=0.7) +
 	geom_smooth(method="lm",formula="y~ns(x,df=3)") +
-	xlab("DPT Rank") +
+	xlab("Pseudotime") +
 	ylab("Log-Expression") +
 	ggtitle(feature) 
     plList[[feature]] <- p
     }
-    expPlot <- plot_grid(plotlist=plList,nrow=1)
+    expPlot <- plot_grid(plotlist=plList,nrow=3)
 
-    subP1 <- plot_grid(expPlot,pTf[[4]],nrow=2,labels=c(lables[2],lables[3]),rel_heights=c(0.5,1),
+    subP1 <- plot_grid(expPlot,pTf[[4]],nrow=1,labels=c(lables[1],lables[2]),
 		       vjust=0.5,scale=0.95)
-    fullP <- plot_grid(pAll[[4]],subP1,ncol=2,labels=c(lables[1],""),
-		       vjust=0.5)
-    out[[lin]] <- fullP
+    out[[lin]] <- subP1
 }
 
 dev.off()
-cairo_pdf("Figure3dpt.pdf",width=12.41,height=17.54)
-plot_grid(plotlist=out,nrow=2)
+cairo_pdf("Figure3.pdf",width=12.41,height=8.75)
+plot_grid(plotlist=out,nrow=1)
 dev.off()
 
 

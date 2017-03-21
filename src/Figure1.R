@@ -14,8 +14,8 @@ pD <- dataList[[2]]
 fD <- dataList[[3]]
 
 pD$Condition <- mapvalues(pD$Condition, from=c("V","P","L","I"),
-			  to=c("Virgin", "Pregnancy",
-			       "Lactation", "Post-Involution"))
+			  to=c("Nulliparous", "14.5d Gestation",
+			       "6d Lactation", "14d Post Natural Involution"))
 
 # Cells
 keepCells <- pD$PassAll & !pD$isImmuneCell & !pD$isOutlier 
@@ -62,7 +62,7 @@ c6 <- c("1500015O10Rik","Col7a1","Moxd1","Mia","Emid1","Pdpn","Col9a2","Fbln2","
 c7 <- c("Oxtr","Krt15","Lep","Igfbp6")
 c8 <- c("Pip","Apod","Prss2","Cbr2","Dusp4")
 c9 <- c("Gng11","Procr","Igfbp7","Nrip2","Notch3","Zeb2")
-genes <- c(general,c1,c3,c5,c8,c4,c2,c6,c7,c9)
+genes <- c(general,c1,c3,c5,c4,c8,c2,c6,c7,c9)
 library(pheatmap)
 set.seed(rnd_seed)
 subsP <- filter(pD, cluster %in% c(1,2,3,4,5,6)) %>%
@@ -70,7 +70,7 @@ subsP <- filter(pD, cluster %in% c(1,2,3,4,5,6)) %>%
     do(sample_n(.,100))
 ord <- filter(pD, cluster %in% c(7,8,9)) %>%
     bind_rows(.,subsP) %>%
-    mutate(cluster=factor(cluster,levels=c(1,3,5,8,4,2,6,7,9))) %>%
+    mutate(cluster=factor(cluster,levels=c(1,3,5,4,8,2,6,7,9))) %>%
     arrange(cluster,Condition)
 mheat <- m.norm[genes,as.character(ord$barcode)]
 mheat <- log(mheat +1)
@@ -81,13 +81,13 @@ annoCol <- data.frame("Cluster"=as.factor(ord$cluster),
 # get colors from p1
 forcol <- ggplot_build(p1)
 clustColors <- unique(arrange(forcol$data[[1]],group) %>% .[["colour"]])
-clustColors <- clustColors[c(1,3,5,8,4,2,6,7,9)]
-names(clustColors) <- c(1,3,5,8,4,2,6,7,9)
+clustColors <- clustColors[c(1,3,5,4,8,2,6,7,9)]
+names(clustColors) <- c(1,3,5,4,8,2,6,7,9)
 # get colors from p0
 forcol <- ggplot_build(p0)
 condColors <- unique(arrange(forcol$data[[1]],group) %>% .[["colour"]])
-names(condColors) <- c("Virgin","Pregnancy","Lactation","Post-Involution")
-
+names(condColors) <- c("Nulliparous", "14.5d Gestation",
+			       "6d Lactation", "14d Post Natural Involution")
 annoColors <- list("Condition"=condColors,
 		   "Cluster"=clustColors)
 
@@ -99,7 +99,7 @@ p <-  pheatmap(mheat,
          show_colnames=FALSE,
          annotation_legend=FALSE,
 	 annotation_col=annoCol,
-	 gaps_col=c(100,200,300,326,426,526,626,661),
+	 gaps_col=c(100,200,300,400,426,526,626,661),
          gaps_row=9,
 	 annotation_colors=annoColors,
 	 fontsize=8)

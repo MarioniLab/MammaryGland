@@ -71,7 +71,7 @@ cols <- mapvalues(pD.vp$cluster,levels(pD.vp$cluster)[-1],
 dms <- eigenvectors(dm)[,1:3]
 
 ## 3d Plot for Basal cells
-scatterplot3d(dms[,2],-dms[,1],dms[,3],color=cols,pch=20,angle=20,
+scatterplot3d(dms[,2],-dms[,1],dms[,3],color=cols,pch=20,angle=40,
 	      cex.symbols=1.5,
 	      mar=c(5,3,-0.1,3)+0.1,
 	      xlab="DC2",
@@ -156,8 +156,8 @@ p0 <- ggplot(pD.vp, aes(x=DC1,y=-DC2, color=cluster)) +
     scale_color_manual(values=cols)+
     guides(colour=FALSE)
 
-pal <- brewer.pal(n=9,name="Paired")[c(1,2,3,5,6,7,8)]
-forcLeg <- filter(pD, !cluster %in% c(9,4))
+pal <- brewer.pal(n=9,name="Paired")[c(1,2,3,5,6,7,8,9)]
+forcLeg <- filter(pD, !cluster %in% c(4))
 clustLeg <- ggplot(forcLeg, aes(x=tSNE1,y=tSNE2,color=cluster)) +
     geom_point() +
     scale_color_manual(values=pal) +
@@ -234,7 +234,6 @@ subP1 <- plot_grid(NULL,subP1,NULL,labels=c("","c",""),nrow=1,
 
 subPab <-plot_grid(g,p0,labels=c("a","b",nrow=2)) 
 subP0 <- plot_grid(subPab,clustLeg,nrow=2,rel_heights=c(1,0.1))
-
 
 cairo_pdf("Figure2.pdf",width=12.41,height=15.54)
 plot_grid(subP0,subP1,labels=c("",""),nrow=2)
