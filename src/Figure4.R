@@ -50,9 +50,13 @@ for (clust in levels(pD$cluster)[-1]) {
     out[,colname] <- expr
 }
 library(pheatmap)
+library(RColorBrewer)
 
 meanSim <- cor(out,method="spearman")
-simMat <- pheatmap(meanSim)
+simMat <- pheatmap(meanSim,
+		   color=colorRampPalette((brewer.pal(n=7,
+							 name="Greys")))(100),
+		   treeheight_row=0)
 dev.off()
 
 ######################
@@ -121,13 +125,16 @@ forPlot <- data.frame("NullParFC"=tabPar$logFC,
 
 library(cowplot)
 
-interest <- filter(forPlot, Gene %in% c("Aldh1a3","Elf5","Hey1","Sox10","Cd14",
+interest <- filter(forPlot, Gene %in% c("Aldh1a3","Elf5","Sox10","Cd14",
 					"Prlr","Esr1","Pgr"))
 p <- ggplot(forPlot, aes(x=NullParFC,y=ParousFC)) +
     geom_point(color="grey50") +
     geom_point(data=interest, aes(x=NullParFC, y=ParousFC), size=4, color="red",pch=1) +
     geom_point(data=interest, aes(x=NullParFC, y=ParousFC), color="black") +
-    geom_label(data=interest, aes(x=NullParFC,y=ParousFC,label=Gene),nudge_x=0.7) +
+    geom_label(data=filter(interest,NullParFC < 0), aes(x=NullParFC,y=ParousFC,label=Gene), nudge_x=-1) +
+    geom_label(data=filter(interest,NullParFC > 0), aes(x=NullParFC,y=ParousFC,label=Gene), nudge_x=1.2) +
+    xlab("Log(FC) against luminal cells in NP gland") +
+    ylab("Log(FC) against luminal cells in P gland") +
     geom_hline(yintercept=0, lty="dashed") +
     geom_vline(xintercept=0, lty="dashed") +
     coord_equal(xlim=c(-5,5),ylim=c(-5,5))
@@ -147,31 +154,6 @@ subP0 <- plot_grid(simMat[[4]],p,labels=c("a","b"))
 deMethGenes <- read.table("../data/methylationData/HypoMethInParous.txt", header=TRUE, stringsAsFactor=FALSE) %>% .$Gene
 deList <- readRDS(file.path("../data/Robjects/DEList.rds"))
 
-
-#FCs
-genes <- c("B4galt1",
-	   "Bax",
-	   "Stat5a",
-	   "Vdr",
-	   "Atp7b",
-	   "Med16",
-	   "Socs2",
-	   "Med13",
-	   "Hif1a",
-	   "Med12l",
-	   "Med13l",
-	   "Eif2ak3",
-	   "Agpat6",
-	   "Csn3",
-	   "Med18",
-	   "Cdo1",
-	   "Xdh",
-	   "Vegfa",
-	   "Stat5b",
-	   "Med1",
-	   "Birc2")
-
-genes <- filter(fD, symbol %in% genes) %>% .$id
 
 deResults <- deList[[4]]
 deRes <- deResults[,c("Gene","logFC.vs.5","top.vs.5")]
@@ -200,13 +182,16 @@ for (comp in comps) {
     ks <- ks.test(geneset,background,alternative="greater")
 
     forPlot <- data.frame("Ranks"=c(geneset,background),
-			  "Set"=c(rep("Hypo-methylated",length(geneset)),
+			  "Geneset"=c(rep("Hypo-methylated",length(geneset)),
 				  rep("Background",length(background))))
     
-    out[[comp]] <- ggplot(forPlot, aes(x=Ranks,color=Set)) +
+    out[[comp]] <- ggplot(forPlot, aes(x=Ranks,color=Geneset)) +
 	stat_ecdf(geom="step",size=1.2) +
 	annotate("text",x=2000,y=0.5,label=paste0("P=",round(ks$p.value,5))) +
 	ggtitle(comp) +
+	scale_colour_manual(values=c("grey50","black")) +
+	ylab("Proportion of Genes") +
+	xlab("P-Value Ranks") +
 	theme(legend.directio="horizontal",
 	      legend.title=element_blank())
 }
@@ -215,7 +200,75 @@ out[[1]] <- out[[1]] %+% guides(colour=FALSE)
 out[[2]] <- out[[2]] %+% guides(colour=FALSE) 
 subP1a <- plot_grid(p,out[[1]],out[[2]],nrow=1,align="h")
 subP1 <- plot_grid(subP1a,leg,rel_heights=c(1,0.1),nrow=2)
-fullP <- plot_grid(subP0,subP1,labels=c("","c"),nrow=2)
+
+####
+#
+#
+#DE-Analysis 4 vs 5 
+#
+####
+
+m <- dataList[[1]]
+pD <- dataList[[2]]
+fD <- dataList[[3]]
+
+#Pre-Filtering before DE-Analysis
+# Cells
+keepCells <- pD$PassAll & !(pD$isImmuneCell | pD$isOutlier)
+m <- m[,keepCells]
+pD <- pD[keepCells,]
+
+# Genes
+keep <- rowMeans(m) > 0.1
+m <- m[keep,]
+fD <- fD[keep,]
+
+#Normalize
+m.norm <- t(t(m)/pD$sf)
+
+stopifnot(identical(rownames(m.norm),as.character(fD$id)))
+rownames(m.norm) <- as.character(fD$symbol)
+Milkgenes <- c("Csn2","Csn3","Lalba","Csn1s1","Csn1s2a","Mfge8")
+ImmuneGenes <- c("Lcn2","B2m","Hk2","H2-K1","Ltf","Nfkb1")
+geneL <- list(Milkgenes,ImmuneGenes)
+for (i in seq_along(geneL)) {
+    genes <- geneL[[i]]
+    forPl <- data.frame(t(m.norm)[,c(genes)]+1,
+			barcode=colnames(m.norm))
+    add <- select(pD,barcode, cluster, Condition) %>%
+	mutate(barcode=as.character(barcode))
+    forPl <- left_join(forPl,add,by="barcode") %>%
+	filter(cluster %in% c(5,4))
+
+    forPl <- melt(forPl,id=c("barcode","cluster","Condition"))
+
+    library(RColorBrewer)
+    pal <- brewer.pal(n=9,name="Paired")[c(4,5)]
+    ExpPlot <- ggplot(forPl, aes(y=value,x=cluster,color=cluster)) +
+	geom_jitter(size=0.9) +
+	stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
+		     geom = "crossbar", width = 1,color="black") +
+	facet_grid(~variable) +
+	ylab("Log Expression") +
+	xlab("") +
+	theme(axis.line.x=element_blank(),
+	      axis.text.x=element_blank(),
+	      axis.ticks.x=element_blank(),
+	      strip.background=element_blank(),
+	      strip.text=element_text(face="bold"),
+	      legend.position="bottom",
+	      legend.direction="horizontal",
+	      ) +
+	scale_colour_manual(values=pal)+
+	guides(colour = guide_legend(override.aes = list(size=3))) +
+	scale_y_log10()
+
+    out[[i]] <- ExpPlot
+}
+
+out[[1]] <- out[[1]] %+% guides(color=FALSE)
+subP05 <- plot_grid(plotlist=out,nrow=2)
+fullP <- plot_grid(subP0,subP05,subP1,labels=c("","c","d"),nrow=3)
 
 cairo_pdf("Figure4.pdf",width=12.41,height=14.54)
 fullP
