@@ -4,6 +4,7 @@ library(dplyr)
 library(gtools)
 library(knitr)
 library(ggplot2)
+library(ggrepel)
 library(dynamicTreeCut)
 library(Rtsne)
 library(reshape2)
@@ -52,10 +53,10 @@ for (clust in levels(pD$cluster)[-1]) {
 library(pheatmap)
 library(RColorBrewer)
 
-meanSim <- cor(out,method="spearman")
+meanSim <- as.matrix(dist(t(out)))
 simMat <- pheatmap(meanSim,
 		   color=colorRampPalette((brewer.pal(n=7,
-							 name="Greys")))(100),
+							 name="Blues")))(100),
 		   treeheight_row=0)
 dev.off()
 
@@ -113,31 +114,49 @@ for (comp in comps) {
     topTab <- xxx$table
     out[[comp]] <- topTab
 }
-tabPar <- out[["Virgin"]][1:500,]
-tabNulPar <- filter(out[["Post-Involution"]],symbol %in% tabPar$symbol)
-rownames(tabPar) <- tabPar$symbol
+tabNulPar <- out[["Virgin"]][1:500,]
+tabPar <- filter(out[["Post-Involution"]],symbol %in% tabNulPar$symbol)
 rownames(tabNulPar) <- tabNulPar$symbol
+rownames(tabPar) <- tabPar$symbol
 tabNulPar <- tabNulPar[tabPar$symbol,]
 
-forPlot <- data.frame("NullParFC"=tabPar$logFC,
-		      "ParousFC"=tabNulPar$logFC,
+forPlot <- data.frame("NullParFC"=tabNulPar$logFC,
+		      "ParousFC"=tabPar$logFC,
 		      "Gene"=tabPar$symbol)
 
 library(cowplot)
 
-interest <- filter(forPlot, Gene %in% c("Aldh1a3","Elf5","Sox10","Cd14",
+interest <- filter(forPlot, Gene %in% c("Aldh1a3","Elf5","Hey1","Cd14",
 					"Prlr","Esr1","Pgr"))
 p <- ggplot(forPlot, aes(x=NullParFC,y=ParousFC)) +
     geom_point(color="grey50") +
-    geom_point(data=interest, aes(x=NullParFC, y=ParousFC), size=4, color="red",pch=1) +
+    #     geom_point(data=interest, aes(x=NullParFC, y=ParousFC), size=4, color="red",pch=1) +
     geom_point(data=interest, aes(x=NullParFC, y=ParousFC), color="black") +
-    geom_label(data=filter(interest,NullParFC < 0), aes(x=NullParFC,y=ParousFC,label=Gene), nudge_x=-1) +
-    geom_label(data=filter(interest,NullParFC > 0), aes(x=NullParFC,y=ParousFC,label=Gene), nudge_x=1.2) +
+    geom_label_repel(data=filter(interest,NullParFC < 0), aes(x=NullParFC,y=ParousFC,label=Gene)) +
+    geom_label_repel(data=filter(interest,NullParFC > 0), aes(x=NullParFC,y=ParousFC,label=Gene)) +
     xlab("Log(FC) against luminal cells in NP gland") +
     ylab("Log(FC) against luminal cells in P gland") +
     geom_hline(yintercept=0, lty="dashed") +
     geom_vline(xintercept=0, lty="dashed") +
     coord_equal(xlim=c(-5,5),ylim=c(-5,5))
+
+#Try PCA instead
+# m.sub <- t(t(m.sub)/pD.sub$sf)
+# m.sub <- m.sub[tabNulPar$symbol,]
+# exps <- t(log2(m.sub+1))
+# pc <- prcomp(exps)
+# pD.sub$PC1 <- pc$x[,1]
+# pD.sub$PC2 <- pc$x[,2]
+# ggplot(pD.sub, aes(PC1,PC2,color=cluster)) +
+#     geom_point()
+# 
+# loadngs <- pc$rotation[,1]
+# loddf <- data.frame("symbol"=names(loadngs),
+#                     "Loadings"=loadngs)
+# ld <- join(tabNulPar,loddf) %>%
+#     mutate("R"=ifelse(logFC >0,"Up","Down"))
+# ggplot(ld, aes(x=R,y=Loadings)) +
+#     geom_boxplot()
 
 
 
@@ -223,52 +242,102 @@ keep <- rowMeans(m) > 0.1
 m <- m[keep,]
 fD <- fD[keep,]
 
+#########################################
+    pD.sub <- filter(pD, (cluster %in% c(4,5)))
+    m.sub <- m[,as.character(pD.sub$barcode)]
+    keep <- rowMeans(m.sub) > 0.1
+    m.sub <- m.sub[keep,]
+    fD.sub <- fD[keep,]
+    rownames(m.sub) <- fD.sub$symbol
+
+    library(edgeR)
+    nf <- log(pD.sub$sf/pD.sub$UmiSums)
+    pD.sub$nf <- exp(nf-mean(nf))
+    y <- DGEList(counts=m.sub,
+		 samples=pD.sub,
+		 genes=fD.sub,
+		 norm.factors=pD.sub$nf)
+
+
+    choice <- 4
+    cluster <- factor(as.numeric(pD.sub$cluster==choice))
+    de.design <- model.matrix(~cluster)
+    y <- estimateDisp(y, de.design, prior.df=0,trend="none")
+    fit <- glmFit(y, de.design)
+    res <- glmTreat(fit,lfc=1)
+    xxx <- topTags(res,n=Inf,sort.by="PValue")
+    topTab <- xxx$table
+topTab$isHypo <- topTab$id %in% deMethGenes
+topTab <- arrange(topTab, isHypo)
+
+topUp <- filter(topTab, FDR < 0.01) %>%
+    arrange(logFC) %>% .$symbol %>% as.character() %>% .[1:5]
+topDown <- filter(topTab, FDR < 0.01) %>%
+    arrange(desc(logFC)) %>% .$symbol %>% as.character() %>% .[1:5]
+
+interst <- filter(topTab, symbol %in% c(topUp,topDown)) 
+
+volcano <- ggplot(topTab,aes(x=logFC,y=-log10(FDR))) +
+    geom_point(size=0.8,color="grey50") +
+    geom_hline(yintercept=2,lty="dashed") +
+    geom_vline(xintercept=1,lty="dashed") +
+    geom_vline(xintercept=-1,lty="dashed") +
+    geom_point(data=interst, aes(x=logFC, y=-log10(FDR)), size=1, color="black",pch=20) +
+    geom_label_repel(data=interst, aes(x=logFC,y=-log10(FDR),label=symbol)) +
+    xlab("log2 fold change") +
+    ylab("-log10(P value)") 
+
+#####################################
 #Normalize
 m.norm <- t(t(m)/pD$sf)
 
 stopifnot(identical(rownames(m.norm),as.character(fD$id)))
 rownames(m.norm) <- as.character(fD$symbol)
-Milkgenes <- c("Csn2","Csn3","Lalba","Csn1s1","Csn1s2a","Mfge8")
-ImmuneGenes <- c("Lcn2","B2m","Hk2","H2-K1","Ltf","Nfkb1")
-geneL <- list(Milkgenes,ImmuneGenes)
-for (i in seq_along(geneL)) {
-    genes <- geneL[[i]]
-    forPl <- data.frame(t(m.norm)[,c(genes)]+1,
-			barcode=colnames(m.norm))
-    add <- select(pD,barcode, cluster, Condition) %>%
-	mutate(barcode=as.character(barcode))
-    forPl <- left_join(forPl,add,by="barcode") %>%
-	filter(cluster %in% c(5,4))
+###################################################
+###################################################
+genes <- c("Csn2","Csn1s1","Csn1s2a","Csn3")
+forPl <- data.frame(t(m.norm)[,c(genes)]+1,
+	barcode=colnames(m.norm))
+add <- select(pD,barcode, cluster, Condition) %>%
+    mutate(barcode=as.character(barcode))
+forPl <- left_join(forPl,add,by="barcode") %>%
+    filter(cluster %in% c(5,4))
+forPl <- melt(forPl,id=c("barcode","cluster","Condition")) %>%
+    mutate(group=paste0(Condition,cluster)) %>%
+    mutate(group=gsub("V5|I5|L5|P5","5",group)) %>%
+    mutate(group=gsub("I4","4-PI",group)) %>%
+    mutate(group=gsub("L4","4-L",group)) %>%
+    mutate(group=factor(group,levels=c("5","4-L","4-PI")))
 
-    forPl <- melt(forPl,id=c("barcode","cluster","Condition"))
+library(RColorBrewer)
+pal <- brewer.pal(n=9,name="Paired")[c(4,5)]
+ExpPlot <- ggplot(forPl, aes(y=value,x=group,color=cluster)) +
+    geom_jitter(size=0.9) +
+    stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
+		 geom = "crossbar", width = 1,color="black") +
+    facet_grid(~variable) +
+    ylab("Log Expression") +
+    xlab("") +
+    theme(#axis.line.x=element_blank(),
+	  #           axis.text.x=element_blank(),
+	  #           axis.ticks.x=element_blank(),
+	  strip.background=element_blank(),
+	  strip.text=element_text(face="bold"),
+	  legend.position="bottom",
+	  legend.direction="horizontal",
+	  ) +
+    scale_colour_manual(values=pal)+
+    guides(colour = guide_legend(override.aes = list(size=3))) +
+    scale_y_log10()
 
-    library(RColorBrewer)
-    pal <- brewer.pal(n=9,name="Paired")[c(4,5)]
-    ExpPlot <- ggplot(forPl, aes(y=value,x=cluster,color=cluster)) +
-	geom_jitter(size=0.9) +
-	stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
-		     geom = "crossbar", width = 1,color="black") +
-	facet_grid(~variable) +
-	ylab("Log Expression") +
-	xlab("") +
-	theme(axis.line.x=element_blank(),
-	      axis.text.x=element_blank(),
-	      axis.ticks.x=element_blank(),
-	      strip.background=element_blank(),
-	      strip.text=element_text(face="bold"),
-	      legend.position="bottom",
-	      legend.direction="horizontal",
-	      ) +
-	scale_colour_manual(values=pal)+
-	guides(colour = guide_legend(override.aes = list(size=3))) +
-	scale_y_log10()
 
-    out[[i]] <- ExpPlot
-}
 
-out[[1]] <- out[[1]] %+% guides(color=FALSE)
-subP05 <- plot_grid(plotlist=out,nrow=2)
-fullP <- plot_grid(subP0,subP05,subP1,labels=c("","c","d"),nrow=3)
+leg <- plot_grid(NULL,get_legend(ExpPlot),nrow=1)
+ExpPlot <- ExpPlot %+% guides(color=FALSE)
+subp <- plot_grid(volcano,ExpPlot,nrow=1,labels=c("c","d"))
+subp <- plot_grid(subp,leg,rel_heights=c(1,0.1),nrow=2)
+
+fullP <- plot_grid(subP0,subp,labels=c("","","d"),nrow=2)
 
 cairo_pdf("Figure4.pdf",width=12.41,height=14.54)
 fullP
