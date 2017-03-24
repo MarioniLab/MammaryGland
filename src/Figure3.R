@@ -346,7 +346,7 @@ p0 <- pheatmap(m.heat,
 	 cutree_rows=2,
 	 annotation_legend=FALSE,
 	 gaps_col=ncol(m.alv),
-	 gaps_row=c(20,40),
+	 gaps_row=c(30,60),
 	 show_rownames=TRUE,
 	 fontsize=6)
 
