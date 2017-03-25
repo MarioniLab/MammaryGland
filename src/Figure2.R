@@ -9,6 +9,7 @@ library(viridis)
 library(RColorBrewer)
 source("functions.R")
 
+rnd_seed <- 300
 dataList <- readRDS("../data/Robjects/ExpressionList_Clustered.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
@@ -45,7 +46,6 @@ condComb <- c("Virgin","Pregnancy")
 #
 #
 
-rnd_seed <- 300
 keepCells <- pD$Condition %in% condComb
 m.vp <- m[,keepCells]
 pD.vp <- pD[keepCells,]
@@ -63,6 +63,7 @@ fD.vp$highVar <- fD.vp$id %in% brennecke
 
 exps <- m.norm[fD.vp$highVar,]
 exps <- t(log(exps+1))
+set.seed(rnd_seed)
 dm <- DiffusionMap(exps,n_eigs=20,k=50)
 library(scatterplot3d)
 pal <- brewer.pal(n=9,name="Paired")
@@ -72,13 +73,21 @@ dms <- eigenvectors(dm)[,1:3]
 library(rgl)
 
 ## 3d Plot for Basal cells
-scatterplot3d(dms[,2],-dms[,1],dms[,3],color=cols,pch=20,angle=30,
-	      cex.symbols=1.5,
+scatterplot3d(x=dms[,1],
+	      y=-dms[,2],
+	      z=dms[,3],
+	      color=cols,
+	      pch=20,
+	      angle=40,
+              cex.symbols=1.5,
+	      scale.y=0.5,
 	      mar=c(5,3,-0.1,3)+0.1,
-	      xlab="Component 2",
-	      ylab="Component 1",
+	      xlab="Component 1",
+	      ylab="-Component 2",
 	      zlab="Component 3",
 	      box=FALSE)
+
+
 
 ## Extract as grob for plot
 library(gridGraphics)
@@ -90,6 +99,22 @@ grab_grob <- function(){
 
 g <- grab_grob()
 g <- grid.arrange(g)
+
+inletD <- pD.vp
+inletD$dc1 <- dms[,1]
+inletD$dc2 <- dms[,3]
+inletD$cluster <- factor(inletD$cluster,levels=c(1,2,3,4,5,6,7,8,9))
+pal2 <- pal[-4]
+inlet <- ggplot(inletD, aes(-dc2,dc1,color=cluster)) +
+    geom_point() +
+    xlab("Component 1") +
+    ylab("-Component 2") +
+    scale_color_manual(values=pal2) +
+    guides(color=FALSE)
+
+cairo_pdf("F2inlet.pdf",width=17.54,height=17.54)
+inlet
+dev.off()
 
 #####################################
 # Only luminal cells in P and V
@@ -194,10 +219,10 @@ DC2Trend <- ggplot(fDC2Trend, aes(x=DC2, y=Aldh1a3)) +
     coord_flip()
 
 # Csn2 and Esr1 trend
-genes <- filter(fD.vp, symbol %in% c("Csn2","Foxa1")) %>% .$id
+genes <- filter(fD.vp, symbol %in% c("Csn2","Esr1")) %>% .$id
 fDC1Trend <- data.frame("DC1"=pD.vp$DC1,
 		   "Csn2"=unname(log2(t(m.norm)[,genes[1]]+1)),
-		   "Foxa1"=unname(log2(t(m.norm)[,genes[2]]+1)),
+		   "Esr1"=unname(log2(t(m.norm)[,genes[2]]+1)),
 		   "Aldh1a3"=NA)
 fDC1Trend <- melt(fDC1Trend,id="DC1",variable_name="Gene")
 DC1Trend <- ggplot(fDC1Trend, aes(x=DC1, y=value, color=Gene)) +
