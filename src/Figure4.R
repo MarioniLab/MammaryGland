@@ -53,10 +53,10 @@ for (clust in levels(pD$cluster)[-1]) {
 library(pheatmap)
 library(RColorBrewer)
 
-meanSim <- as.matrix(dist(t(out)))
+meanSim <- asSim(as.matrix(dist(t(out))))
 simMat <- pheatmap(meanSim,
 		   color=colorRampPalette((brewer.pal(n=7,
-							 name="Blues")))(100),
+							 name="Greys")))(100),
 		   treeheight_row=0)
 dev.off()
 
@@ -126,7 +126,7 @@ forPlot <- data.frame("NullParFC"=tabNulPar$logFC,
 
 library(cowplot)
 
-interest <- filter(forPlot, Gene %in% c("Aldh1a3","Elf5","Hey1","Cd14",
+interest <- filter(forPlot, Gene %in% c("Elf5","Hey1","Cd14",
 					"Prlr","Esr1","Pgr"))
 p <- ggplot(forPlot, aes(x=NullParFC,y=ParousFC)) +
     geom_point(color="grey50") +
@@ -337,8 +337,8 @@ ExpPlot <- ExpPlot %+% guides(color=FALSE)
 subp <- plot_grid(volcano,ExpPlot,nrow=1,labels=c("c","d"))
 subp <- plot_grid(subp,leg,rel_heights=c(1,0.1),nrow=2)
 
-fullP <- plot_grid(subP0,subp,labels=c("","","d"),nrow=2)
+fullP <- plot_grid(subP0,subp,nrow=2)
 
-cairo_pdf("Figure4.pdf",width=12.41,height=14.54)
+cairo_pdf("Figure4.pdf",width=17.54,height=17.54)
 fullP
 dev.off()

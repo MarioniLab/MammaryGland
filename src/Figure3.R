@@ -275,20 +275,20 @@ m.both <- m.both/apply(m.both,1,max)
 ########### Three set of Genes #################################
 
 #Set1 DE on both same gradient
-res1 <- filter(res, (hrm.PAdjust < 0.001 & alv.PAdjust < 0.001)
+res1 <- filter(res, (hrm.PAdjust < 0.01 & alv.PAdjust < 0.01)
 	       & (sign(hrm.gradient)<0 & sign(alv.gradient) < 0)
 	       & (!(hrm.tooLow | alv.tooLow)))
 
 cres <- rbind(res1,res1)
 combPvalRank <- order(c(res1$hrm.PAdjust,res1$alv.PAdjust))
-genes1 <- cres[combPvalRank,"Gene"] %>%.[1:30] %>% as.character()
+genes1 <- unique(cres[combPvalRank,"Gene"]) %>%.[1:30] %>% as.character()
 swtch1 <- apply(m.both[genes1,],1,function(x) max(which(x>0.5)))
 genes1 <- genes1[order(swtch1)]
 
 res1tfs <- filter(res1, Gene %in% tfs) %>% .$Gene %>% as.character()
 
 #Set2 DE increase only alveolar
-res2 <- filter(res, alv.PAdjust < 0.001 & !alv.tooLow & alv.gradient >0)
+res2 <- filter(res, alv.PAdjust < 0.01 & !alv.tooLow & alv.gradient >0)
 #                & hrm.gradient<=0)
 genes2 <- arrange(res2,alv.PAdjust) %>% .$Gene %>%.[1:30] %>% as.character()
 swtch2 <- apply(m.both[genes2,],1,function(x) max(which(x>0.5)))
@@ -299,7 +299,7 @@ res2tfs <- filter(res2, Gene %in% tfs) %>% .$Gene %>% as.character()
 
 
 #Set3 DE increase only hormone-sensing
-res3 <- filter(res, hrm.PAdjust < 0.001 & !hrm.tooLow & hrm.gradient >0)
+res3 <- filter(res, hrm.PAdjust < 0.01 & !hrm.tooLow & hrm.gradient >0)
 	       #                &alv.gradient<=0)
 genes3 <- arrange(res3,hrm.PAdjust) %>% .$Gene %>%.[1:30] %>% as.character()
 swtch3 <- apply(m.both[genes3,],1,function(x) min(which(x>0.5)))
@@ -365,7 +365,7 @@ features <- c("Creb5","Hey1","Fosl1",
 	      "Runx1","Tox2","Bhlhe41",
 	      "Elf5","Foxs1","Ehf"
 	      )
-# features <- res1tfs
+# features <- genes1[1:23]
 p1 <- out[[1]][["pD"]] %>% arrange(DPTRank)
 yhet1 <- data.frame(t(m.hrm)[,features])
 yhet1$barcode <- as.character(p1$barcode)
