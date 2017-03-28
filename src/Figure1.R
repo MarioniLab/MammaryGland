@@ -73,11 +73,11 @@ ord <- filter(pD, cluster %in% c(7,8,9)) %>%
     mutate(cluster=factor(cluster,levels=c(1,3,5,4,8,2,6,7,9))) %>%
     arrange(cluster,Condition)
 mheat <- m.norm[genes,as.character(ord$barcode)]
-mheat <- log(mheat +1)
+mheat <- log2(mheat +1)
 mheat <- mheat/apply(mheat,1,max)
 library(pheatmap)
 annoCol <- data.frame("Cluster"=as.factor(ord$cluster),
-		      "Condition"=ord$Condition)
+		      "Stage"=ord$Condition)
 # get colors from p1
 forcol <- ggplot_build(p1)
 clustColors <- unique(arrange(forcol$data[[1]],group) %>% .[["colour"]])
@@ -88,7 +88,7 @@ forcol <- ggplot_build(p0)
 condColors <- unique(arrange(forcol$data[[1]],group) %>% .[["colour"]])
 names(condColors) <- c("Nulliparous", "14.5d Gestation",
 			       "6d Lactation", "14d Post Natural Involution")
-annoColors <- list("Condition"=condColors,
+annoColors <- list("Stage"=condColors,
 		   "Cluster"=clustColors)
 
 rownames(annoCol) <- as.character(ord$barcode)

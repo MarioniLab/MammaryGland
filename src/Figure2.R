@@ -106,7 +106,7 @@ inletD$dc2 <- dms[,3]
 inletD$cluster <- factor(inletD$cluster,levels=c(1,2,3,4,5,6,7,8,9))
 pal2 <- pal[-4]
 inlet <- ggplot(inletD, aes(-dc2,dc1,color=cluster)) +
-    geom_point() +
+    geom_point(size=5) +
     xlab("Component 1") +
     ylab("-Component 2") +
     scale_color_manual(values=pal2) +
@@ -205,7 +205,7 @@ fDC2Trend <- data.frame("DC2"=-pD.vp$DC2,
 DC2Trend <- ggplot(fDC2Trend, aes(x=DC2, y=Aldh1a3)) +
     geom_point(size=0.5,color="#7570b3",alpha=0.5) +
     geom_smooth(method="glm",formula="y~ns(x,df=5)",
-		method.args=list(family="quasipoisson")) +
+		method.args=list(family="quasipoisson"),color="#7570b3") +
     #     geom_ribbon(aes(ymin = 0,ymax = predict(loess(Aldh1a3 ~ DC2 ))),
     #                     alpha = 0.3,fill = 'dodgerblue')+
 #     ggtitle("Progenitor marker expression") +
@@ -219,10 +219,10 @@ DC2Trend <- ggplot(fDC2Trend, aes(x=DC2, y=Aldh1a3)) +
     coord_flip()
 
 # Csn2 and Esr1 trend
-genes <- filter(fD.vp, symbol %in% c("Csn2","Esr1")) %>% .$id
+genes <- filter(fD.vp, symbol %in% c("Csn2","Pgr")) %>% .$id
 fDC1Trend <- data.frame("DC1"=pD.vp$DC1,
 		   "Csn2"=unname(log2(t(m.norm)[,genes[1]]+1)),
-		   "Esr1"=unname(log2(t(m.norm)[,genes[2]]+1)),
+		   "Pgr"=unname(log2(t(m.norm)[,genes[2]]+1)),
 		   "Aldh1a3"=NA)
 fDC1Trend <- melt(fDC1Trend,id="DC1",variable_name="Gene")
 DC1Trend <- ggplot(fDC1Trend, aes(x=DC1, y=value, color=Gene)) +

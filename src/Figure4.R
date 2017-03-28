@@ -43,11 +43,11 @@ pD$cluster <- mapvalues(pD$cluster, from=c(1,2,3,4,5,6,7,9,10),
 			  to=c(1,2,3,4,5,6,7,8,9))
 
 
-out <- data.frame("Cluster 1"=numeric(nrow(m)))
+out <- data.frame("C1"=numeric(nrow(m)))
 
 for (clust in levels(pD$cluster)[-1]) {
     expr <- rowMeans(log2(m.norm[,pD$cluster==clust]+1))
-    colname <- paste0("Cluster.",clust)
+    colname <- paste0("C",clust)
     out[,colname] <- expr
 }
 library(pheatmap)
@@ -129,13 +129,13 @@ library(cowplot)
 interest <- filter(forPlot, Gene %in% c("Elf5","Hey1","Cd14",
 					"Prlr","Esr1","Pgr"))
 p <- ggplot(forPlot, aes(x=NullParFC,y=ParousFC)) +
-    geom_point(color="grey50") +
+    geom_point(color="grey50",size=2) +
     #     geom_point(data=interest, aes(x=NullParFC, y=ParousFC), size=4, color="red",pch=1) +
     geom_point(data=interest, aes(x=NullParFC, y=ParousFC), color="black") +
     geom_label_repel(data=filter(interest,NullParFC < 0), aes(x=NullParFC,y=ParousFC,label=Gene)) +
     geom_label_repel(data=filter(interest,NullParFC > 0), aes(x=NullParFC,y=ParousFC,label=Gene)) +
-    xlab("Log(FC) against luminal cells in NP gland") +
-    ylab("Log(FC) against luminal cells in P gland") +
+    xlab("LFC of C5 vs. luminal cells in NP") +
+    ylab("LFC of C4 vs. luminal cells in PI") +
     geom_hline(yintercept=0, lty="dashed") +
     geom_vline(xintercept=0, lty="dashed") +
     coord_equal(xlim=c(-5,5),ylim=c(-5,5))
@@ -267,25 +267,45 @@ fD <- fD[keep,]
     res <- glmTreat(fit,lfc=1)
     xxx <- topTags(res,n=Inf,sort.by="PValue")
     topTab <- xxx$table
-topTab$isHypo <- topTab$id %in% deMethGenes
-topTab <- arrange(topTab, isHypo)
+
+lac <- c("Btn1a1","Lalba","B4galt1","Csn3","Csn1s2a","Csn1s1","Csn2","Hk2","Xdh","Vegfa")
+
+immuno <- c("Hp","Slpi","H2-K1", "B2m", "H2-Q7", "Lbp", "Tlr2", "Ltf", "Ifit1",
+	    "Cd1d1")
 
 topUp <- filter(topTab, FDR < 0.01) %>%
     arrange(logFC) %>% .$symbol %>% as.character() %>% .[1:5]
 topDown <- filter(topTab, FDR < 0.01) %>%
     arrange(desc(logFC)) %>% .$symbol %>% as.character() %>% .[1:5]
 
+
 interst <- filter(topTab, symbol %in% c(topUp,topDown)) 
+imminterest <- filter(topTab, symbol %in% immuno)
+lacinterest <- filter(topTab, symbol %in% lac)
 
 volcano <- ggplot(topTab,aes(x=logFC,y=-log10(FDR))) +
-    geom_point(size=0.8,color="grey50") +
+    geom_point(size=2,color="grey50",pch=20) +
     geom_hline(yintercept=2,lty="dashed") +
     geom_vline(xintercept=1,lty="dashed") +
     geom_vline(xintercept=-1,lty="dashed") +
-    geom_point(data=interst, aes(x=logFC, y=-log10(FDR)), size=1, color="black",pch=20) +
+    geom_point(data=interst, aes(x=logFC, y=-log10(FDR)), size=3, color="black",pch=20) +
+    geom_point(data=lacinterest, aes(x=logFC, y=-log10(FDR)), size=3, color="dodgerblue",pch=20) +
+    geom_point(data=imminterest, aes(x=logFC, y=-log10(FDR)), size=3, color="coral",pch=20) +
     geom_label_repel(data=interst, aes(x=logFC,y=-log10(FDR),label=symbol)) +
-    xlab("log2 fold change") +
-    ylab("-log10(P value)") 
+    xlab("Log2 Fold Change") +
+    ylab("-Log10(P value)") 
+
+dum <- data.frame(x=c(1,1),y=c(1,1),grp=c("Immune response","Lactation"))
+dumleg <- ggplot(dum, aes(x,y,color=grp)) +
+    geom_point() +
+    scale_color_manual(values=c("coral","dodgerblue")) +
+    theme(legend.position="bottom",
+	  legend.title=element_blank(),
+	  legend.direction="horizontal") +
+    guides(colour = guide_legend(override.aes = list(size=3))) 
+
+dumleg <- get_legend(dumleg)
+
 
 #####################################
 #Normalize
@@ -313,10 +333,10 @@ library(RColorBrewer)
 pal <- brewer.pal(n=9,name="Paired")[c(4,5)]
 ExpPlot <- ggplot(forPl, aes(y=value,x=group,color=cluster)) +
     geom_jitter(size=0.9) +
-    stat_summary(fun.y = median, fun.ymin = median, fun.ymax = median,
+    stat_summary(fun.y = mean, fun.ymin = mean, fun.ymax = mean,
 		 geom = "crossbar", width = 1,color="black") +
     facet_grid(~variable) +
-    ylab("Log Expression") +
+    ylab("Log-Expression") +
     xlab("") +
     theme(#axis.line.x=element_blank(),
 	  #           axis.text.x=element_blank(),
@@ -332,7 +352,7 @@ ExpPlot <- ggplot(forPl, aes(y=value,x=group,color=cluster)) +
 
 
 
-leg <- plot_grid(NULL,get_legend(ExpPlot),nrow=1)
+leg <- plot_grid(dumleg,get_legend(ExpPlot),nrow=1)
 ExpPlot <- ExpPlot %+% guides(color=FALSE)
 subp <- plot_grid(volcano,ExpPlot,nrow=1,labels=c("c","d"))
 subp <- plot_grid(subp,leg,rel_heights=c(1,0.1),nrow=2)
