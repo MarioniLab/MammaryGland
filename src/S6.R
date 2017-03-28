@@ -271,8 +271,8 @@ genes.both <- intersect(rownames(m.hrm),rownames(m.alv))
 m.both <- cbind(m.alv[genes.both,c(ncol(m.alv):1)],m.hrm[genes.both,])
 # m.both <- m.both/apply(m.both,1,max)
 m.both <- t(scale(t(m.both)))
-m.both[m.both>3] <- 3
-m.both[m.both<-3] <- -3
+m.both[m.both > 3]  <- 3
+m.both[m.both < -3]  <- -3
 # 
 #Only DE on both branches
 # res <- filter(res, hrm.PAdjust < 0.001 | alv.PAdjust < 0.001)
@@ -289,7 +289,7 @@ cres <- rbind(res1,res1)
 combPvalRank <- order(c(res1$hrm.PAdjust,res1$alv.PAdjust))
 genes1 <- unique(cres[combPvalRank,"Gene"]) %>%.[1:50] %>% as.character()
 swtch1 <- apply(m.both[genes1,],1,function(x) max(which(x>0.5)))
-genes1 <- genes1[order(swtch1)]
+genes1 <- res1$Gene
 
 res1tfs <- filter(res1, Gene %in% tfs) %>% .$Gene %>% as.character()
 
@@ -301,10 +301,21 @@ cres <- rbind(res2,res2)
 combPvalRank <- order(c(res2$hrm.PAdjust,res2$alv.PAdjust))
 genes2 <- unique(cres[combPvalRank,"Gene"]) %>%.[1:50] %>% as.character()
 swtch2 <- apply(m.both[genes2,],1,function(x) max(which(x>0.5)))
-genes2 <- genes2[order(swtch2)]
+genes2 <- res2$Gene
 
 res2tfs <- filter(res2, Gene %in% tfs) %>% .$Gene %>% as.character()
 
+forxls1 <-res1[,!grepl("c|tooLow",colnames(res1))]
+colnames(forxls1) <- gsub("hrm","HormoneSensing",colnames(forxls1))
+colnames(forxls1) <- gsub("alv","Secretory",colnames(forxls1))
+write.csv(forxls1,"../paper/supps/DE_sameGradient.csv",quote=FALSE)
+
+forxls2 <-res2[,!grepl("c|tooLow",colnames(res2))]
+colnames(forxls2) <- gsub("hrm","HormoneSensing",colnames(forxls2))
+colnames(forxls2) <- gsub("alv","Secretory",colnames(forxls2))
+write.csv(forxls2,"../paper/supps/DE_diffGradient.csv",quote=FALSE)
+
+    
 
 
 #Set3 DE increase only hormone-sensing
@@ -317,8 +328,7 @@ res2tfs <- filter(res2, Gene %in% tfs) %>% .$Gene %>% as.character()
 # res3tfs <- filter(res3, Gene %in% tfs) %>% .$Gene %>% as.character()
 # 
 
-genes <- c(genes1,genes2)#genes3)
-m.heat <- m.both[genes,]
+m.heat <- m.both
 
 ##Annotation Data
 pD.ord <- pD
@@ -342,203 +352,41 @@ names(dptcols) <- c(1:length(dptcols))
 annoColors <- list("Cluster"=clustCol,
 		   "Pseudotime"=dptcols)
 
+m.heat1 <- m.heat[genes1,]
+m.heat2 <- m.heat[genes2,]
 ##Plot
-p0 <- pheatmap(m.heat,
+png("Heatmap_sameGradient.png",height=1248,width=960)
+p0 <- pheatmap(m.heat1,
 	 cluster_cols=FALSE,
-	 cluster_rows=FALSE,
+	 cluster_rows=TRUE,
 	 clustering_distance_rows="correlation",
 	 annotation=annoCol,
 	 clustering_method="average",
 	 show_colnames=FALSE,
 	 annotation_colors=annoColors,
 	 treeheight_row=0,
-	 cutree_rows=2,
+	 legend=FALSE,
 	 annotation_legend=FALSE,
 	 gaps_col=ncol(m.alv),
-	 gaps_row=c(50),
-	 show_rownames=TRUE,
-	 fontsize=6)
-
-########################
-#
-# Two Branch comparison
-#
-########################
-
-
-###Try 2
-features <- c("Krt8","Krt18","Gata3","Notch1","Notch2","Stat5a","Stat6",
-	     "Bmi1","Prom1","Sox9","Elf5","Hes1","Lmo4","Wnt5a","Lalba",
-	     "Krt14","Pgr","Tnfsf11")
-features <- c("Creb5","Hey1","Fosl1",
-	      "Runx1","Tox2","Bhlhe41",
-	      "Elf5","Foxs1","Ehf"
-	      )
-p1 <- out[[1]][["pD"]] %>% arrange(DPTRank)
-yhet1 <- data.frame(t(m.hrm)[,features])
-yhet1$barcode <- as.character(p1$barcode)
-raw1 <- data.frame(t(out[[1]][["Matrix"]][features,yhet1$barcode]))
-colnames(raw1) <- paste0("raw",colnames(raw1))
-raw1$barcode <- yhet1$barcode
-fplot1 <- join(p1,yhet1,by="barcode") 
-fplot1 <- join(fplot1,raw1,by="barcode") %>%
-    mutate(dptNorm=dpt/max(dpt))
-p2 <- out[[2]][["pD"]] %>% arrange(DPTRank)
-yhet2 <- data.frame(t(m.alv)[,features])
-yhet2$barcode <- as.character(p2$barcode)
-raw2 <- data.frame(t(out[[2]][["Matrix"]][features,yhet2$barcode]))
-colnames(raw2) <- paste0("raw",colnames(raw2))
-raw2$barcode <- yhet2$barcode
-fplot2 <- join(p2,yhet2,by="barcode") 
-fplot2 <- join(fplot2,raw2,by="barcode") %>%
-    mutate(dptNorm=dpt/max(dpt))
-pList <- list()
-for (feature in features) {
-    pnts <- paste0("raw",feature)
-    lns <- feature
-    p <- ggplot() +
-	geom_point(size=0.8,data=fplot1,aes_string(x="dptNorm",y=pnts, color="cluster")) +
-	geom_point(size=0.8,data=fplot2,aes_string(x="dptNorm",y=pnts, color="cluster")) +
-	geom_line(data=fplot1,aes_string(x="dptNorm",y=lns),lty="dashed") +
-	geom_line(data=fplot2,aes_string(x="dptNorm",y=lns)) +
-	ggtitle(feature) +
-	ylab("") +
-	scale_color_manual(values=clustCol) +
-	scale_x_continuous(breaks=c(0,1)) +
-	theme(legend.position="bottom",
-	      legend.direction="horizontal",
-	      legend.title=element_blank()) +
-	guides(colour = guide_legend(override.aes = list(size=3))) +
-	xlab("") 
-    pList[[feature]] <- p
-}
-
-	      
-
-# pD.sub <- pD[(!pD$branch %in% c("Root","Decision stage")),] 
-# pD.sub <- group_by(pD.sub, branch) %>%
-#     mutate(dptNorm=dpt/max(dpt)) %>%
-#     ungroup()
-#                               
-# m.sub <- m.norm[,as.character(pD.sub$barcode)]
-# keep <- rowMeans(m.sub) > 0.1
-# m.sub <- m.sub[keep,]
-# fD.sub <- fD#[keep,]
-# ids <- colnames(pD.sub)
-# yhet <- data.frame(t(m.sub))
-# stopifnot(identical(rownames(m.sub),as.character(fD.sub$id)))
-# colnames(yhet) <- fD.sub$symbol
-# yhet$barcode <- colnames(m.sub)
-# fullDat <- join(pD.sub,yhet, by="barcode")
-
-# res <- data.frame()
-# genes <- fD.sub$symbol
-# m.smooth <- matrix(nrow=length(genes),ncol=nrow(fullDat))
-# colnames(m.smooth) <- as.character(fullDat$barcode)
-# rownames(m.smooth) <- genes
-# take m.smooth het to allow allocation of vectors for columns
-# m.smooth <- t(m.smooth)
-# for (gene in genes) {
-#     x <- fullDat$dptNorm
-#     y <- log2(fullDat[,gene]+1)
-#     fctr <- fullDat$branch
-#     mod0 <- lm(y ~ ns(x,df=5))
-#     mod1 <- lm(y ~ ns(x,df=5)*fctr)
-#     lrt <- lrtest(mod0,mod1)
-# 
-    ## Create P-Value and coefficient matrix
-#     p <- lrt[5][2,]
-#     
-#     tmp <- data.frame(Gene=gene,
-#                       PValue=p)
-#     res <- rbind(res,tmp)
-    ##Update fitted Value gene expression matrix
-    #     m.smooth[,gene] <- mod1$fitted.values
-# }
-# m.smooth <- t(m.smooth)
-# 
-# res$PAdjust<- p.adjust(res$PValue, method="bonferroni")
-# 
-# deGenes <- as.character(res$Gene[res$PAdjust< 0.001])
-# deGenes <- arrange(res, PValue) %>% .$Gene %>% .[1:20]
-#  deGenes <- deGenes[deGenes %in% tfs] [1:50]
-
-
-#Prepare heatmap
-# ord <- arrange(pD.sub, DPTRank) %>% .$barcode %>% as.character()
-# m.smooth.ord <- m.smooth[deGenes,ord]
-# rownames(m.sub) <- fD.sub$symbol
-# m.sub.ord <- log2(m.sub[deGenes,ord]+1)
-# m.smooth.ord <- m.smooth.ord/apply(m.smooth.ord,1,max)
-# 
-# pheatmap(m.smooth.ord,
-#          cluster_cols=FALSE,
-#          show_colnames=FALSE,
-#          show_rownames=FALSE)
-
-# forPlot <- fullDat[,c("dptNorm","barcode","branch",features)]
-# forPlot <- melt(forPlot,id=c("barcode","dptNorm","branch"))
-# ggplot(forPlot, aes(x=dptNorm, y=log2(value+1),color=branch)) +
-#     geom_point(size=0.5) +
-#     geom_smooth(method="lm",formula="y~ns(x,df=3)") +
-#     facet_wrap(~variable,scales="free") +
-#     theme_bw()
- 
-# plList <- list()
-# for (feature in features) {
-#     forPlot <- fullDat[,c("dptNorm","branch","barcode","cluster",feature)]
-#     forPlot <- melt(forPlot,id=c("barcode","dptNorm","branch","cluster"))
-#     p <- ggplot(forPlot, aes(x=dptNorm, y=log2(value+1),color=cluster,lty=branch)) +
-#         geom_point(size=0.7) +
-#         geom_smooth(method="lm",formula="y~ns(x,df=3)",aes(color=NULL),color="black") +
-#         xlab("Pseudotime") +
-#         ylab("Log-Expression") +
-#         ggtitle(feature) +
-#         guides(color=FALSE,lty=FALSE)
-#     plList[[feature]] <- p
-# }
-
-dummyD <- data.frame(x=rnorm(10),y=rnorm(10),
-		     branch=c(rep("Secretory lineage",5),rep("Hormone-sensing lineage",5)))
-dummyP2 <- ggplot(dummyD,aes(x,y,lty=branch)) +
-    geom_line() +
-    theme(legend.position="bottom",
-	  #           legend.direction="horizontal",
-	  legend.title=element_blank()) +
-    scale_linetype_manual(values=c("dashed","solid"))
-legs1 <- get_legend(dummyP2)
-
-legs <- get_legend(pList[[1]])
-legs <- plot_grid(legs1,legs,nrow=1)
-pls <- lapply(pList,function(x){
-	      x <- x %+% guides(color=FALSE) 
-	      return(x)})
-
-pls[["Foxs1"]] <- pls[["Foxs1"]] %+% xlab("Normalized Pseudotime")
-pls[["Runx1"]] <- pls[["Runx1"]] %+% ylab("Log-Expression")
-
-expPlot <- plot_grid(plotlist=pls,ncol=3,labels=c("c","","",
-						  "d","","",
-						  "e","",""))
-expPlot <- plot_grid(expPlot,legs,rel_heights=c(1,0.05),ncol=1)
-expPlot <- plot_grid(NULL,expPlot,ncol=1,rel_heights=c(0.3,1))
-# htmp <- plot_grid(branches,p0[[4]],ncol=1,rel_heights=c(0.5,1),
-#                   rel_widths=c(0.8,1),labels=c("a","b"),vjust=c(1.5,0.5))
-htmp <- plot_grid(NULL,p0[[4]],ncol=1,rel_heights=c(.275,1),labels=c("a","b"),
-		  vjust=c(1.5,0.5))
-
-
-library(gridExtra)
-pb1 <- grid.arrange(pb1)
-pb2 <- grid.arrange(pb2)
-htmp <- htmp + draw_grob(pb2,-0.02,0.78,.35,.2)
-htmp <- htmp + draw_grob(pb1,0.4,0.78,.35,.2)
-
-fullP <- plot_grid(htmp,expPlot,ncol=2,rel_widths=c(1,1))
-
+	 show_rownames=FALSE)
 dev.off()
-# save_plot("Figure3.pdf",fullP,base_height=6.7675)
-cairo_pdf("Figure3.pdf",width=16.55,height=13.0575)
-fullP
+
+png("Heatmap_diffGradient.png",height=1248,width=960)
+p1 <- pheatmap(m.heat2,
+	 cluster_cols=FALSE,
+	 cluster_rows=TRUE,
+	 clustering_distance_rows="correlation",
+	 annotation=annoCol,
+	 clustering_method="average",
+	 show_colnames=FALSE,
+	 annotation_colors=annoColors,
+	 treeheight_row=0,
+	 annotation_legend=TRUE,
+	 gaps_col=ncol(m.alv),
+	 show_rownames=FALSE)
 dev.off()
-# 
+
+png("../paper/figures/S6.png",height=1248,width=1248)
+comb <- plot_grid(p0[[4]],NULL,p1[[4]],nrow=1,vjust=0.5,rel_widths=c(1,.1,1))
+comb
+dev.off()

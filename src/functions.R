@@ -68,7 +68,7 @@ plotGeneDist <- function(m, pD, fD, genes, colorBy="Condition") {
     pltDat[,colorBy] <- as.factor(pltDat[,colorBy])
     plt <- ggplot(pltDat, aes_string(x=colorBy,y="value")) +
 	geom_boxplot() +
-	geom_point(position="jitter",alpha=0.2,shape=19) +
+	#         geom_point(position="jitter",alpha=0.2,shape=19) +
 	facet_wrap(~variable, scales="free") +
 	theme_bw()
     return(plt)
