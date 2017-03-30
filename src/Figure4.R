@@ -273,6 +273,9 @@ lac <- c("Btn1a1","Lalba","B4galt1","Csn3","Csn1s2a","Csn1s1","Csn2","Hk2","Xdh"
 immuno <- c("Hp","Slpi","H2-K1", "B2m", "H2-Q7", "Lbp", "Tlr2", "Ltf", "Ifit1",
 	    "Cd1d1")
 
+forxls <- select(topTab, id, symbol, logFC, unshrunk.logFC, logCPM, PValue, FDR)
+write.csv(forxls,file="../paper/supps/DE_C4vsC5.csv",quote=FALSE)
+
 topUp <- filter(topTab, FDR < 0.01) %>%
     arrange(logFC) %>% .$symbol %>% as.character() %>% .[1:5]
 topDown <- filter(topTab, FDR < 0.01) %>%
