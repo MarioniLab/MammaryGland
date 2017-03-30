@@ -305,12 +305,16 @@ genes2 <- res2$Gene
 
 res2tfs <- filter(res2, Gene %in% tfs) %>% .$Gene %>% as.character()
 
+forxls1$hrm.gradient <- sign(forxls1$hrm.gradient)
+forxls1$alv.gradient <- sign(forxls1$alv.gradient)
 forxls1 <-res1[,!grepl("c|tooLow",colnames(res1))]
 colnames(forxls1) <- gsub("hrm","HormoneSensing",colnames(forxls1))
 colnames(forxls1) <- gsub("alv","Secretory",colnames(forxls1))
 write.csv(forxls1,"../paper/supps/DE_sameGradient.csv",quote=FALSE)
 
 forxls2 <-res2[,!grepl("c|tooLow",colnames(res2))]
+forxls2$hrm.gradient <- sign(forxls2$hrm.gradient)
+forxls2$alv.gradient <- sign(forxls2$alv.gradient)
 colnames(forxls2) <- gsub("hrm","HormoneSensing",colnames(forxls2))
 colnames(forxls2) <- gsub("alv","Secretory",colnames(forxls2))
 write.csv(forxls2,"../paper/supps/DE_diffGradient.csv",quote=FALSE)

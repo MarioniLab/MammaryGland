@@ -49,6 +49,20 @@ p0 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=Condition)) +
     theme(legend.position="bottom",legend.direction="horizontal",
 	  legend.title=element_blank()) 
 
+pD$SampleID <- mapvalues(pD$SampleID, from=c("V1","V2","P1","P2","L1","L2","I1","I2"),
+			  to=c("NP1","NP2","G1","G2","L1","L2","PI1","PI2"))
+pD$SampleID <- factor(pD$SampleID,levels=c("NP1","NP2","G1","G2","L1","L2","PI1","PI2")) 
+pD <- arrange(pD,prcntMito)
+
+s1 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=SampleID)) +
+    geom_point(size=1.5) +
+    scale_color_brewer(palette="Paired")+
+    #     ggtitle("Cluster") +
+    theme_void(base_size=12) +
+    guides(colour = guide_legend(override.aes = list(size=3))) +
+    theme(legend.position="bottom",legend.direction="horizontal",
+	  legend.title=element_blank()) 
+
 plot_grid(p0,NULL,p1,align="h",nrow=1,rel_widths=c(1,0.2,1))
 
 ## Try heatmap
