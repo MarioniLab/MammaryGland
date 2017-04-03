@@ -85,17 +85,18 @@ pD$cluster <- mapvalues(pD$cluster, from=c(1,2,3,4,5,6,7,9,10),
 			  to=c(1,2,3,4,5,6,7,8,9))
 
 
-comps <- c("Virgin","Post-Involution")
+comps <- c(5,4)
 out <- list()
-for (comp in comps) {
-    pD.sub <- filter(pD,Condition %in% comp, !(cluster %in% c(6,7,9)))
+library(edgeR)
+for (choice in comps) {
+    rmClust <- setdiff(c(5,4),choice)
+    pD.sub <- filter(pD, !(cluster %in% c(6,7,9,rmClust)))
     m.sub <- m[,as.character(pD.sub$barcode)]
-    keep <- rowMeans(m.sub) > 0.01
+    keep <- rowMeans(m.sub) > 0.1
     m.sub <- m.sub[keep,]
     fD.sub <- fD[keep,]
     rownames(m.sub) <- fD.sub$symbol
 
-    library(edgeR)
     nf <- log(pD.sub$sf/pD.sub$UmiSums)
     pD.sub$nf <- exp(nf-mean(nf))
     y <- DGEList(counts=m.sub,
@@ -104,18 +105,17 @@ for (comp in comps) {
 		 norm.factors=pD.sub$nf)
 
 
-    choice <- ifelse(comp=="Virgin",5,4)
     cluster <- factor(as.numeric(pD.sub$cluster==choice))
     de.design <- model.matrix(~cluster)
     y <- estimateDisp(y, de.design, prior.df=0,trend="none")
     fit <- glmFit(y, de.design)
-    res <- glmTreat(fit)
+    res <- glmTreat(fit,lfc=1)
     xxx <- topTags(res,n=Inf,sort.by="PValue")
     topTab <- xxx$table
-    out[[comp]] <- topTab
+    out[[paste0("C",choice)]] <- topTab
 }
-tabNulPar <- out[["Virgin"]][1:500,]
-tabPar <- filter(out[["Post-Involution"]],symbol %in% tabNulPar$symbol)
+tabNulPar <- out[["C5"]][1:500,]
+tabPar <- filter(out[["C4"]],symbol %in% tabNulPar$symbol)
 rownames(tabNulPar) <- tabNulPar$symbol
 rownames(tabPar) <- tabPar$symbol
 tabNulPar <- tabNulPar[tabPar$symbol,]
@@ -126,7 +126,7 @@ forPlot <- data.frame("NullParFC"=tabNulPar$logFC,
 
 library(cowplot)
 
-interest <- filter(forPlot, Gene %in% c("Elf5","Hey1","Cd14",
+interest <- filter(forPlot, Gene %in% c("Kit","Hey1","Cd14",
 					"Prlr","Esr1","Pgr"))
 p <- ggplot(forPlot, aes(x=NullParFC,y=ParousFC)) +
     geom_point(color="grey50",size=2) +
@@ -134,94 +134,17 @@ p <- ggplot(forPlot, aes(x=NullParFC,y=ParousFC)) +
     geom_point(data=interest, aes(x=NullParFC, y=ParousFC), color="black") +
     geom_label_repel(data=filter(interest,NullParFC < 0), aes(x=NullParFC,y=ParousFC,label=Gene)) +
     geom_label_repel(data=filter(interest,NullParFC > 0), aes(x=NullParFC,y=ParousFC,label=Gene)) +
-    xlab("LFC of C5 vs. luminal cells in NP") +
-    ylab("LFC of C4 vs. luminal cells in PI") +
+    xlab("LFC of C5 vs. luminal cells") +
+    ylab("LFC of C4 vs. luminal cells") +
     geom_hline(yintercept=0, lty="dashed") +
     geom_vline(xintercept=0, lty="dashed") +
     coord_equal(xlim=c(-5,5),ylim=c(-5,5))
-
-#Try PCA instead
-# m.sub <- t(t(m.sub)/pD.sub$sf)
-# m.sub <- m.sub[tabNulPar$symbol,]
-# exps <- t(log2(m.sub+1))
-# pc <- prcomp(exps)
-# pD.sub$PC1 <- pc$x[,1]
-# pD.sub$PC2 <- pc$x[,2]
-# ggplot(pD.sub, aes(PC1,PC2,color=cluster)) +
-#     geom_point()
-# 
-# loadngs <- pc$rotation[,1]
-# loddf <- data.frame("symbol"=names(loadngs),
-#                     "Loadings"=loadngs)
-# ld <- join(tabNulPar,loddf) %>%
-#     mutate("R"=ifelse(logFC >0,"Up","Down"))
-# ggplot(ld, aes(x=R,y=Loadings)) +
-#     geom_boxplot()
-
 
 
 subP0 <- plot_grid(simMat[[4]],p,labels=c("a","b"))
 
 
-######
-#
-#
-#Hypo-Methylated Genes
-#
-#
-#######
-deMethGenes <- read.table("../data/methylationData/HypoMethInParous.txt", header=TRUE, stringsAsFactor=FALSE) %>% .$Gene
-deList <- readRDS(file.path("../data/Robjects/DEList.rds"))
-
-
-deResults <- deList[[4]]
-deRes <- deResults[,c("Gene","logFC.vs.5","top.vs.5")]
-deRes <- mutate(deRes, isHypoMeth= Gene %in% deMethGenes) %>% 
-	   rename(foldChange=logFC.vs.5)
-
-
-p <- ggplot(filter(deRes, top.vs.5 <=1000), aes(y=foldChange, x=isHypoMeth)) +
-    geom_violin(draw_quantiles=0.5) +
-    xlab("Hypo-Methylated") +
-    ylab("Log Fold Change") 
-
-
-comps <- c("Up-regulated vs. 5", "Down-regulated vs. 5")
-out <- list()
-for (comp in comps) {
-    if (comp=="Up-regulated vs. 5") {
-    deDat <- filter(deRes, foldChange >0)
-    } else{
-    deDat <- filter(deRes, foldChange <0)
-    }
-    ranks <- rank(deDat$top.vs.5)
-    ind <- deDat$isHypoMeth
-    geneset <- ranks[ind]
-    background <- ranks[!ind]
-    ks <- ks.test(geneset,background,alternative="greater")
-
-    forPlot <- data.frame("Ranks"=c(geneset,background),
-			  "Geneset"=c(rep("Hypo-methylated",length(geneset)),
-				  rep("Background",length(background))))
-    
-    out[[comp]] <- ggplot(forPlot, aes(x=Ranks,color=Geneset)) +
-	stat_ecdf(geom="step",size=1.2) +
-	annotate("text",x=2000,y=0.5,label=paste0("P=",round(ks$p.value,5))) +
-	ggtitle(comp) +
-	scale_colour_manual(values=c("grey50","black")) +
-	ylab("Proportion of Genes") +
-	xlab("P-Value Ranks") +
-	theme(legend.directio="horizontal",
-	      legend.title=element_blank())
-}
-leg <- get_legend(out[[1]])
-out[[1]] <- out[[1]] %+% guides(colour=FALSE) 
-out[[2]] <- out[[2]] %+% guides(colour=FALSE) 
-subP1a <- plot_grid(p,out[[1]],out[[2]],nrow=1,align="h")
-subP1 <- plot_grid(subP1a,leg,rel_heights=c(1,0.1),nrow=2)
-
 ####
-#
 #
 #DE-Analysis 4 vs 5 
 #
@@ -237,11 +160,6 @@ keepCells <- pD$PassAll & !(pD$isImmuneCell | pD$isOutlier)
 m <- m[,keepCells]
 pD <- pD[keepCells,]
 
-# Genes
-keep <- rowMeans(m) > 0.1
-m <- m[keep,]
-fD <- fD[keep,]
-
 #########################################
     pD.sub <- filter(pD, (cluster %in% c(4,5)))
     m.sub <- m[,as.character(pD.sub$barcode)]
@@ -250,7 +168,6 @@ fD <- fD[keep,]
     fD.sub <- fD[keep,]
     rownames(m.sub) <- fD.sub$symbol
 
-    library(edgeR)
     nf <- log(pD.sub$sf/pD.sub$UmiSums)
     pD.sub$nf <- exp(nf-mean(nf))
     y <- DGEList(counts=m.sub,
@@ -362,6 +279,6 @@ subp <- plot_grid(subp,leg,rel_heights=c(1,0.1),nrow=2)
 
 fullP <- plot_grid(subP0,subp,nrow=2)
 
-cairo_pdf("Figure4.pdf",width=17.54,height=17.54)
-fullP
+cairo_pdf("Figure4.pdf",width=10.75,height=15.19)
+plot_grid(fullP,NULL,nrow=2,rel_heights=c(1,0.75))
 dev.off()

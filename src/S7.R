@@ -90,7 +90,7 @@ out <- list()
 for (comp in comps) {
     pD.sub <- filter(pD,Condition %in% comp, !(cluster %in% c(6,7,9)))
     m.sub <- m[,as.character(pD.sub$barcode)]
-    keep <- rowMeans(m.sub) > 0.01
+    keep <- rowMeans(m.sub) > 0.1
     m.sub <- m.sub[keep,]
     fD.sub <- fD[keep,]
     rownames(m.sub) <- fD.sub$symbol
@@ -170,11 +170,6 @@ keepCells <- pD$PassAll & !(pD$isImmuneCell | pD$isOutlier)
 m <- m[,keepCells]
 pD <- pD[keepCells,]
 
-# Genes
-keep <- rowMeans(m) > 0.1
-m <- m[keep,]
-fD <- fD[keep,]
-
 #########################################
     pD.sub <- filter(pD, (cluster %in% c(4,5)))
     m.sub <- m[,as.character(pD.sub$barcode)]
@@ -232,6 +227,6 @@ p1 <- ggplot(output, aes(x=Term, y=-log10(as.numeric(Fisher.classic)))) +
 
 subp1 <- plot_grid(subp0,p1,nrow=2,labels=c("","c"))
 caseinPlot <- readRDS("../data/Robjects/CaseinsPlot.rds")
-cairo_pdf("../paper/figures/S7.pdf",width=12.41,height=17.54)
+cairo_pdf("../paper/figures/S7.pdf",width=9.92,height=14.028)
 plot_grid(subp1,caseinPlot,nrow=2,labels=c("","d"))
 dev.off()

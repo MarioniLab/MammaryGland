@@ -162,6 +162,7 @@ for (lin in lineages) {
     for (gene in genes) {
 	x <- fullDat$dpt
 	y <- fullDat[,gene]
+	mod0 <- lm(y~1)
 	mod1 <- lm(y ~ ns(x,df=3))
 	lmmod <- lm(mod1$fitted.values~x)
 
@@ -170,7 +171,9 @@ for (lin in lineages) {
 	cfs <- mod1$coefficients
 	names(cfs) <- paste0("c",c(0:(length(cfs)-1)))
 	## Create P-Value and coefficient matrix
-	p <- pf(fstat[1],df1=fstat[2],df2=fstat[3], lower.tail=FALSE)
+	lrt <- lrtest(mod0,mod1)
+	#         p <- pf(fstat[1],df1=fstat[2],df2=fstat[3], lower.tail=FALSE)
+	p <- lrt[2,5]
 	pgrad <- summary(lmmod)[[4]][2,4]
 	gradient <- ifelse(pgrad < 0.01, lmmod$coefficients[2],0)
 
@@ -188,7 +191,7 @@ for (lin in lineages) {
     tooLow <- rownames(m.smooth)[(maxExp-minExp)<=1]
 
 
-    res$PAdjust<- p.adjust(res$PValue, method="bonferroni")
+    res$PAdjust<- p.adjust(res$PValue)# method="bonferroni")
     res <- mutate(res,tooLow= Gene %in% tooLow)
 
     ## Heatmap of all TF 
@@ -305,9 +308,9 @@ genes2 <- res2$Gene
 
 res2tfs <- filter(res2, Gene %in% tfs) %>% .$Gene %>% as.character()
 
+forxls1 <-res1[,!grepl("c|tooLow",colnames(res1))]
 forxls1$hrm.gradient <- sign(forxls1$hrm.gradient)
 forxls1$alv.gradient <- sign(forxls1$alv.gradient)
-forxls1 <-res1[,!grepl("c|tooLow",colnames(res1))]
 colnames(forxls1) <- gsub("hrm","HormoneSensing",colnames(forxls1))
 colnames(forxls1) <- gsub("alv","Secretory",colnames(forxls1))
 write.csv(forxls1,"../paper/supps/DE_sameGradient.csv",quote=FALSE)

@@ -78,6 +78,7 @@ cols <- mapvalues(pD.vp$cluster,levels(pD.vp$cluster)[-1],
 		  pal)
 dms <- eigenvectors(dm)[,1:3]
 plot(eigenvalues(dm),pch=20,xlab="Component",ylab="Eigenvalue")
+lines(eigenvalues(dm),pch=20,xlab="Component",ylab="Eigenvalue")
 
 g0 <- grab_grob()
 g0 <- grid.arrange(g0)
@@ -113,6 +114,7 @@ exps <- m.norm[fD.vp$highVar,]
 exps <- t(log(exps+1))
 dm <- DiffusionMap(exps,n_eigs=20,k=50)
 plot(eigenvalues(dm),pch=20,xlab="Component",ylab="Eigenvalue")
+lines(eigenvalues(dm),pch=20,xlab="Component",ylab="Eigenvalue")
 g1 <- grab_grob()
 g1 <- grid.arrange(g1)
 
@@ -172,7 +174,7 @@ for (feats in features) {
     pD.cur$DC1 <- eigenvectors(dm)[,1]
     pD.cur$DC2 <- eigenvectors(dm)[,2]
     pD.cur$features <- feats
-    pD.cur$SubSample <- subsampl
+    pD.cur$SubSample <- paste0(subsampl*100,"%")
     out <- rbind(out,pD.cur)
 }
 }
@@ -182,6 +184,7 @@ cols <- brewer.pal(n=9,name="Paired")[clusts]
 names(cols) <- clusts
 
 library(cowplot)
+out$SubSample <- factor(out$SubSample, levels=c("100%","50%","25%"))
 p <- ggplot(out, aes(DC1,DC2, color=cluster)) +
     geom_point(size=0.8) +
     scale_color_manual(values=cols) +
@@ -201,11 +204,8 @@ pD.dm <- select(pD.vp, barcode,dpt)
 pD.mon <- select(monoc[["pD"]], barcode, Pseudotime)
 pD.comp <- inner_join(pD.dm,pD.mon,by="barcode")
 
-corP <- ggplot(pD.comp, aes(x=rank(dpt), y=rank(Pseudotime))) +
-    geom_point()
-
 subp0 <- plot_grid(g0,g1,monoc.plt,nrow=1,labels="auto")
 # subp1 <- plot_grid(subp0,monoc.plt,nrow=1,rel_widths=c(0.5,1),rel_heights=c(0.5,1),labels=c("","c"))
-cairo_pdf("../paper/figures/S5.pdf",width=14.28,height=14.28)
+cairo_pdf("../paper/figures/S5.pdf",width=11.69,height=8.27)
 plot_grid(subp0,p,ncol=1,labels=c("","d"),rel_heights=c(1,1.5))
 dev.off()
