@@ -21,9 +21,7 @@ m <- m[,keepCells]
 pD <- pD[keepCells,]
 
 # Genes
-keep1 <- rowSums(m!=0)>10
-keep2 <- rowSums(m)>20
-keep <- keep1 & keep2
+keep <- rowMeans(m) > 0.1
 m <- m[keep,]
 fD <- fD[keep,]
 
@@ -44,7 +42,7 @@ fit <- glmFit(y, de.design)
 #copy cat
 library(doParallel)
 nCores <- 3
-cl <-makeCluster(nCores, type="FORK"
+cl <-makeCluster(nCores, type="FORK")
 registerDoParallel(cl)
 result <- foreach (i=seq_along(levels(cluster))) %dopar% {
     result.logFC <- result.PValue <- list()
