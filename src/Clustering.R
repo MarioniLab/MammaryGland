@@ -45,8 +45,8 @@ clust <- dynamicCluster(t(m.sub), dm=dm,
 pD$cluster <- clust$cluster
 
 #Rename clusters according to nomenclature in paper
-pD$cluster <- mapvalues(pD$cluster,c(0,1,2,3,4,5,6,7,9,10,8),
-			c(0,1,2,3,4,5,6,7,8,9,10))
+pD$cluster <- as.factor(mapvalues(pD$cluster,c(0,1,2,3,4,5,6,7,9,10,8),
+			c(0,1,2,3,4,5,6,7,8,9,10)))
 
 #Clusters per condition and sample
 table(pD$cluster,pD$Condition)
