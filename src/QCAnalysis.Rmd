@@ -25,7 +25,7 @@ m <- dataList[["counts"]]
 pD <- dataList[["phenoData"]]
 fD <- dataList[["featureData"]]
 #relevel pD Condition to get it in logical sequence
-pD$Condition <- factor(pD$Condition,levels=c("V","P","L","I"))
+# pD$Condition <- factor(pD$Condition,levels=c("V","P","L","I"))
 ```
 # Overview over the data
 
@@ -341,8 +341,8 @@ tsnePlot
 ***
 ## Save Data
 ```{r}
-pD.add <- select(pD.filtered, barcode, sf, tSNE1, tSNE2)
-fD.add <- select(fD.filtered, id, highVar)
+pD.add <- dplyr::select(pD.filtered, barcode, sf, tSNE1, tSNE2)
+fD.add <- dplyr::select(fD.filtered, id, highVar)
 pD <- left_join(pD,pD.add, by="barcode")
 fD <- left_join(fD,fD.add, by="id")
 stopifnot(identical(as.character(pD$barcode),colnames(m)))
