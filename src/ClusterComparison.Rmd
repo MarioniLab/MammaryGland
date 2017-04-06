@@ -126,10 +126,10 @@ renderTable({
     clust <- clustering()
     x <- table(clust$cluster,pD$Condition)
     out <- data.frame("Cluster"=rownames(x),
-	       "Virgin"=unname(x[,"V"]),
-	       "Pregnant"=unname(x[,"P"]),
+	       "Virgin"=unname(x[,"NP"]),
+	       "Pregnant"=unname(x[,"G"]),
 	       "Lactation"=unname(x[,"L"]),
-	       "Involution"=unname(x[,"I"]))
+	       "Involution"=unname(x[,"PI"]))
 })
 
 renderPlot({
