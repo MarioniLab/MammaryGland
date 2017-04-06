@@ -24,10 +24,7 @@ pD$sf <- computeSumFactors(m,clusters=clusters)
 m <- t(t(m)/pD$sf)
 # 
 
-#Run various clustering combinations
-
 #Feature Selection
-library(fpc)
 m.sub <- t(m[fD$highVar,])
 dms <- c("euclidean","pearson","spearman")
 lks <- c("average","ward.D2","complete")

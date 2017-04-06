@@ -1,4 +1,9 @@
-######### QC-Analysis ########
+####################
+#
+#QC-Analysis
+#
+###################
+
 library(scran)
 library(dplyr)
 library(knitr)
@@ -7,25 +12,20 @@ library(Rtsne)
 library(cowplot)
 source("functions.R")
 
-
-#Load Data
+# Load Data
 dataList <- readRDS("../data/Robjects/ExpressionList.rds")
 m <- dataList[["counts"]]
 pD <- dataList[["phenoData"]]
 fD <- dataList[["featureData"]]
 rnd_seed <- 300
 
-## Number of Cells
+# ---- QCOverview ----
+
+# Number of Cells
 table(pD$SampleID)
 table(pD$Condition)
 
-##################################
-#
-# Overview on QC-stats
-#
-#################################
-
-## Sequencing Depth and Genes detected
+# Sequencing Depth and Genes detected
 pD$UmiSums<- colSums(m)
 pD$GenesDetected <- colSums(m!=0)
 genesDetected <- ggplot(pD, aes(x=SampleID,y=GenesDetected,fill=Condition)) +
@@ -39,14 +39,14 @@ LibrarySize <- ggplot(pD, aes(x=SampleID,y=UmiSums,fill=Condition)) +
     ylab("Total number of molecules") +
     theme_bw()
 
-## Cell Viability
+# Cell Viability
 mMito <- m[fD$Mitochondrial,]
 pD$prcntMito <- colSums(mMito)/colSums(m)
 cellViability <- ggplot(pD, aes(x=prcntMito, y=GenesDetected, color=Condition, shape=Replicate))+
     geom_point() +
     theme_bw()
 
-## Genewise QC
+# Genewise QC
 ntop <- 50 
 mRel <- t(t(m)/colSums(m))
 rownames(mRel)  <- fD$symbol
@@ -77,14 +77,10 @@ plot_grid(genesDetected,LibrarySize,cellViability,
 	  topGenes,topFreq)
 
 
-##################################
-#
-# QC-Thresholding
-#
-#################################
+# ---- QCThresholding ----
 
 
-#Left MAD function for thresholding
+# Left MAD function for thresholding
 leftmad <- function(x) {
     m <- median(x)
     dev <- abs(x-m)
@@ -92,7 +88,7 @@ leftmad <- function(x) {
     return(leftmad)
 }
 
-#Define hard thresholds
+# Define hard thresholds
 MitoCutOff <- 0.05
 genesDetectedCutOff <- 500 # only applies to L sample
 librarySizeCutOff <- 1000 # only applies to L sample
@@ -108,13 +104,14 @@ smryByGroup <- group_by(pD,Condition) %>%
     select(Condition,starts_with("threshold")) 
 print(smryByGroup)
 
-#Thresholding per group
 
-#inititae Df
+# initiate empty df
 pD <- mutate(pD,
 	     ThresholdViability = 0,
 	     ThresholdGenesDet = 0,
 	     ThresholdLibSize = 0)
+
+# Thresholding per group
 grps <- as.character(unique(pD$Condition))
 for (grp in grps) {
     thrs <- filter(smryByGroup, Condition==grp) %>% select(-Condition) %>% t() %>% as.vector()
@@ -152,7 +149,7 @@ cellViability <- cellViability + aes(color=PassViability) +
     annotate("rect",ymin=-Inf, ymax=Inf, xmax=Inf, xmin=MitoCutOff,
 	     fill="grey", alpha=0.3) 
 
-
+# Overview over cells removed
 table(pD$Condition,pD$PassGenesDet)
 table(pD$Condition,pD$PassLibSize)
 table(pD$Condition,pD$PassViability)
@@ -160,11 +157,11 @@ table(pD$Condition,pD$PassAll)
 
 plot_grid(gdHist,libSizeHist,cellViability)
 
-#Apply Thresholds
+# Apply Thresholds
 pD.filtered <- filter(pD, PassAll)
 m.filtered <- m[,as.character(pD.filtered$barcode)]
 
-#Thresholding on lowly expressed genes
+# Thresholding on lowly expressed genes
 isexpThreshold <- 10
 expThreshold <- 50*isexpThreshold
 keep1 <- rowSums(m.filtered!=0) > isexpThreshold
@@ -173,14 +170,10 @@ fD$keep <- keep1 & keep2
 m.filtered <- m.filtered[fD$keep,]
 fD.filtered <- fD[fD$keep,]
 
-#Final matrix
+# Final matrix
 dim(m.filtered)
 
-##################################
-#
-# Normalization and HVGs
-#
-#################################
+# ---- NormAndHVG ----
 
 # Estimate size factors using scran
 clusters <- quickCluster(m.filtered)
@@ -189,21 +182,16 @@ pD.filtered$sf <- computeSumFactors(m.filtered,clusters=clusters)
 plot(log10(colSums(m.filtered))~log10(pD.filtered$sf),main="Library Size versus Size Factors (Log10-Scale)",
      pch=20,xlab="Size Factors",ylab="Library Size")
 
-#Normalize count matrix
+# Normalize count matrix
 m.norm <- t(t(m.filtered)/pD.filtered$sf)
 
 
-#HVG definition by Brennecke
+# Highly variable genes
 brennecke <- BrenneckeHVG(m.norm,fdr=0.1,minBiolDisp=0.25)
 fD.filtered$highVar <- fD.filtered$id %in% brennecke
 
-##################################
-#
-# Save Data
-#
-#################################
 
-
+# ---- SaveData ----
 pD.add <- select(pD.filtered, barcode, sf)
 fD.add <- select(fD.filtered, id, highVar)
 pD <- left_join(pD,pD.add, by="barcode")

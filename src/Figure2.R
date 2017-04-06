@@ -1,3 +1,8 @@
+#########################################
+#
+#Script to reproduce Figure 2
+#
+#########################################
 library(plyr)
 library(splines)
 library(destiny)
@@ -7,72 +12,58 @@ library(ggplot2)
 library(cowplot)
 library(viridis)
 library(RColorBrewer)
+library(scatterplot3d)
+library(gridGraphics)
+library(gridExtra)
 source("functions.R")
 
+#Load Data
 rnd_seed <- 300
 dataList <- readRDS("../data/Robjects/ExpressionList_Clustered.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
 
-pD$Condition <- mapvalues(pD$Condition, from=c("V","P","L","I"),
-			  to=c("Virgin", "Pregnancy",
-			       "Lactation", "Post-Involution"))
-
-# Cells
+#Remove QC-fails,outlier and immune cells
 keepCells <- pD$PassAll & !pD$isImmuneCell & !pD$isOutlier 
 m <- m[,keepCells]
 pD <- pD[keepCells,]
 
-pD$cluster <- mapvalues(pD$cluster, from=c(1,2,3,4,5,6,7,9,10),
-			  to=c(1,2,3,4,5,6,7,8,9))
-#Normalize
-m.norm <- t(t(m)/pD$sf)
-rownames(m.norm) <- fD$symbol
 
 
-##########################################
-#
-#
-# Diffusion Maps
-#
-#
-##########################################
-
-
-condComb <- c("Virgin","Pregnancy")
-
-# For Basal and Luminal cells
-#
-#
-
+# ---- BasalAndLuminal ----
+condComb <- c("NP","G")
 keepCells <- pD$Condition %in% condComb
 m.vp <- m[,keepCells]
 pD.vp <- pD[keepCells,]
 
-#Gene filtering
+#Remove lowly expressed genes
 keep <- rowMeans(m.vp)>0.1
 m.vp <- m.vp[keep,]
 fD.vp <- fD[keep,]
 
-#
+#Normalize 
 m.norm <- t(t(m.vp)/pD.vp$sf)
 
+#compute HVGs
 brennecke <- BrenneckeHVG(m.norm,suppress.plot=TRUE)
 fD.vp$highVar <- fD.vp$id %in% brennecke
 
+#Prepare count matrix by selected HVGs and log-transform
 exps <- m.norm[fD.vp$highVar,]
 exps <- t(log(exps+1))
+
+#Compute diffusion map
 set.seed(rnd_seed)
 dm <- DiffusionMap(exps,n_eigs=20,k=50)
-library(scatterplot3d)
-pal <- brewer.pal(n=9,name="Paired")
-cols <- mapvalues(pD.vp$cluster,levels(pD.vp$cluster)[-1],
-		  pal)
 dms <- eigenvectors(dm)[,1:3]
-library(rgl)
 
-## 3d Plot for Basal cells
+#Set color scale according to F1a
+pal <- brewer.pal(n=9,name="Paired")
+cols <- mapvalues(pD.vp$cluster,levels(pD.vp$cluster)[-c(1,10)],
+		  pal)
+
+## 3d Plot for luminal and basal cells
 scatterplot3d(x=dms[,1],
 	      y=-dms[,2],
 	      z=dms[,3],
@@ -87,19 +78,15 @@ scatterplot3d(x=dms[,1],
 	      zlab="Component 3",
 	      box=FALSE)
 
-
-
 ## Extract as grob for plot
-library(gridGraphics)
-library(gridExtra)
 grab_grob <- function(){
   grid.echo()
   grid.grab()
 }
-
 g <- grab_grob()
 g <- grid.arrange(g)
 
+#Create the "alternative view inlet"
 inletD <- pD.vp
 inletD$dc1 <- dms[,1]
 inletD$dc2 <- dms[,3]
@@ -112,70 +99,49 @@ inlet <- ggplot(inletD, aes(-dc2,dc1,color=cluster)) +
     scale_color_manual(values=pal2) +
     guides(color=FALSE)
 
-cairo_pdf("F2inlet.pdf",width=17.54,height=17.54)
+# cairo_pdf("F2inlet.pdf",width=17.54,height=17.54)
 inlet
-dev.off()
+# dev.off()
 
-#####################################
-# Only luminal cells in P and V
-#
-#####################################
 
-#Pre-Filtering before DE-Analysis
+# ---- LuminalOnly ----
+
 # Cells
 keepCells <- !(pD$cluster %in% c(6,7,9)) & pD$Condition %in% condComb
 m.vp <- m[,keepCells]
 pD.vp <- pD[keepCells,]
 
-#Gene filtering
+# Genes 
 keep <- rowMeans(m.vp)>0.1
 m.vp <- m.vp[keep,]
 fD.vp <- fD[keep,]
 
-#
+# Normalize
 m.norm <- t(t(m.vp)/pD.vp$sf)
 
+# HVGs
 brennecke <- BrenneckeHVG(m.norm,suppress.plot=TRUE)
 fD.vp$highVar <- fD.vp$id %in% brennecke
 
 
-# Compute Diffusion map
-set.seed(rnd_seed)
+# Prepare expression matrix by selecting only HVGs and log-transformation
 exps <- m.norm[fD.vp$highVar,]
 exps <- t(log(exps+1))
-dm <- DiffusionMap(exps,n_eigs=20,k=50)
-# plot(eigenvalues(dm)[1:20])
 
-# Pseudotime and branching
+# Compute Diffusion map
 set.seed(rnd_seed)
+dm <- DiffusionMap(exps,n_eigs=20,k=50)
 dcs <- eigenvectors(dm)[,1:2]
-t1 <- which.min(dcs[,2])
-t2 <- which.min(dcs[,1])
-t3 <- which.max(dcs[,1])
-dpt <- DPT(dm, branching=TRUE, tips=c(t1,t2,t3))
-root <- which(dpt@tips[,1])[3]
-rootdpt <- paste0("DPT",root)
-# plot(dpt,pch=20,dcs=c(1,2),col_by=rootdpt)
-
-# Rename branches
-branch <- dpt@branch[,1]
-branch[is.na(branch)]  <- "Decision stage"
-branch[branch==1] <- "Root"
-branch[branch==2] <- "Secretory lineage"
-branch[branch==3] <- "Hormone-sensing lineage"
-pD.vp$branch <- factor(branch,levels=c("Root","Decision stage",
-				    "Secretory lineage",
-				    "Hormone-sensing lineage"))
-pD.vp$dpt<- dpt[["dpt"]]
+#add DCs to pD
 pD.vp$DC1 <- eigenvectors(dm)[,1]
 pD.vp$DC2 <- eigenvectors(dm)[,2]
 
+# Color scheme for plots
 clusts <- as.numeric(as.character(sort(unique(pD.vp$cluster))))
 cols <- brewer.pal(n=9,name="Paired")[clusts]
 names(cols) <- clusts
 
-
-## Plots
+## Luminal compartment colored by clusters
 p <- ggplot(pD.vp, aes(x=DC1,y=-DC2, color=cluster)) +
     geom_point(size=2, pch=20) +
     guides(colour = guide_legend(override.aes = list(size=3))) +
@@ -184,6 +150,7 @@ p <- ggplot(pD.vp, aes(x=DC1,y=-DC2, color=cluster)) +
     xlab("Component 1") +
     ylab("- Component 2") 
 
+# Create legend for luminal only and luminal/basal plot
 pal <- brewer.pal(n=9,name="Paired")[c(1,2,3,5,6,7,8,9)]
 forcLeg <- filter(pD, !cluster %in% c(4))
 clustLeg <- ggplot(forcLeg, aes(x=tSNE1,y=tSNE2,color=cluster)) +
@@ -194,11 +161,12 @@ clustLeg <- ggplot(forcLeg, aes(x=tSNE1,y=tSNE2,color=cluster)) +
 	  legend.position="bottom")+
     guides(colour=guide_legend(nrow=1,
 			       override.aes=list(size=3)))
-
 clustLeg <- get_legend(clustLeg)
     
 
-# Aldehyde trend
+# ---- GeneExpressionTrends ----
+
+#Aldehyde trend along component2
 ald <- filter(fD.vp, symbol %in% c("Aldh1a3")) %>% .$id
 fDC2Trend <- data.frame("DC2"=-pD.vp$DC2,
 		   "Aldh1a3"=unname(log2(t(m.norm)[,ald]+1)))
@@ -206,34 +174,21 @@ DC2Trend <- ggplot(fDC2Trend, aes(x=DC2, y=Aldh1a3)) +
     geom_point(size=0.5,color="#7570b3",alpha=0.5) +
     geom_smooth(method="glm",formula="y~ns(x,df=5)",
 		method.args=list(family="quasipoisson"),color="#7570b3") +
-    #     geom_ribbon(aes(ymin = 0,ymax = predict(loess(Aldh1a3 ~ DC2 ))),
-    #                     alpha = 0.3,fill = 'dodgerblue')+
-#     ggtitle("Progenitor marker expression") +
     ylab("Log-Expression") +
     xlab("-Component 2") +
-    #     theme(axis.line.y=element_blank(),
-    #           axis.line.x=element_line(colour="black"),
-    #           axis.text.y=element_blank(),
-    #           axis.ticks.y=element_blank()
-    #           ) +
     coord_flip()
 
-# Csn2 and Esr1 trend
+#Csn2 and Pgr trend along component1
 genes <- filter(fD.vp, symbol %in% c("Csn2","Pgr")) %>% .$id
 fDC1Trend <- data.frame("DC1"=pD.vp$DC1,
 		   "Csn2"=unname(log2(t(m.norm)[,genes[1]]+1)),
 		   "Pgr"=unname(log2(t(m.norm)[,genes[2]]+1)),
-		   "Aldh1a3"=NA)
+		   "Aldh1a3"=NA) # include Aldh1a3 as NA to have a common legend
 fDC1Trend <- melt(fDC1Trend,id="DC1",variable_name="Gene")
 DC1Trend <- ggplot(fDC1Trend, aes(x=DC1, y=value, color=Gene)) +
     geom_point(size=0.5,alpha=0.5) +
     geom_smooth(method="glm",formula="y~ns(x,df=5)",
 		method.args=list(family="quasipoisson")) +
-#     theme(axis.line.x=element_blank(),
-#           axis.line.y=element_line(colour="black"),
-#           axis.text.x=element_blank(),
-#           axis.ticks.x=element_blank()
-#           ) +
     scale_color_manual(values=c("#1b9e77","#d95f02","#7570b3")) +
     ylab("Log-Expression") +
     xlab("Component 1") +
@@ -241,7 +196,7 @@ DC1Trend <- ggplot(fDC1Trend, aes(x=DC1, y=value, color=Gene)) +
     theme(legend.direction="vertical",legend.title=element_blank()) +
     xlab("") 
 
-
+#Combine all plots
 leg2 <- get_legend(DC1Trend)
 
 DC1Trend <- DC1Trend %+% guides(colour=FALSE)
@@ -256,6 +211,6 @@ subP1 <- plot_grid(subP1,labels=c("b"))
 subPab <-plot_grid(g,labels=c("a"))
 subP0 <- plot_grid(subPab,clustLeg,nrow=2,rel_heights=c(1,0.1))
 
-cairo_pdf("Figure2.pdf",width=8.41,height=12.54)
+# cairo_pdf("Figure2.pdf",width=8.41,height=12.54)
 plot_grid(subP0,subP1,labels=c("",""),nrow=2)
-dev.off()
+# dev.off()
