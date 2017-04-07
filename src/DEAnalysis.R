@@ -6,13 +6,13 @@ library(Rtsne)
 library(doParallel)
 source("functions.R")
 
+# Load Data
 rnd_seed <- 300
 dataList <- readRDS("../data/Robjects/ExpressionList_Clustered.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
 
-#Pre-Filtering before DE-Analysis
 # Cells
 keepCells <- pD$PassAll & !(pD$isImmuneCell | pD$isOutlier)
 m <- m[,keepCells]
@@ -24,6 +24,7 @@ m <- m[keep,]
 fD <- fD[keep,]
 
 
+# DGEList
 nf <- log(pD$sf/pD$UmiSums)
 pD$nf <- exp(nf-mean(nf))
 y <- DGEList(counts=m,
@@ -31,6 +32,7 @@ y <- DGEList(counts=m,
 	     genes=fD,
 	     norm.factors=pD$nf)
 
+# Model and disp
 cluster <- factor(pD$cluster)
 de.design <- model.matrix(~0+cluster)
 y <- estimateDisp(y, de.design, trend="none", df=0)
@@ -64,6 +66,6 @@ result <- foreach (i=seq_along(levels(cluster))) %dopar% {
     marker.set <- marker.set[order(marker.set$Top),]
     return(marker.set)
 }
-names(result) <- seq_along(levels(cluster))
+names(result) <- levels(cluster)
 
 saveRDS(result,"../data/Robjects/DEList.rds")
