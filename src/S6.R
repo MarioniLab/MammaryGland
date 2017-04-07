@@ -144,7 +144,6 @@ p1 <- ggplot(output, aes(x=Term, y=-log10(as.numeric(Fisher.classic)))) +
     xlab("GO-Term [BP]") 
 
 subp1 <- plot_grid(subp0,p1,nrow=2,labels=c("","c"))
-caseinPlot <- readRDS("../data/Robjects/CaseinsPlot.rds")
 # cairo_pdf("../paper/figures/S7.pdf",width=9.92,height=14.028)
 plot_grid(subp1,caseinPlot,nrow=2,labels=c("","d"))
 # dev.off()
