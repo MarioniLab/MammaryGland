@@ -48,11 +48,6 @@ clust <- dynamicCluster(t(m.sub), dm=dm,
 				 output="Cluster",
 				 minSize=minSize)
 
-# Funciton to extract plot as grob
-grab_grob <- function(){
-  grid.echo()
-  grid.grab()
-}
 
 # ---- BootstrapPlots -----
 # Bootstrap stability of clusters with ds=0

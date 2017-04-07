@@ -1,12 +1,11 @@
 #########################################
 #
-#Script to reproduce Figure 3
+#Figure 3
 #
 #########################################
 library(plyr)
 library(cowplot)
 library(pheatmap)
-library(reshape2)
 library(splines)
 library(dplyr)
 library(destiny)
@@ -206,7 +205,6 @@ m.both[m.both<-3] <- -3 # cut at -3 for visualization
 
 
 # ---- BranchSpecificDefinition ----
-
 
 #Set1 DE on both same gradient
 res1 <- filter(res, (hrm.PAdjust < 0.01 & alv.PAdjust < 0.01)
