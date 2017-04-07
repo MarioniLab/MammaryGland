@@ -1,3 +1,9 @@
+############################
+#
+# Figure S2
+#
+############################
+
 library(scran)
 library(dplyr)
 library(ggplot2)
@@ -43,7 +49,7 @@ tsnPlot <- ggplot(pD.lac, aes(x=tSNE1, y=tSNE2,color=QCpass)) +
     scale_color_manual(values=c("grey","black")) +
     theme(legend.title=element_blank())
 
-cairo_pdf("../paper/figures/S2.pdf")
+# cairo_pdf("../paper/figures/S2.pdf")
 tsnPlot
-dev.off()
+# dev.off()
 
