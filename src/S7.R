@@ -1,16 +1,15 @@
-library(scran)
 library(plyr)
 library(dplyr)
-library(gtools)
-library(knitr)
 library(ggplot2)
-library(ggrepel)
-library(dynamicTreeCut)
 library(Rtsne)
 library(reshape2)
+library(edgeR)
 library(pheatmap)
+library(cowplot)
+library(RColorBrewer)
 source("functions.R")
 
+# Load Data
 rnd_seed <- 300
 dataList <- readRDS("../data/Robjects/ExpressionList_Clustered.rds")
 m <- dataList[[1]]
@@ -23,69 +22,7 @@ keepCells <- pD$PassAll & !(pD$isImmuneCell | pD$isOutlier)
 m <- m[,keepCells]
 pD <- pD[keepCells,]
 
-# Genes
-keep <- rowMeans(m) > 0.1
-m <- m[keep,]
-fD <- fD[keep,]
-
-#Normalize
-m.norm <- t(t(m)/pD$sf)
-
-#HVG
-brennecke <- BrenneckeHVG(m.norm,suppress.plot=TRUE)
-
-#Rename condition and cluster
-pD$Condition <- mapvalues(pD$Condition, from=c("V","P","L","I"),
-			  to=c("Virgin", "Pregnancy",
-			       "Lactation", "Post-Involution"))
-
-pD$cluster <- mapvalues(pD$cluster, from=c(1,2,3,4,5,6,7,9,10),
-			  to=c(1,2,3,4,5,6,7,8,9))
-
-
-out <- data.frame("C1"=numeric(nrow(m)))
-
-for (clust in levels(pD$cluster)[-1]) {
-    expr <- rowMeans(log2(m.norm[,pD$cluster==clust]+1))
-    colname <- paste0("C",clust)
-    out[,colname] <- expr
-}
-library(pheatmap)
-library(RColorBrewer)
-
-meanSim <- asSim(as.matrix(dist(t(out))))
-simMat <- pheatmap(meanSim,
-		   color=colorRampPalette((brewer.pal(n=7,
-							 name="Greys")))(100),
-		   treeheight_row=0)
-dev.off()
-
-######################
-#
-#DE-Analysis
-#
-######################
-
-m <- dataList[[1]]
-pD <- dataList[[2]]
-fD <- dataList[[3]]
-
-#Pre-Filtering before DE-Analysis
-# Cells
-keepCells <- pD$PassAll & !(pD$isImmuneCell | pD$isOutlier)
-m <- m[,keepCells]
-pD <- pD[keepCells,]
-
-#Rename condition and cluster
-pD$Condition <- mapvalues(pD$Condition, from=c("V","P","L","I"),
-			  to=c("Virgin", "Pregnancy",
-			       "Lactation", "Post-Involution"))
-
-pD$cluster <- mapvalues(pD$cluster, from=c(1,2,3,4,5,6,7,9,10),
-			  to=c(1,2,3,4,5,6,7,8,9))
-
-
-comps <- c("Virgin","Post-Involution")
+comps <- c("NP","PI")
 out <- list()
 for (comp in comps) {
     pD.sub <- filter(pD,Condition %in% comp, !(cluster %in% c(6,7,9)))
@@ -95,7 +32,6 @@ for (comp in comps) {
     fD.sub <- fD[keep,]
     rownames(m.sub) <- fD.sub$symbol
 
-    library(edgeR)
     nf <- log(pD.sub$sf/pD.sub$UmiSums)
     pD.sub$nf <- exp(nf-mean(nf))
     y <- DGEList(counts=m.sub,
@@ -104,32 +40,22 @@ for (comp in comps) {
 		 norm.factors=pD.sub$nf)
 
 
-    choice <- ifelse(comp=="Virgin",5,4)
+    choice <- ifelse(comp=="NP",5,4)
     cluster <- factor(as.numeric(pD.sub$cluster==choice))
     de.design <- model.matrix(~cluster)
     y <- estimateDisp(y, de.design, prior.df=0,trend="none")
     fit <- glmFit(y, de.design)
     res <- glmTreat(fit)
-    xxx <- topTags(res,n=Inf,sort.by="PValue")
-    topTab <- xxx$table
+    resTab <- topTags(res,n=Inf,sort.by="PValue")
+    topTab <- resTab$table
     out[[comp]] <- topTab
 }
-tabNulPar <- out[["Virgin"]][1:500,]
-tabPar <- filter(out[["Post-Involution"]],symbol %in% tabNulPar$symbol)
-rownames(tabNulPar) <- tabNulPar$symbol
-rownames(tabPar) <- tabPar$symbol
-tabNulPar <- tabNulPar[tabPar$symbol,]
+tabNulPar <- out[["NP"]][1:500,]
 
-forPlot <- data.frame("NullParFC"=tabNulPar$logFC,
-		      "ParousFC"=tabPar$logFC,
-		      "Gene"=tabPar$symbol)
-
-library(cowplot)
-library(RColorBrewer)
-
-#Try PCA instead
+# ---- PCA ----
+genes <- tabNulPar$symbol %in% rownames(m.sub)
 m.sub <- t(t(m.sub)/pD.sub$sf)
-m.sub <- m.sub[tabNulPar$symbol,]
+m.sub <- m.sub[genes,]
 exps <- t(log2(m.sub+1))
 pc <- prcomp(exps)
 pD.sub$PC1 <- pc$x[,1]
@@ -153,55 +79,45 @@ subp0 <- plot_grid(pcplot, pLoad, rel_widths=c(1,.8),labels="auto")
 
 
 
-####
-#
-#
-#DE-Analysis 4 vs 5 
-#
-####
+# ---- DEAnalysis4vs5 ----
 
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
 
-#Pre-Filtering before DE-Analysis
 # Cells
 keepCells <- pD$PassAll & !(pD$isImmuneCell | pD$isOutlier)
 m <- m[,keepCells]
 pD <- pD[keepCells,]
 
-#########################################
-    pD.sub <- filter(pD, (cluster %in% c(4,5)))
-    m.sub <- m[,as.character(pD.sub$barcode)]
-    keep <- rowMeans(m.sub) > 0.1
-    m.sub <- m.sub[keep,]
-    fD.sub <- fD[keep,]
-    rownames(m.sub) <- fD.sub$symbol
+pD.sub <- filter(pD, (cluster %in% c(4,5)))
+m.sub <- m[,as.character(pD.sub$barcode)]
+keep <- rowMeans(m.sub) > 0.1
+m.sub <- m.sub[keep,]
+fD.sub <- fD[keep,]
+rownames(m.sub) <- fD.sub$symbol
 
-    library(edgeR)
-    nf <- log(pD.sub$sf/pD.sub$UmiSums)
-    pD.sub$nf <- exp(nf-mean(nf))
-    y <- DGEList(counts=m.sub,
-		 samples=pD.sub,
-		 genes=fD.sub,
-		 norm.factors=pD.sub$nf)
+library(edgeR)
+nf <- log(pD.sub$sf/pD.sub$UmiSums)
+pD.sub$nf <- exp(nf-mean(nf))
+y <- DGEList(counts=m.sub,
+	     samples=pD.sub,
+	     genes=fD.sub,
+	     norm.factors=pD.sub$nf)
 
 
-    choice <- 4
-    cluster <- factor(as.numeric(pD.sub$cluster==choice))
-    de.design <- model.matrix(~cluster)
-    y <- estimateDisp(y, de.design, prior.df=0,trend="none")
-    fit <- glmFit(y, de.design)
-    res <- glmTreat(fit,lfc=1)
-    xxx <- topTags(res,n=Inf,sort.by="PValue")
-    topTab <- xxx$table
+choice <- 4
+cluster <- factor(as.numeric(pD.sub$cluster==choice))
+de.design <- model.matrix(~cluster)
+y <- estimateDisp(y, de.design, prior.df=0,trend="none")
+fit <- glmFit(y, de.design)
+res <- glmTreat(fit,lfc=1)
+resTab <- topTags(res,n=Inf,sort.by="PValue")
+topTab <- resTab$table
 
 deGenes <- filter(topTab, FDR < 0.01, logFC > 0) %>%. $symbol
 allGenes <- topTab$symbol
 
-# GO Analysis
- require("topGO")
- library(org.Mm.eg.db)
 
 # ---- Data ----
 univrs <- allGenes
@@ -209,6 +125,8 @@ alG <- factor(as.numeric(univrs %in% deGenes))
 names(alG) <- univrs
 
 # ---- GOanalysis ----
+library("topGO")
+library(org.Mm.eg.db)
 
 ## prepare Data for topGO
 GO.data <- new("topGOdata", description="Lib GO",ontology="BP", allGenes=alG, 
@@ -227,6 +145,6 @@ p1 <- ggplot(output, aes(x=Term, y=-log10(as.numeric(Fisher.classic)))) +
 
 subp1 <- plot_grid(subp0,p1,nrow=2,labels=c("","c"))
 caseinPlot <- readRDS("../data/Robjects/CaseinsPlot.rds")
-cairo_pdf("../paper/figures/S7.pdf",width=9.92,height=14.028)
+# cairo_pdf("../paper/figures/S7.pdf",width=9.92,height=14.028)
 plot_grid(subp1,caseinPlot,nrow=2,labels=c("","d"))
-dev.off()
+# dev.off()
