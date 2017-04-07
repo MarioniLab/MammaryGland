@@ -1,4 +1,6 @@
+
 plotGeneDist <- function(m, pD, fD, genes, colorBy="Condition") {
+    # function to plot gene expression as boxplots
     require(reshape)
     stopifnot(identical(rownames(m),fD$id))
     rownames(m) <- fD$symbol
@@ -18,47 +20,6 @@ plotGeneDist <- function(m, pD, fD, genes, colorBy="Condition") {
 	facet_wrap(~variable, scales="free") +
 	theme_bw()
     return(plt)
-}
-
-compClustering <- function(m,fD,fs="brennecke",dm="spearman",lk="ward.D2",ds=0,minSize=15) {
-
-    #Feature Selection
-    keep <- fD[,fs]
-    trafM <- log2(m[keep,]+1)
-
-    #Dissimilarity Measure
-    if(dm!="euclidean") {
-	if(lk=="ward.D2") {
-    dis <- as.dist(sqrt((1-cor(trafM,method=dm))/2))
-	}else {
-	    dis <- as.dist((1-cor(trafM,method=dm))/2)
-	}
-    } else {
-	dis <- dist(t(trafM),method=dm)
-    }
-
-    #Hierarchical Clustering
-    htree <- hclust(dis, method=lk)
-    #Tree Cut
-    cluss <- cutreeDynamic(htree,distM=as.matrix(dis),deepSplit=ds,minClusterSize=minSize)
-
-    #Compute Validation Statistics
-    clstats <- cluster.stats(d=dis, cluss)
-    asw <- clstats$avg.silwidth
-    rss <- clstats$within.cluster.ss
-    con <- connectivity(distance=dis,clusters=cluss)
-
-    #Compile output
-    out <- data.frame("FeatureSelection"=fs,
-		      "Dissimilarity"=dm,
-		      "Linkage"=lk,
-		      "DeepSplit"=ds,
-		      "Statistic"=c("Average Silhouette Width",
-				    "Within Cluster SS",
-				    "Connectivity"),
-		      "Value"=c(asw,rss,con),
-		      "K"=max(cluss),
-		      "m"=length(cluss))
 }
 
 BrenneckeHVG <- function (m, suppress.plot = FALSE, fdr = 0.1, 
