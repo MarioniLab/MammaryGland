@@ -134,11 +134,12 @@ p <- ggplot(out, aes(DC1,DC2, color=cluster)) +
 	  ) 
 
 # Read in Monocle plot
+pal <- brewer.pal(n=9,name="Paired")[c(1,2,3,5,8,9)]
 monoc <- readRDS("../data/Robjects/ExpressionList_Monocle.rds")
 monoc.plt <- monoc[["plot"]] %+% guides(color=FALSE)
 
 # Combine plots
 subp0 <- plot_grid(g1,g2,monoc.plt,nrow=1,labels="auto")
-# cairo_pdf("../paper/figures/S5.pdf",width=11.69,height=8.27)
+cairo_pdf("../paper/figures/S3.pdf",width=11.69,height=8.27)
 plot_grid(subp0,p,ncol=1,labels=c("","d"),rel_heights=c(1,1.5))
-# dev.off()
+dev.off()

@@ -22,7 +22,7 @@ fD <- dataList[[3]]
 #Rename Condition for plot
 pD$Condition <- mapvalues(pD$Condition, from=c("NP","G","L","PI"),
 			  to=c("Nulliparous", "14.5d Gestation",
-			       "6d Lactation", "14d Post Natural Involution"))
+			       "6d Lactation", "11d Post Natural Involution"))
 
 #Remove previously identified outlier and immune cells
 keepCells <- pD$PassAll & !pD$isImmuneCell & !pD$isOutlier 
@@ -97,7 +97,7 @@ rownames(annoCol) <- as.character(ord$barcode)
 forcol <- ggplot_build(p0)
 condColors <- unique(arrange(forcol$data[[1]],group) %>% .[["colour"]])
 names(condColors) <- c("Nulliparous", "14.5d Gestation",
-			       "6d Lactation", "14d Post Natural Involution")
+			       "6d Lactation", "11d Post Natural Involution")
 # Cluster color scheme as in F1c
 forcol <- ggplot_build(p1)
 clustColors <- unique(arrange(forcol$data[[1]],group) %>% .[["colour"]])
@@ -130,6 +130,6 @@ fullP <- plot_grid(subP,p[[4]],nrow=2,
 fullPplus0 <- plot_grid(NULL,fullP,nrow=2,
 			labels=c("a",""),rel_heights=c(0.3,0.9))
 
-# cairo_pdf("Figure1.pdf",width=12.41,height=17.54)
+cairo_pdf("../paper/figures/Figure1.pdf",width=12.41,height=17.54)
 fullPplus0
-# dev.off()
+dev.off()

@@ -187,7 +187,7 @@ m.norm <- t(t(m.filtered)/pD.filtered$sf)
 
 
 # Highly variable genes
-brennecke <- BrenneckeHVG(m.norm,fdr=0.1,minBiolDisp=0.25)
+brennecke <- BrenneckeHVG(m.norm,fdr=0.1)
 fD.filtered$highVar <- fD.filtered$id %in% brennecke
 
 

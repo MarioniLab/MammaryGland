@@ -66,7 +66,7 @@ cols <- mapvalues(pD.vp$cluster,levels(pD.vp$cluster)[-c(1,10)],
 # Plot for luminal and basal cells
 scatterplot3d(x=dms[,1],
 	      y=-dms[,2],
-	      z=dms[,3],
+	      z=-dms[,3],
 	      color=cols,
 	      pch=20,
 	      angle=40,
@@ -75,7 +75,7 @@ scatterplot3d(x=dms[,1],
 	      mar=c(5,3,-0.1,3)+0.1,
 	      xlab="Component 1",
 	      ylab="-Component 2",
-	      zlab="Component 3",
+	      zlab="-Component 3",
 	      box=FALSE)
 
 g <- grab_grob()
@@ -85,19 +85,19 @@ dev.off()
 #Create the alternative view inlet
 inletD <- pD.vp
 inletD$dc1 <- dms[,1]
-inletD$dc2 <- dms[,3]
+inletD$dc3 <- dms[,3]
 inletD$cluster <- factor(inletD$cluster,levels=c(1,2,3,4,5,6,7,8,9))
 pal2 <- pal[-4]
-inlet <- ggplot(inletD, aes(-dc2,dc1,color=cluster)) +
+inlet <- ggplot(inletD, aes(-dc3,dc1,color=cluster)) +
     geom_point(size=5) +
     xlab("Component 1") +
-    ylab("-Component 2") +
+    ylab("-Component 3") +
     scale_color_manual(values=pal2) +
     guides(color=FALSE)
 
-# cairo_pdf("F2inlet.pdf",width=17.54,height=17.54)
-# inlet
-# dev.off()
+cairo_pdf("../paper/figures/F2inlet.pdf",width=17.54,height=17.54)
+inlet
+dev.off()
 
 # ---- LuminalOnlyNPandG ----
 
@@ -135,13 +135,13 @@ cols <- brewer.pal(n=9,name="Paired")[clusts]
 names(cols) <- clusts
 
 # Luminal compartment colored by clusters
-p <- ggplot(pD.vp, aes(x=DC1,y=-DC2, color=cluster)) +
+p <- ggplot(pD.vp, aes(x=DC1,y=DC2, color=cluster)) +
     geom_point(size=2, pch=20) +
     guides(colour = guide_legend(override.aes = list(size=3))) +
     scale_color_manual(values=cols)+
     guides(colour=FALSE) +
     xlab("Component 1") +
-    ylab("- Component 2") 
+    ylab("Component 2") 
 
 # Create legend for luminal only and luminal/basal plot
 pal <- brewer.pal(n=9,name="Paired")[c(1,2,3,5,6,7,8,9)]
@@ -161,14 +161,14 @@ clustLeg <- get_legend(clustLeg)
 
 # Aldehyde trend along component2
 ald <- filter(fD.vp, symbol %in% c("Aldh1a3")) %>% .$id
-fDC2Trend <- data.frame("DC2"=-pD.vp$DC2,
+fDC2Trend <- data.frame("DC2"=pD.vp$DC2,
 		   "Aldh1a3"=unname(log2(t(m.norm)[,ald]+1)))
 DC2Trend <- ggplot(fDC2Trend, aes(x=DC2, y=Aldh1a3)) +
     geom_point(size=0.5,color="#7570b3",alpha=0.5) +
     geom_smooth(method="glm",formula="y~ns(x,df=5)",
 		method.args=list(family="quasipoisson"),color="#7570b3") +
     ylab("Log-Expression") +
-    xlab("-Component 2") +
+    xlab("Component 2") +
     coord_flip()
 
 # Csn2 and Pgr trend along component1
@@ -203,6 +203,6 @@ subP1 <- plot_grid(subP1,labels=c("b"))
 subPab <-plot_grid(g,labels=c("a"))
 subP0 <- plot_grid(subPab,clustLeg,nrow=2,rel_heights=c(1,0.1))
 
-# cairo_pdf("Figure2.pdf",width=8.41,height=12.54)
+cairo_pdf("../paper/figures/Figure2.pdf",width=8.41,height=12.54)
 plot_grid(subP0,subP1,labels=c("",""),nrow=2)
-# dev.off()
+dev.off()

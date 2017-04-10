@@ -36,7 +36,7 @@ p1 <- pheatmap(m.heat2,
 	 annotation_legend=TRUE,
 	 gaps_col=ncol(m.alv),
 	 show_rownames=FALSE)
-# png("../paper/figures/S6.png",height=1248,width=1248)
+png("../paper/figures/S4.png",height=1248,width=1248)
 comb <- plot_grid(p0[[4]],NULL,p1[[4]],nrow=1,vjust=0.5,rel_widths=c(1,.1,1))
 comb
-# dev.off()
+dev.off()

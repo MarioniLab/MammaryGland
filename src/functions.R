@@ -23,7 +23,7 @@ plotGeneDist <- function(m, pD, fD, genes, colorBy="Condition") {
 }
 
 BrenneckeHVG <- function (m, suppress.plot = FALSE, fdr = 0.1, 
-    minBiolDisp = 0.5) 
+    minBiolDisp = 0.25) 
     {
 	require(statmod)
 	meansGenes <- rowMeans(m, na.rm = TRUE)

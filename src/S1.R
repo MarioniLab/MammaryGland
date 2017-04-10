@@ -36,7 +36,7 @@ p1 <- tableGrob(sumry,rows=NULL,)
 
 # Load plots from QCAnalysis
 source("QCAnalysis.R")
-
-# cairo_pdf("../paper/figures/S1.pdf",height=12.41,width=17.54)
+dev.off()
+cairo_pdf("../paper/figures/S1.pdf",height=12.41,width=17.54)
 plot_grid(p1,gdHist,libSizeHist,cellViability, labels="auto")
-# dev.off()
+dev.off()
