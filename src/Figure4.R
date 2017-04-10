@@ -184,7 +184,7 @@ volcano <- ggplot(topTab,aes(x=logFC,y=-log10(FDR))) +
     geom_point(data=interest, aes(x=logFC, y=-log10(FDR)), size=3, color="black",pch=20) +
     geom_point(data=lacinterest, aes(x=logFC, y=-log10(FDR)), size=3, color="dodgerblue",pch=20) +
     geom_point(data=imminterest, aes(x=logFC, y=-log10(FDR)), size=3, color="coral",pch=20) +
-    geom_label_repel(data=interst, aes(x=logFC,y=-log10(FDR),label=symbol)) +
+    geom_label_repel(data=interest, aes(x=logFC,y=-log10(FDR),label=symbol)) +
     xlab("Log2 Fold Change") +
     ylab("-Log10(P value)") 
 
@@ -228,7 +228,7 @@ ExpPlot <- ggplot(forPl, aes(y=value,x=group,color=cluster)) +
     stat_summary(fun.y = mean, fun.ymin = mean, fun.ymax = mean,
 		 geom = "crossbar", width = 1,color="black") +
     facet_grid(~variable) +
-    ylab("Log-Expression") +
+    ylab("Expression") +
     xlab("") +
     theme(strip.background=element_blank(),
 	  strip.text=element_text(face="bold"),
