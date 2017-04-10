@@ -216,8 +216,8 @@ forPl <- left_join(forPl,add,by="barcode") %>%
     filter(cluster %in% c(5,4))
 forPl <- melt(forPl,id=c("barcode","cluster","Condition")) %>%
     mutate(group=paste0(Condition,cluster)) %>%
-    mutate(group=gsub("V5|I5|L5|P5","5",group)) %>%
-    mutate(group=gsub("I4","4-PI",group)) %>%
+    mutate(group=gsub("NP5|G5|L5|PI5","5",group)) %>%
+    mutate(group=gsub("PI4","4-PI",group)) %>%
     mutate(group=gsub("L4","4-L",group)) %>%
     mutate(group=factor(group,levels=c("5","4-L","4-PI")))
 
@@ -237,7 +237,7 @@ ExpPlot <- ggplot(forPl, aes(y=value,x=group,color=cluster)) +
 	  ) +
     scale_colour_manual(values=pal)+
     guides(colour = guide_legend(override.aes = list(size=3))) +
-    scale_y_log10()
+    scale_y_log10(breaks=c(10,25,50,100,200,300,500,1000))
 
 
 # Combine plots
@@ -248,6 +248,6 @@ subp <- plot_grid(subp,leg,rel_heights=c(1,0.1),nrow=2)
 
 fullP <- plot_grid(subP0,subp,nrow=2)
 
-cairo_pdf("Figure4.pdf",width=10.75,height=15.19)
+cairo_pdf("../paper/figures/Figure4.pdf",width=10.75,height=15.19)
 plot_grid(fullP,NULL,nrow=2,rel_heights=c(1,0.75))
 dev.off()

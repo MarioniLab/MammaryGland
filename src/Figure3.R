@@ -361,7 +361,7 @@ fullP <- plot_grid(htmp,expPlot,ncol=2,rel_widths=c(1,1))
 
 #close graphics device before plotting
 dev.off()
-# cairo_pdf("Figure3.pdf",width=16.55,height=13.0575)
+cairo_pdf("../paper/figures/Figure3.pdf",width=16.55,height=13.0575)
 fullP
-# dev.off()
+dev.off()
 # 
