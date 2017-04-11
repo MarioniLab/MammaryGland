@@ -61,13 +61,16 @@ table(pD$cluster,pD$SampleID)
 
 # ---- RemoveImmuneCellsAndOutlier ----
 
+# Subset data to exclude cluster 0 and 10
 pD.add <- select(pD, barcode, cluster)
 pD.new <- left_join(pD.full,pD.add, by="barcode")
 pD.new <- filter(pD.new, !(cluster %in% c(0,10)) & PassAll)
 m.new <- m.full[,as.character(pD.new$barcode)]
 fD.new <- fD.full
 
-# Filter
+# ---- BuildFinalData ----
+
+# Remove lowly expressed genes
 isexpThreshold <- 10
 expThreshold <- 50*isexpThreshold
 keep1 <- rowSums(m.new!=0) > isexpThreshold
@@ -85,7 +88,7 @@ m.norm <- t(t(m.filtered)/pD.new$sf)
 brennecke <- BrenneckeHVG(m.norm,fdr=0.1)
 fD.new$highVar <- fD.new$id %in% brennecke
 
-# Compute tSNE for later
+# Compute tSNE 
 fPCA <- log2(t(m.norm[brennecke,])+1)
 fPCA <- scale(fPCA,scale=TRUE,center=TRUE)
 set.seed(rnd_seed)
