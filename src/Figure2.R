@@ -135,7 +135,7 @@ cols <- brewer.pal(n=9,name="Paired")[clusts]
 names(cols) <- clusts
 
 # Luminal compartment colored by clusters
-p <- ggplot(pD.vp, aes(x=DC1,y=DC2, color=cluster)) +
+p.clust <- ggplot(pD.vp, aes(x=DC1,y=DC2, color=cluster)) +
     geom_point(size=2, pch=20) +
     guides(colour = guide_legend(override.aes = list(size=3))) +
     scale_color_manual(values=cols)+
@@ -160,49 +160,30 @@ clustLeg <- get_legend(clustLeg)
 # ---- GeneExpressionTrends ----
 
 # Aldehyde trend along component2
-ald <- filter(fD.vp, symbol %in% c("Aldh1a3")) %>% .$id
-fDC2Trend <- data.frame("DC2"=pD.vp$DC2,
-		   "Aldh1a3"=unname(log2(t(m.norm)[,ald]+1)))
-DC2Trend <- ggplot(fDC2Trend, aes(x=DC2, y=Aldh1a3)) +
-    geom_point(size=0.5,color="#7570b3",alpha=0.5) +
-    geom_smooth(method="glm",formula="y~ns(x,df=5)",
-		method.args=list(family="quasipoisson"),color="#7570b3") +
-    ylab("Log-Expression") +
-    xlab("Component 2") +
-    coord_flip()
+genes <- c("Aldh1a3","Csn2","Pgr")
+rownames(m.norm) <- fD.vp$symbol
+fPlot <- data.frame(t(log2(m.norm[genes,]+1)),
+		    barcode=colnames(m.norm))
+fPlot <- join(fPlot, pD.vp[,c("barcode","DC1","DC2")], by="barcode")
+pltlist <- list()
+for (gene in genes) {
+    fPl <- arrange_(fPlot, gene)
+    p <- ggplot(fPl, aes_string(x="DC1",y="DC2", color=gene)) +
+	geom_point(size=2, pch=20) +
+	#         scale_color_gradient(high="#D73027",low="#4575B4") +
+	scale_color_viridis() +
+	xlab("Component 1") +
+	ylab("Component 2") 
+    pltlist[[gene]] <- p
+}
 
-# Csn2 and Pgr trend along component1
-genes <- filter(fD.vp, symbol %in% c("Csn2","Pgr")) %>% .$id
-fDC1Trend <- data.frame("DC1"=pD.vp$DC1,
-		   "Csn2"=unname(log2(t(m.norm)[,genes[1]]+1)),
-		   "Pgr"=unname(log2(t(m.norm)[,genes[2]]+1)),
-		   "Aldh1a3"=NA) # include Aldh1a3 as NA to have a common legend
-fDC1Trend <- melt(fDC1Trend,id="DC1",variable_name="Gene")
-DC1Trend <- ggplot(fDC1Trend, aes(x=DC1, y=value, color=Gene)) +
-    geom_point(size=0.5,alpha=0.5) +
-    geom_smooth(method="glm",formula="y~ns(x,df=5)",
-		method.args=list(family="quasipoisson")) +
-    scale_color_manual(values=c("#1b9e77","#d95f02","#7570b3")) +
-    ylab("Log-Expression") +
-    xlab("Component 1") +
-    guides(color=guide_legend(override.aes=list(fill=NA,size=2))) +
-    theme(legend.direction="vertical",legend.title=element_blank()) +
-    xlab("") 
+
 
 # Combine all plots
-leg2 <- get_legend(DC1Trend)
 
-DC1Trend <- DC1Trend %+% guides(colour=FALSE)
-
-subP <- plot_grid(p,DC2Trend,DC1Trend,align="hv",rel_widths=c(1,0.6),
-		  rel_heights=c(1,0.6))
-
-subP1 <- subP + draw_grob(leg2,0.7,-0.11,1/3,0.5)
-subP1 <- plot_grid(subP1,labels=c("b"))
-
-subPab <-plot_grid(g,labels=c("a"))
-subP0 <- plot_grid(subPab,clustLeg,nrow=2,rel_heights=c(1,0.1))
+subPa <-plot_grid(g,clustLeg,nrow=2,labels=c("a"),rel_heights=c(1,0.1))
+subPb <- plot_grid(p.clust,plotlist=pltlist,labels=c("b"))
 
 cairo_pdf("../paper/figures/Figure2.pdf",width=8.41,height=12.54)
-plot_grid(subP0,subP1,labels=c("",""),nrow=2)
+plot_grid(subPa,subPb,nrow=2)
 dev.off()
