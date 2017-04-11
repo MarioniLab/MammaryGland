@@ -1,8 +1,5 @@
-#########################################
-#
-#Figure 3
-#
-#########################################
+# Figure 3
+
 library(plyr)
 library(cowplot)
 library(pheatmap)

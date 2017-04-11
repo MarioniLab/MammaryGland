@@ -1,8 +1,5 @@
-###########################
-#
-#Clustering
-#
-############################
+# Clustering
+
 library(plyr)
 library(scran)
 library(dplyr)

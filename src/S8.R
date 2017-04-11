@@ -1,8 +1,4 @@
-############################
-#
-# Figure S2
-#
-############################
+# Figure S8
 
 library(scran)
 library(dplyr)

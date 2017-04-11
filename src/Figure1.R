@@ -1,8 +1,5 @@
-#########################################
-#
 # Figure 1
-#
-#########################################
+
 library(plyr)
 library(dplyr)
 library(ggplot2)
@@ -12,6 +9,7 @@ library(RColorBrewer)
 library(pheatmap)
 source("functions.R")
 
+# Load Data
 rnd_seed <- 300
 dataList <- readRDS("../data/Robjects/ExpressionList_Clustered.rds")
 m <- dataList[[1]]
@@ -19,17 +17,19 @@ pD <- dataList[[2]]
 fD <- dataList[[3]]
 
 
-#Rename Condition for plot
+# ---- tSNE-Plots ----
+
+# Rename Condition for plot
 pD$Condition <- mapvalues(pD$Condition, from=c("NP","G","L","PI"),
 			  to=c("Nulliparous", "14.5d Gestation",
 			       "6d Lactation", "11d Post Natural Involution"))
 
-#Remove previously identified outlier and immune cells
+# Remove outlier and immune cells
 keepCells <- pD$PassAll & !pD$isImmuneCell & !pD$isOutlier 
 m <- m[,keepCells]
 pD <- pD[keepCells,]
 
-#t-SNE colored by Condition
+# t-SNE colored by Condition
 p0 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=Condition)) +
     geom_point(size=1.5) +
     #     ggtitle("Conditions") +
@@ -56,7 +56,7 @@ plot_grid(p0,NULL,p1,align="h",nrow=1,rel_widths=c(1,0.2,1))
 general <- c("Acta2","Mylk","Krt5","Krt14","Cnn1","Trp63","Epcam","Krt18","Krt8")
 c1 <- c("Cited1","Prlr","Esr1")
 c2 <- c("Fabp3","Thrsp","Csn2","Csn1s2a","Glycam1","Olah","Rspo1")
-c3 <- c("Foxa1","Aldh1a3","Kit","Cd14")
+c3 <- c("Foxa1","Ly6a","Aldh1a3","Kit","Cd14")
 c4 <- c("Ltf","Hp","Pdk4","C4b","Chil1","Vegfa","Slpi")
 c5 <- c("Lypd3","Gpc6")
 c6 <- c("1500015O10Rik","Col7a1","Moxd1","Mia","Emid1","Pdpn","Col9a2","Fbln2","Igfbp3","Fst","Il17b","Bmp7")

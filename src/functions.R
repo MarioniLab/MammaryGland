@@ -1,4 +1,4 @@
-
+# functions used in the analysis
 plotGeneDist <- function(m, pD, fD, genes, colorBy="Condition") {
     # function to plot gene expression as boxplots
     require(reshape)
