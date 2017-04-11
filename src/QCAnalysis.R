@@ -83,8 +83,8 @@ plot_grid(genesDetected,LibrarySize,cellViability,
 # Left MAD function for thresholding
 leftmad <- function(x) {
     m <- median(x)
-    dev <- abs(x-m)
-    leftmad <- median(dev[x<=m])
+    d <- abs(x-m)
+    leftmad <- median(d[x<=m])
     return(leftmad)
 }
 
@@ -93,6 +93,7 @@ MitoCutOff <- 0.05
 genesDetectedCutOff <- 500 # only applies to L sample
 librarySizeCutOff <- 1000 # only applies to L sample
 
+# Compute thresholds per group
 smryByGroup <- group_by(pD,Condition) %>%
     summarize(threshold_PrcntMito=0.05,
 	      mGenesDetected=median(log10(GenesDetected)),
@@ -105,13 +106,13 @@ smryByGroup <- group_by(pD,Condition) %>%
 print(smryByGroup)
 
 
-# initiate empty df
+# empty df
 pD <- mutate(pD,
 	     ThresholdViability = 0,
 	     ThresholdGenesDet = 0,
 	     ThresholdLibSize = 0)
 
-# Thresholding per group
+# Apply thresholds per group
 grps <- as.character(unique(pD$Condition))
 for (grp in grps) {
     thrs <- filter(smryByGroup, Condition==grp) %>% select(-Condition) %>% t() %>% as.vector()
@@ -121,13 +122,13 @@ for (grp in grps) {
 		 ThresholdGenesDet= ifelse(Condition==grp, 10^thrs["threshold_GenesDetected"],ThresholdGenesDet),
 		 ThresholdLibSize= ifelse(Condition==grp, 10^thrs["threshold_UmiSums"],ThresholdLibSize))
 }
-
 pD <- mutate(pD,
 	     PassViability=prcntMito < ThresholdViability,
 	     PassGenesDet=GenesDetected > ThresholdGenesDet,
 	     PassLibSize=UmiSums > ThresholdLibSize,
 	     PassAll= PassViability & PassGenesDet & PassLibSize)
 
+# Illustrate thresholds
 gdHist <- ggplot(pD, aes(x=GenesDetected,y=..density..)) +
     geom_histogram(fill="white",color="black") +
     geom_vline(data=smryByGroup,aes(xintercept=10^threshold_GenesDetected),color="red",lty="longdash") +
@@ -157,11 +158,11 @@ table(pD$Condition,pD$PassAll)
 
 plot_grid(gdHist,libSizeHist,cellViability)
 
-# Apply Thresholds
+# Remove QC-fails
 pD.filtered <- filter(pD, PassAll)
 m.filtered <- m[,as.character(pD.filtered$barcode)]
 
-# Thresholding on lowly expressed genes
+# remove lowly expressed genes
 isexpThreshold <- 10
 expThreshold <- 50*isexpThreshold
 keep1 <- rowSums(m.filtered!=0) > isexpThreshold
