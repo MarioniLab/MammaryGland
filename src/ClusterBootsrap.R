@@ -1,3 +1,5 @@
+# Bootstrap for clustering
+
 library(scran)
 library(dplyr)
 library(knitr)
@@ -22,7 +24,7 @@ m <- m[fD$keep,pD$PassAll]
 pD <- pD[pD$PassAll,]
 fD <- fD[fD$keep,]
 
-#Normalization
+# Normalization
 clusters <- quickCluster(m)
 pD$sf <- computeSumFactors(m,clusters=clusters)
 m <- t(t(m)/pD$sf)
@@ -31,7 +33,6 @@ m <- t(t(m)/pD$sf)
 m.sub <- t(m[fD$highVar,])
 
 # Combinations of clustering parameters
-
 dms <- c("euclidean")
 lks <- c("average")
 dss <- c(0,1,2)
@@ -50,4 +51,5 @@ result <- foreach(i=seq_along(dss), .combine=c) %dopar% {
 	    }}
     return(tmp0)}
 stopCluster(cl)
+# Save
 saveRDS(result, "../data/Robjects/ClusterBootstrap.rds")

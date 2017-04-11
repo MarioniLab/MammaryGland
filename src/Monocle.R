@@ -1,8 +1,4 @@
-###
-#
-# Monocle analysis of luminal cells in NP and G
-#
-##
+# Differentation inference with monocle
 
 library(plyr)
 library(dplyr)
@@ -17,6 +13,8 @@ dataList <- readRDS("../data/Robjects/ExpressionList_Clustered.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
+
+# ---- Prepocessing ----
 
 # Cells
 keepCells <- pD$PassAll & !pD$isImmuneCell & !pD$isOutlier & pD$Condition %in% c("NP","G") &
@@ -33,12 +31,11 @@ fD <- fD[keep,]
 m.norm <- t(t(m)/pD$sf)
 rownames(m.norm) <- fD$symbol
 
-
 # High Var
 brennecke <- BrenneckeHVG(m.norm,fdr=0.1)
 fD$highVar <- fD$id %in% brennecke
 
-
+# ---- Monocle ----
 
 # Initiate Monocle
 pD.af <- new("AnnotatedDataFrame", data=pD)
@@ -52,7 +49,7 @@ cds <- newCellDataSet(as.matrix(m),
 	       lowerDetectionLimit=1,
 	       expressionFamily=negbinomial.size())
 
-# Trajectory inference accoring to vignette
+# Trajectory inference according to vignette
 phenoData(cds)$Size_Factor <- pD$sf
 cds <- estimateDispersions(cds)
 

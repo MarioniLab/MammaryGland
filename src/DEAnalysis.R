@@ -1,3 +1,5 @@
+# DE for all clusters to find marker genes
+
 library(scran)
 library(edgeR)
 library(dplyr)
@@ -38,6 +40,7 @@ de.design <- model.matrix(~0+cluster)
 y <- estimateDisp(y, de.design, trend="none", df=0)
 fit <- glmFit(y, de.design)
 
+# DE
 nCores <- 3
 cl <-makeCluster(nCores, type="FORK")
 registerDoParallel(cl)
@@ -68,4 +71,5 @@ result <- foreach (i=seq_along(levels(cluster))) %dopar% {
 }
 names(result) <- levels(cluster)
 
+# Save data
 saveRDS(result,"../data/Robjects/DEList.rds")

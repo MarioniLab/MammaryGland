@@ -1,8 +1,4 @@
-####################
-#
-#QC-Analysis
-#
-###################
+# QC-Analysis
 
 library(scran)
 library(dplyr)

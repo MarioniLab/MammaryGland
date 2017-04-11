@@ -1,8 +1,4 @@
-######################
-#
-# Figure S4
-#
-######################
+# S9 and 10
 
 library(scran)
 library(plyr) 
@@ -138,12 +134,16 @@ legend(x = 20, y = -10, legend = c(1:10), col = c(1:10), pch = 16)
 g5 <- grab_grob()
 g5 <- grid.arrange(g5)
 
+# ---- QCStatsPerCluster -----
+
 # Plot library size per cluster
 pD <- filter(pD, cluster!=0)
 LibrarySize <- ggplot(pD, aes(x=cluster,y=UmiSums)) +
     geom_violin(draw_quantiles=0.5)+
     ylab("Total Number of Molecules") +
     scale_y_log10() 
+
+# ---- Combine -----
 
 # Combine Plots
 sub0 <- plot_grid(g,g4,ncol=1,labels=c("a","b"))

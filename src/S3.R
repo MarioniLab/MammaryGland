@@ -1,8 +1,4 @@
-#########################
-#
 # Figure S5
-#
-########################
 
 library(plyr)
 library(destiny)

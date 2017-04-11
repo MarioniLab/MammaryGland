@@ -1,16 +1,17 @@
-#
 # Script to prepare cellranger data for downstream analysis
-#
 
 library(cellrangerRkit)
 library(dplyr)
 
+# ---- ReadData ----
 # Read in output from cell ranger using cellrangerRkit
 gene_bc_matrix <- load_cellranger_matrix("../data/CellRangerData/MammaryGland",
 					 genome="mm10")
 pDat <- data.frame(pData(gene_bc_matrix))
 fDat <- data.frame(fData(gene_bc_matrix))
 cDat <- as.matrix(exprs(gene_bc_matrix))
+
+# ---- Formatting ----
 
 # Add more info to phenotype Data
 pDat <- mutate(pDat, SeqID=substr(barcode,18,18)) %>%

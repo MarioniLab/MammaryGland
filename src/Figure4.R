@@ -1,3 +1,4 @@
+# Figure 4
 library(scran)
 library(plyr)
 library(dplyr)
