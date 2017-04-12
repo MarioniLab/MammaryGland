@@ -155,31 +155,42 @@ clustLeg <- get_legend(clustLeg)
 
 # ---- GeneExpressionTrends ----
 
-# Aldehyde trend along component2
-genes <- c("Aldh1a3","Csn2","Pgr","Wap","Esr1")
+genes <- c("Aldh1a3","Cd44","Csn2","Glycam1","Pgr","Esr1")
 rownames(m.norm) <- fD.vp$symbol
-fPlot <- data.frame(t(log2(m.norm[genes,]+1)),
+exps <- log2(m.norm[genes,]+1)
+exps <- t(exps/apply(exps,1,max))
+fPlot <- data.frame(exps,
 		    barcode=colnames(m.norm))
 fPlot <- join(fPlot, pD.vp[,c("barcode","DC1","DC2")], by="barcode")
+pal <- colorRampPalette(rev(brewer.pal(n=7,name="RdYlBu")))(200)
 pltlist <- list()
 for (gene in genes) {
     fPl <- arrange_(fPlot, gene)
     p <- ggplot(fPl, aes_string(x="DC1",y="DC2", color=gene)) +
 	geom_point(size=2, pch=20) +
-	scale_color_gradient(high="#D73027",low="#4575B4") +
-	#         scale_color_viridis() +
-	xlab("Component 1") +
-	ylab("Component 2") 
+	#         scale_color_gradient(high="#D73027",low="#4575B4") +
+	scale_color_gradientn(colours=pal) +
+	ggtitle(gene) +
+	theme_void() +
+	theme(legend.position="bottom",
+	      legend.direction="horizontal",
+	      legend.title=element_blank())
     pltlist[[gene]] <- p
 }
 
+leg <- get_legend(pltlist[[1]])
+pls <- lapply(pltlist,function(x){
+	      x <- x %+% guides(color=FALSE) 
+	      return(x)})
 
 
 # Combine all plots
 
 subPa <-plot_grid(g,clustLeg,nrow=2,labels=c("a"),rel_heights=c(1,0.1))
-subPb <- plot_grid(p.clust,plotlist=pltlist,labels=c("b"),nrow=3)
+subPb1 <- plot_grid(plotlist=pls,nrow=3)
+subPb1b <- plot_grid(subPb1,leg,nrow=2,rel_heights=c(1,0.05))
+subPb2 <- plot_grid(p.clust,subPb1b,labels=c("b"))
 
 cairo_pdf("../paper/figures/Figure2.pdf",width=8.41,height=12.54)
-plot_grid(subPa,subPb,nrow=2)
+plot_grid(subPa,subPb2,nrow=2)
 dev.off()
