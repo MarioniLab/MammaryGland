@@ -191,6 +191,6 @@ subPb1 <- plot_grid(plotlist=pls,nrow=3)
 subPb1b <- plot_grid(subPb1,leg,nrow=2,rel_heights=c(1,0.05))
 subPb2 <- plot_grid(p.clust,subPb1b,labels=c("b"))
 
-cairo_pdf("../paper/figures/Figure2.pdf",width=8.27,height=11.69)
+# cairo_pdf("../paper/figures/Figure2.pdf",width=8.27,height=11.69)
 plot_grid(subPa,subPb2,nrow=2)
-dev.off()
+# dev.off()

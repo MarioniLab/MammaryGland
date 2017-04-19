@@ -130,6 +130,6 @@ fullP <- plot_grid(subP,p[[4]],nrow=2,
 fullPplus0 <- plot_grid(NULL,fullP,nrow=2,
 			labels=c("a",""),rel_heights=c(0.3,0.9))
 
-cairo_pdf("../paper/figures/Figure1.pdf",width=12.41,height=17.54)
+# cairo_pdf("../paper/figures/Figure1.pdf",width=12.41,height=17.54)
 fullPplus0
-dev.off()
+# dev.off()

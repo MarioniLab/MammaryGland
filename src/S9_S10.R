@@ -150,6 +150,6 @@ sub0 <- plot_grid(g,g4,ncol=1,labels=c("a","b"))
 sub2 <- plot_grid(LibrarySize,p3,g5,nrow=1,labels=c("c","d","e"))
 fin <- plot_grid(sub0,sub2,ncol=1,rel_heights=c(2,1))
 
-cairo_pdf("../paper/figures/S9_10.pdf",height=14.28,width=14.28)
+# cairo_pdf("../paper/figures/S9_10.pdf",height=14.28,width=14.28)
 fin
-dev.off()
+# dev.off()
