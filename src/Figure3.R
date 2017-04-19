@@ -219,7 +219,7 @@ forxls1$hrm.gradient <- sign(forxls1$hrm.gradient)
 forxls1$alv.gradient <- sign(forxls1$alv.gradient)
 colnames(forxls1) <- gsub("hrm","HormoneSensing",colnames(forxls1))
 colnames(forxls1) <- gsub("alv","Secretory",colnames(forxls1))
-write.csv(forxls1,"../paper/supps/DE_sameGradient.csv",quote=FALSE,row.names=FALSE)
+# write.csv(forxls1,"../paper/supps/DE_sameGradient.csv",quote=FALSE,row.names=FALSE)
 
 #Set2 DE with different trends
 res2 <- filter(res, (hrm.PAdjust < 0.01 | alv.PAdjust < 0.01)
@@ -236,7 +236,7 @@ forxls2$hrm.gradient <- sign(forxls2$hrm.gradient)
 forxls2$alv.gradient <- sign(forxls2$alv.gradient)
 colnames(forxls2) <- gsub("hrm","HormoneSensing",colnames(forxls2))
 colnames(forxls2) <- gsub("alv","Secretory",colnames(forxls2))
-write.csv(forxls2,"../paper/supps/DE_diffGradient.csv",quote=FALSE,row.names=FALSE)
+# write.csv(forxls2,"../paper/supps/DE_diffGradient.csv",quote=FALSE,row.names=FALSE)
 
 #Matrix for heatmap
 genes <- c(genes1,genes2)
@@ -372,8 +372,8 @@ htmp <- htmp + draw_grob(pb1,0.4,0.78,.35,.2)
 fullP <- plot_grid(htmp,expPlot,ncol=2,rel_widths=c(1,1))
 
 #close graphics device before plotting
-dev.off()
-cairo_pdf("../paper/figures/Figure3.pdf",width=16.55,height=13.0575)
+# dev.off()
+# cairo_pdf("../paper/figures/Figure3.pdf",width=16.55,height=13.0575)
 fullP
-dev.off()
+# dev.off()
 # 

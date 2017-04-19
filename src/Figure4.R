@@ -249,6 +249,6 @@ subp <- plot_grid(subp,leg,rel_heights=c(1,0.1),nrow=2)
 
 fullP <- plot_grid(subP0,subp,nrow=2)
 
-cairo_pdf("../paper/figures/Figure4.pdf",width=10.75,height=15.19)
+# cairo_pdf("../paper/figures/Figure4.pdf",width=10.75,height=15.19)
 plot_grid(fullP,NULL,nrow=2,rel_heights=c(1,0.75))
-dev.off()
+# dev.off()

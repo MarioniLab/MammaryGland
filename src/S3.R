@@ -136,6 +136,6 @@ monoc.plt <- monoc[["plot"]] %+% guides(color=FALSE)
 
 # Combine plots
 subp0 <- plot_grid(g1,g2,monoc.plt,nrow=1,labels="auto")
-cairo_pdf("../paper/figures/S3.pdf",width=11.69,height=8.27)
+# cairo_pdf("../paper/figures/S3.pdf",width=11.69,height=8.27)
 plot_grid(subp0,p,ncol=1,labels=c("","d"),rel_heights=c(1,1.5))
-dev.off()
+# dev.off()
