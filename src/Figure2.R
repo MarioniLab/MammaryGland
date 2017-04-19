@@ -155,14 +155,14 @@ clustLeg <- get_legend(clustLeg)
 
 # ---- GeneExpressionTrends ----
 
-genes <- c("Aldh1a3","Cd44","Csn2","Glycam1","Pgr","Esr1")
+genes <- c("Aldh1a3","Kit","Csn2","Glycam1","Pgr","Esr1")
 rownames(m.norm) <- fD.vp$symbol
 exps <- log2(m.norm[genes,]+1)
 exps <- t(exps/apply(exps,1,max))
 fPlot <- data.frame(exps,
 		    barcode=colnames(m.norm))
 fPlot <- join(fPlot, pD.vp[,c("barcode","DC1","DC2")], by="barcode")
-pal <- colorRampPalette(rev(brewer.pal(n=7,name="RdYlBu")))(200)
+pal <- colorRampPalette(brewer.pal(n=7,name="YlOrRd"))(200)
 pltlist <- list()
 for (gene in genes) {
     fPl <- arrange_(fPlot, gene)
@@ -191,6 +191,6 @@ subPb1 <- plot_grid(plotlist=pls,nrow=3)
 subPb1b <- plot_grid(subPb1,leg,nrow=2,rel_heights=c(1,0.05))
 subPb2 <- plot_grid(p.clust,subPb1b,labels=c("b"))
 
-cairo_pdf("../paper/figures/Figure2.pdf",width=8.41,height=12.54)
+cairo_pdf("../paper/figures/Figure2.pdf",width=8.27,height=11.69)
 plot_grid(subPa,subPb2,nrow=2)
 dev.off()

@@ -212,6 +212,14 @@ genes1 <- arrange(res1, pValRank) %>% .[1:50,"Gene"] %>% as.character()
 swtch1 <- apply(m.both[genes1,],1,function(x) max(which(x>0.5)))
 genes1 <- genes1[order(swtch1)]
 
+#save as supps
+
+forxls1 <-res1[,!grepl("c",colnames(res1))]
+forxls1$hrm.gradient <- sign(forxls1$hrm.gradient)
+forxls1$alv.gradient <- sign(forxls1$alv.gradient)
+colnames(forxls1) <- gsub("hrm","HormoneSensing",colnames(forxls1))
+colnames(forxls1) <- gsub("alv","Secretory",colnames(forxls1))
+write.csv(forxls1,"../paper/supps/DE_sameGradient.csv",quote=FALSE,row.names=FALSE)
 
 #Set2 DE with different trends
 res2 <- filter(res, (hrm.PAdjust < 0.01 | alv.PAdjust < 0.01)
@@ -222,6 +230,13 @@ genes2 <- arrange(res2, pValRank) %>% .[1:50,"Gene"] %>% as.character()
 swtch2 <- apply(m.both[genes2,],1,function(x) max(which(x>0.5)))
 genes2 <- genes2[order(swtch2)]
 
+# save as supps
+forxls2 <-res2[,!grepl("c",colnames(res2))]
+forxls2$hrm.gradient <- sign(forxls2$hrm.gradient)
+forxls2$alv.gradient <- sign(forxls2$alv.gradient)
+colnames(forxls2) <- gsub("hrm","HormoneSensing",colnames(forxls2))
+colnames(forxls2) <- gsub("alv","Secretory",colnames(forxls2))
+write.csv(forxls2,"../paper/supps/DE_diffGradient.csv",quote=FALSE,row.names=FALSE)
 
 #Matrix for heatmap
 genes <- c(genes1,genes2)

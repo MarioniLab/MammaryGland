@@ -130,7 +130,7 @@ names(alG) <- univrs
 library("topGO")
 library(org.Mm.eg.db)
 
-## prepare Data for topGO
+# prepare Data for topGO
 GO.data <- new("topGOdata", description="Lib GO",ontology="BP", allGenes=alG, 
 	       annot=annFUN.org, mapping="org.Mm.eg.db",
 	       nodeSize=5, ID="symbol")
