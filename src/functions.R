@@ -26,28 +26,28 @@ BrenneckeHVG <- function (m, suppress.plot = FALSE, fdr = 0.1,
     minBiolDisp = 0.25) 
     {
 	require(statmod)
-	meansGenes <- rowMeans(m, na.rm = TRUE)
-	varsGenes <- unlist(apply(m, 1, var, na.rm = TRUE))
-	cv2Genes <- varsGenes/meansGenes^2
-	minMeanForFit <- unname(quantile(meansGenes[which(cv2Genes > 0.3)], 
+	means <- rowMeans(m, na.rm = TRUE)
+	vars <- unlist(apply(m, 1, var, na.rm = TRUE))
+	cv2 <- vars/means^2
+	minMeanForFit <- unname(quantile(means[which(cv2 > 0.3)], 
 	    0.8))
-	useForFit <- meansGenes >= minMeanForFit
-	fit <- glmgam.fit(cbind(a0 = 1, a1tilde = 1/meansGenes[useForFit]), 
-	    cv2Genes[useForFit])
+	useForFit <- means >= minMeanForFit
+	fit <- glmgam.fit(cbind(a0 = 1, a1tilde = 1/means[useForFit]), 
+	    cv2[useForFit])
 	a0 <- unname(fit$coefficients["a0"])
 	a1 <- unname(fit$coefficients["a1tilde"])
 	psia1theta <- a1
 	minBiolDisp <- minBiolDisp^2
 	m <- ncol(m)
 	cv2th <- a0 + minBiolDisp + a0 * minBiolDisp
-	testDenom <- (meansGenes * psia1theta + meansGenes^2 * cv2th)/(1 + 
+	testDenom <- (means * psia1theta + means^2 * cv2th)/(1 + 
 	    cv2th/m)
-	p <- 1 - pchisq(varsGenes * (m - 1)/testDenom, m - 1)
+	p <- 1 - pchisq(vars * (m - 1)/testDenom, m - 1)
 	padj <- p.adjust(p, "BH")
 	sig <- padj < fdr
 	sig[is.na(sig)] <- FALSE
 	if (!suppress.plot) {
-	    plot(meansGenes, cv2Genes, xaxt = "n", yaxt = "n", log = "xy", 
+	    plot(means, cv2, xaxt = "n", yaxt = "n", log = "xy", 
 		xlab = "average normalized read count", ylab = "squared coefficient of variation (CV^2)", 
 		col = "white")
 	    axis(1, 10^(-2:5), c("0.01", "0.1", "1", "10", "100", 
@@ -56,14 +56,14 @@ BrenneckeHVG <- function (m, suppress.plot = FALSE, fdr = 0.1,
 		"1000"), las = 2)
 	    abline(h = 10^(-2:1), v = 10^(-1:5), col = "#D0D0D0", 
 		lwd = 2)
-	    points(meansGenes, cv2Genes, pch = 20, cex = 0.2, col = ifelse(padj < 
+	    points(means, cv2, pch = 20, cex = 0.2, col = ifelse(padj < 
 		0.1, "#C0007090", "black"))
 	    xg <- 10^seq(-2, 6, length.out = 1000)
 	    lines(xg, (a1)/xg + a0, col = "#FF000080", lwd = 3)
 	    lines(xg, psia1theta/xg + a0 + minBiolDisp, lty = "dashed", 
 		col = "#C0007090", lwd = 3)
 	}
-	return(names(meansGenes)[sig])
+	return(names(means)[sig])
     }
 dynamicCluster <- function(m, dm="euclidean", lk="average", ds=0, output="ForBootstrap", minSize=15) {
     print("Clustering on n*p matrix")

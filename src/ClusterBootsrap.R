@@ -25,8 +25,6 @@ pD <- pD[pD$PassAll,]
 fD <- fD[fD$keep,]
 
 # Normalization
-clusters <- quickCluster(m)
-pD$sf <- computeSumFactors(m,clusters=clusters)
 m <- t(t(m)/pD$sf)
 
 # Feature Selection
