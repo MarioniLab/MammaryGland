@@ -1,4 +1,6 @@
-# R code that was used in the analysis
+# \src
+This folder contains all scripts that were used in the analysis. 
+Apart from the scripts that were used for each figure, the folder contains the following general scripts:
 
 - functions.R contains general functions that were used in the analysis
 - getTFcheckpoint.R and PrepareData.R were used to convert the Cell Ranger output into an R object
