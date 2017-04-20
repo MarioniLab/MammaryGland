@@ -131,6 +131,12 @@ p <- ggplot(out, aes(DC1,DC2, color=cluster)) +
 
 # Read in Monocle plot
 pal <- brewer.pal(n=9,name="Paired")[c(1,2,3,5,8,9)]
+
+# Run script if not done yet
+if (!file.exists("../data/Robjects/ExpressionList_Monocle.rds")){
+    source("Monocle.R")
+}
+
 monoc <- readRDS("../data/Robjects/ExpressionList_Monocle.rds")
 monoc.plt <- monoc[["plot"]] %+% guides(color=FALSE)
 
