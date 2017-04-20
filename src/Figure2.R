@@ -33,7 +33,7 @@ keepCells <- pD$Condition %in% condComb
 m.vp <- m[,keepCells]
 pD.vp <- pD[keepCells,]
 
-# Remove lowly expressed genes
+# Remove genes below 0.1 mean
 keep <- rowMeans(m.vp)>0.1
 m.vp <- m.vp[keep,]
 fD.vp <- fD[keep,]
@@ -78,7 +78,7 @@ g <- grab_grob()
 g <- grid.arrange(g)
 dev.off()
 
-#Create the alternative view inlet
+# Create the alternative view inlet
 inletD <- pD.vp
 inletD$dc1 <- dms[,1]
 inletD$dc3 <- dms[,3]
@@ -91,9 +91,9 @@ inlet <- ggplot(inletD, aes(-dc3,dc1,color=cluster)) +
     scale_color_manual(values=pal2) +
     guides(color=FALSE)
 
-cairo_pdf("../paper/figures/F2inlet.pdf",width=17.54,height=17.54)
+# cairo_pdf("../paper/figures/F2inlet.pdf",width=17.54,height=17.54)
 inlet
-dev.off()
+# dev.off()
 
 # ---- LuminalOnlyNPandG ----
 
@@ -102,7 +102,7 @@ keepCells <- !(pD$cluster %in% c(6,7,9)) & pD$Condition %in% condComb
 m.vp <- m[,keepCells]
 pD.vp <- pD[keepCells,]
 
-# Genes 
+# remove genes below 0.1 mean
 keep <- rowMeans(m.vp)>0.1
 m.vp <- m.vp[keep,]
 fD.vp <- fD[keep,]
