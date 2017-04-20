@@ -13,8 +13,6 @@ source("functions.R")
 
 # Load Data
 rnd_seed <- 300
-clustDat <- readRDS("../data/Robjects/ClusterComparison.rds") 
-bootDat <- readRDS("../data/Robjects/ClusterBootstrap.rds")
 dataList <- readRDS("../data/Robjects/ExpressionList_QC.rds")
 
 m.full <- dataList[[1]]
