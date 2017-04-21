@@ -212,6 +212,7 @@ res1 <- filter(res, (hrm.PAdjust < 0.01 & alv.PAdjust < 0.01)
 
 res1 <- mutate(res1, pValRank=rank(pmin(hrm.PAdjust,alv.PAdjust),ties.method="first"))
 genes1 <- arrange(res1, pValRank) %>% .[1:50,"Gene"] %>% as.character()
+# order genes for heatmap
 swtch1 <- apply(m.both[genes1,],1,function(x) max(which(x>0.5)))
 genes1 <- genes1[order(swtch1)]
 
@@ -230,6 +231,7 @@ res2 <- filter(res, (hrm.PAdjust < 0.01 | alv.PAdjust < 0.01)
 
 res2 <- mutate(res2, pValRank=rank(pmin(hrm.PAdjust,alv.PAdjust),ties.method="first"))
 genes2 <- arrange(res2, pValRank) %>% .[1:50,"Gene"] %>% as.character()
+# order genes for heatmap
 swtch2 <- apply(m.both[genes2,],1,function(x) max(which(x>0.5)))
 genes2 <- genes2[order(swtch2)]
 

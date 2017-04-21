@@ -1,13 +1,10 @@
 # Figure 4
+
 library(scran)
 library(plyr)
 library(dplyr)
-library(gtools)
-library(knitr)
 library(ggplot2)
 library(ggrepel)
-library(dynamicTreeCut)
-library(Rtsne)
 library(reshape2)
 library(pheatmap)
 library(RColorBrewer)
@@ -21,7 +18,6 @@ m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
 
-#Pre-Filtering before DE-Analysis
 # Cells
 keepCells <- pD$PassAll & !(pD$isImmuneCell | pD$isOutlier)
 m <- m[,keepCells]
@@ -32,9 +28,10 @@ keep <- rowMeans(m) > 0.1
 m <- m[keep,]
 fD <- fD[keep,]
 
-#Normalize
+# Normalize
 m.norm <- t(t(m)/pD$sf)
 
+# Similarity Matrix
 pD$cluster <- factor(pD$cluster) #drop unused levels
 out <- data.frame("C1"=numeric(nrow(m)))
 for (clust in levels(pD$cluster)) {
@@ -52,18 +49,21 @@ dev.off()
 
 
 # ---- DEProgenitorVsRest ----
+
 #reload data
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
 
-keepCells <- pD$PassAll & !(pD$isImmuneCell | pD$isOutlier)
 m <- m[,keepCells]
 pD <- pD[keepCells,]
 
 comps <- c(5,4)
 out <- list()
+
+# DE for each progenitor cluster versus all other luminal cells
 for (choice in comps) {
+    # subset data
     rmClust <- setdiff(c(5,4),choice)
     pD.sub <- filter(pD, !(cluster %in% c(6,7,9,rmClust)))
     m.sub <- m[,as.character(pD.sub$barcode)]
@@ -72,6 +72,7 @@ for (choice in comps) {
     fD.sub <- fD[keep,]
     rownames(m.sub) <- fD.sub$symbol
 
+    # DGEList object 
     nf <- log(pD.sub$sf/pD.sub$UmiSums)
     pD.sub$nf <- exp(nf-mean(nf))
     y <- DGEList(counts=m.sub,
@@ -80,6 +81,7 @@ for (choice in comps) {
 		 norm.factors=pD.sub$nf)
 
 
+    # DE
     cluster <- factor(as.numeric(pD.sub$cluster==choice))
     de.design <- model.matrix(~cluster)
     y <- estimateDisp(y, de.design, prior.df=0,trend="none")
@@ -92,7 +94,6 @@ for (choice in comps) {
 tabNulPar <- out[["C5"]][1:500,]
 tabPar <- filter(out[["C4"]],symbol %in% tabNulPar$symbol)
 rownames(tabNulPar) <- tabNulPar$symbol
-rownames(tabPar) <- tabPar$symbol
 tabNulPar <- tabNulPar[tabPar$symbol,]
 
 forPlot <- data.frame("NullParFC"=tabNulPar$logFC,
@@ -100,11 +101,11 @@ forPlot <- data.frame("NullParFC"=tabNulPar$logFC,
 		      "Gene"=tabPar$symbol)
 
 
-#genes to highlight
+# genes to highlight
 interest <- filter(forPlot, Gene %in% c("Kit","Hey1","Cd14",
 					"Prlr","Esr1","Pgr"))
 
-#FC plot
+# FC plot
 p <- ggplot(forPlot, aes(x=NullParFC,y=ParousFC)) +
     geom_point(color="grey50",size=2) +
     geom_point(data=interest, aes(x=NullParFC, y=ParousFC), color="black") +
@@ -126,11 +127,12 @@ m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
 
-keepCells <- pD$PassAll & !(pD$isImmuneCell | pD$isOutlier)
 m <- m[,keepCells]
 pD <- pD[keepCells,]
 
-#prepare data for DE
+# DE C4 vs C5
+
+# subset data
 pD.sub <- filter(pD, (cluster %in% c(4,5)))
 m.sub <- m[,as.character(pD.sub$barcode)]
 keep <- rowMeans(m.sub) > 0.1
@@ -138,6 +140,7 @@ m.sub <- m.sub[keep,]
 fD.sub <- fD[keep,]
 rownames(m.sub) <- fD.sub$symbol
 
+# DGEList object
 nf <- log(pD.sub$sf/pD.sub$UmiSums)
 pD.sub$nf <- exp(nf-mean(nf))
 y <- DGEList(counts=m.sub,
@@ -146,6 +149,7 @@ y <- DGEList(counts=m.sub,
 	     norm.factors=pD.sub$nf)
 
 
+# DE
 choice <- 4
 cluster <- factor(as.numeric(pD.sub$cluster==choice))
 de.design <- model.matrix(~cluster)
@@ -155,28 +159,28 @@ res <- glmTreat(fit,lfc=1)
 resTab <- topTags(res,n=Inf,sort.by="PValue")
 topTab <- resTab$table
 
-#Highlight genes with lactation/immune annotation
+# Highlight genes with lactation/immune annotation
 lac <- c("Btn1a1","Lalba","B4galt1","Csn3","Csn1s2a","Csn1s1","Csn2","Hk2","Xdh","Vegfa")
 immuno <- c("Hp","Slpi","H2-K1", "B2m", "H2-Q7", "Lbp", "Tlr2", "Ltf", "Ifit1",
 	    "Cd1d1")
 
-#Write DE table for supps
+# Write DE table for supps
 forxls <- select(topTab, id, symbol, logFC, unshrunk.logFC, logCPM, PValue, FDR)
 # write.csv(forxls,file="../paper/supps/DE_C4vsC5.csv",quote=FALSE)
 
-#Highlight top DE genes in Volcano plot
+# Highlight top DE genes in Volcano plot
 topUp <- filter(topTab, FDR < 0.01) %>%
     arrange(logFC) %>% .$symbol %>% as.character() %>% .[1:5]
 topDown <- filter(topTab, FDR < 0.01) %>%
     arrange(desc(logFC)) %>% .$symbol %>% as.character() %>% .[1:5]
 
 
-#Genes to highlight
+# Genes to highlight
 interest <- filter(topTab, symbol %in% c(topUp,topDown)) 
 imminterest <- filter(topTab, symbol %in% immuno)
 lacinterest <- filter(topTab, symbol %in% lac)
 
-#VolcanoPlot
+# VolcanoPlot
 volcano <- ggplot(topTab,aes(x=logFC,y=-log10(FDR))) +
     geom_point(size=2,color="grey50",pch=20) +
     geom_hline(yintercept=2,lty="dashed") +
