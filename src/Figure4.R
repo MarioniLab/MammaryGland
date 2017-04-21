@@ -162,7 +162,7 @@ immuno <- c("Hp","Slpi","H2-K1", "B2m", "H2-Q7", "Lbp", "Tlr2", "Ltf", "Ifit1",
 
 #Write DE table for supps
 forxls <- select(topTab, id, symbol, logFC, unshrunk.logFC, logCPM, PValue, FDR)
-write.csv(forxls,file="../paper/supps/DE_C4vsC5.csv",quote=FALSE)
+# write.csv(forxls,file="../paper/supps/DE_C4vsC5.csv",quote=FALSE)
 
 #Highlight top DE genes in Volcano plot
 topUp <- filter(topTab, FDR < 0.01) %>%
