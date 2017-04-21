@@ -155,7 +155,7 @@ clustLeg <- get_legend(clustLeg)
 
 # ---- GeneExpressionTrends ----
 
-genes <- c("Aldh1a3","Kit","Csn2","Glycam1","Pgr","Esr1")
+genes <- c("Aldh1a3","Csn2","Glycam1","Pgr","Esr1")
 rownames(m.norm) <- fD.vp$symbol
 exps <- log2(m.norm[genes,]+1)
 exps <- t(exps/apply(exps,1,max))
