@@ -1,10 +1,7 @@
 # Figure 2
 
 library(plyr)
-library(splines)
-library(destiny)
 library(dplyr)
-library(reshape)
 library(ggplot2)
 library(cowplot)
 library(viridis)
@@ -17,52 +14,19 @@ source("functions.R")
 # Load Data
 rnd_seed <- 300
 dataList <- readRDS("../data/Robjects/ExpressionList_Clustered.rds")
-m <- dataList[[1]]
+dms <- read.csv("../data/Robjects/dm_all.csv")
 pD <- dataList[[2]]
-fD <- dataList[[3]]
-
-# Remove QC-fails,outlier and immune cells
-keepCells <- pD$PassAll & !pD$isImmuneCell & !pD$isOutlier 
-m <- m[,keepCells]
-pD <- pD[keepCells,]
-
-# ---- BasalAndLuminalNPandG ----
-
-condComb <- c("NP","G")
-keepCells <- pD$Condition %in% condComb
-m.vp <- m[,keepCells]
-pD.vp <- pD[keepCells,]
-
-# Remove genes below 0.1 mean
-keep <- rowMeans(m.vp)>0.1
-m.vp <- m.vp[keep,]
-fD.vp <- fD[keep,]
-
-# Normalize 
-m.norm <- t(t(m.vp)/pD.vp$sf)
-
-# Compute HVGs
-brennecke <- BrenneckeHVG(m.norm,suppress.plot=TRUE)
-fD.vp$highVar <- fD.vp$id %in% brennecke
-
-# Prepare expression matrix
-exps <- m.norm[fD.vp$highVar,]
-exps <- t(log(exps+1))
-
-# Compute diffusion map
-set.seed(rnd_seed)
-dm <- DiffusionMap(exps,n_eigs=20,k=50)
-dms <- eigenvectors(dm)[,1:3]
+pD <- right_join(pD,dms,by="barcode")
 
 # Set color scale according to F1a
 pal <- brewer.pal(n=9,name="Paired")
-cols <- mapvalues(pD.vp$cluster,levels(pD.vp$cluster)[-c(1,10)],
+cols <- mapvalues(pD$cluster,levels(pD$cluster)[-c(1,11)],
 		  pal)
 
 # Plot for luminal and basal cells
-scatterplot3d(x=dms[,1],
-	      y=-dms[,2],
-	      z=-dms[,3],
+scatterplot3d(x=pD[,"DC1"],
+	      y=-pD[,"DC2"],
+	      z=-pD[,"DC3"],
 	      color=cols,
 	      pch=20,
 	      angle=40,
@@ -79,12 +43,9 @@ g <- grid.arrange(g)
 dev.off()
 
 # Create the alternative view inlet
-inletD <- pD.vp
-inletD$dc1 <- dms[,1]
-inletD$dc3 <- dms[,3]
-inletD$cluster <- factor(inletD$cluster,levels=c(1,2,3,4,5,6,7,8,9))
+pD$cluster <- factor(pD$cluster,levels=c(1,2,3,4,5,6,7,8,9))
 pal2 <- pal[-4]
-inlet <- ggplot(inletD, aes(-dc3,dc1,color=cluster)) +
+inlet <- ggplot(pD, aes(-DC3,DC1,color=cluster)) +
     geom_point(size=5) +
     xlab("Component 1") +
     ylab("-Component 3") +
@@ -94,50 +55,6 @@ inlet <- ggplot(inletD, aes(-dc3,dc1,color=cluster)) +
 # cairo_pdf("../paper/figures/F2inlet.pdf",width=17.54,height=17.54)
 inlet
 # dev.off()
-
-# ---- LuminalOnlyNPandG ----
-
-# Cells
-keepCells <- !(pD$cluster %in% c(6,7,9)) & pD$Condition %in% condComb
-m.vp <- m[,keepCells]
-pD.vp <- pD[keepCells,]
-
-# remove genes below 0.1 mean
-keep <- rowMeans(m.vp)>0.1
-m.vp <- m.vp[keep,]
-fD.vp <- fD[keep,]
-
-# Normalize
-m.norm <- t(t(m.vp)/pD.vp$sf)
-
-# HVGs
-brennecke <- BrenneckeHVG(m.norm,suppress.plot=TRUE)
-fD.vp$highVar <- fD.vp$id %in% brennecke
-
-# Prepare expression matrix by selecting only HVGs and log-transformation
-exps <- m.norm[fD.vp$highVar,]
-exps <- t(log(exps+1))
-
-# Compute Diffusion map
-set.seed(rnd_seed)
-dm <- DiffusionMap(exps,n_eigs=20,k=50)
-dcs <- eigenvectors(dm)[,1:2]
-pD.vp$DC1 <- eigenvectors(dm)[,1]
-pD.vp$DC2 <- eigenvectors(dm)[,2]
-
-# Color scheme for plots
-clusts <- as.numeric(as.character(sort(unique(pD.vp$cluster))))
-cols <- brewer.pal(n=9,name="Paired")[clusts]
-names(cols) <- clusts
-
-# Luminal compartment colored by clusters
-p.clust <- ggplot(pD.vp, aes(x=DC1,y=DC2, color=cluster)) +
-    geom_point(size=2, pch=20) +
-    guides(colour = guide_legend(override.aes = list(size=3))) +
-    scale_color_manual(values=cols)+
-    guides(colour=FALSE) +
-    xlab("Component 1") +
-    ylab("Component 2") 
 
 # Create legend for luminal only and luminal/basal plot
 pal <- brewer.pal(n=9,name="Paired")[c(1,2,3,5,6,7,8,9)]
@@ -151,18 +68,51 @@ clustLeg <- ggplot(forcLeg, aes(x=tSNE1,y=tSNE2,color=cluster)) +
     guides(colour=guide_legend(nrow=1,
 			       override.aes=list(size=3)))
 clustLeg <- get_legend(clustLeg)
+
+# ---- LuminalOnly ----
+dms <- read.csv("../data/Robjects/dm_luminal.csv")
+pD <- dataList[[2]]
+pD <- right_join(pD,dms,by="barcode")
+
+clusts <- as.numeric(as.character(sort(unique(pD$cluster))))
+cols <- brewer.pal(n=9,name="Paired")[clusts]
+names(cols) <- clusts
+
+# Luminal compartment colored by clusters
+p.clust <- ggplot(pD, aes(x=DC1,y=DC2, color=cluster)) +
+    geom_point(size=2, pch=20) +
+    guides(colour = guide_legend(override.aes = list(size=3))) +
+    scale_color_manual(values=cols)+
+    guides(colour=FALSE) +
+    xlab("Component 1") +
+    ylab("Component 2") 
+
     
 
 # ---- GeneExpressionTrends ----
 
+# load data again
+m <- dataList[[1]]
+fD <- dataList[[3]]
+m <- m[,pD$barcode]
+
+m.norm <- t(t(m)/pD$sf)
+
+# Genes to plot for trends
 genes <- c("Aldh1a3","Csn2","Glycam1","Pgr","Esr1")
-rownames(m.norm) <- fD.vp$symbol
+rownames(m.norm) <- fD$symbol
 exps <- log2(m.norm[genes,]+1)
 exps <- t(exps/apply(exps,1,max))
+
+# setup df
 fPlot <- data.frame(exps,
 		    barcode=colnames(m.norm))
-fPlot <- join(fPlot, pD.vp[,c("barcode","DC1","DC2")], by="barcode")
+fPlot <- full_join(fPlot, pD[,c("barcode","DC1","DC2")], by="barcode")
+
+# color
 pal <- colorRampPalette(brewer.pal(n=7,name="YlOrRd"))(200)
+
+#  forloop for all genes
 pltlist <- list()
 for (gene in genes) {
     fPl <- arrange_(fPlot, gene)
