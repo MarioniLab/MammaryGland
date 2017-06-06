@@ -1,12 +1,6 @@
 # DE for all clusters to find marker genes
 
 library(scran)
-library(edgeR)
-library(dplyr)
-library(ggplot2)
-library(Rtsne)
-library(doParallel)
-source("functions.R")
 
 # Load Data
 rnd_seed <- 300
@@ -20,56 +14,27 @@ keepCells <- pD$PassAll & !(pD$isImmuneCell | pD$isOutlier)
 m <- m[,keepCells]
 pD <- pD[keepCells,]
 
+# norm
+m <- t(t(m)/pD$sf)
+
 # Genes
-keep <- rowMeans(m) > 0.1
+grps <- unique(pD$cluster)
+keep <- NULL
+for (grp in grps) {
+    sbst <- as.character(pD[pD$cluster==grp,"barcode"])
+    n <- m[,sbst]
+    tmp <- rownames(n[rowMedians(n)>=1,])
+    keep <- c(tmp,keep)
+}
+keep <- rownames(m) %in% unique(keep)
 m <- m[keep,]
 fD <- fD[keep,]
 
+# log
+m <- log2(m+1)
 
-# DGEList
-nf <- log(pD$sf/pD$UmiSums)
-pD$nf <- exp(nf-mean(nf))
-y <- DGEList(counts=m,
-	     samples=pD,
-	     genes=fD,
-	     norm.factors=pD$nf)
+# markers
+cls <- as.character(pD$cluster)
+markers <- findMarkers(m,cls)
 
-# Model and disp
-cluster <- factor(pD$cluster)
-de.design <- model.matrix(~0+cluster)
-y <- estimateDisp(y, de.design, trend="none", df=0)
-fit <- glmFit(y, de.design)
-
-# DE
-nCores <- 3
-cl <-makeCluster(nCores, type="FORK")
-registerDoParallel(cl)
-result <- foreach (i=seq_along(levels(cluster))) %dopar% {
-    result.logFC <- result.PValue <- list()
-    chosen.clust <- i
-
-    for ( clust in seq_len(nlevels(cluster))) {
-	if (clust==chosen.clust) { next } 
-	print(paste0("We are at cluster ",clust))
-	contrast <- numeric(ncol(de.design))
-	contrast[chosen.clust] <- 1
-	contrast[clust] <- -1
-	res <- glmTreat(fit, contrast=contrast, lfc=1)
-	con.name <- paste0('vs.', levels(cluster)[clust])
-	result.logFC[[con.name]] <- res$table$logFC
-	result.PValue[[con.name]] <- rank(res$table$PValue, ties="first")
-    }
-
-    collected.ranks <- lapply(result.PValue, rank, ties="first")
-    min.rank <- do.call(pmin, collected.ranks)
-    marker.set <- data.frame(Top=min.rank, Gene=rownames(y),
-			     logFC=do.call(cbind, result.logFC),
-			     top=do.call(cbind, result.PValue),
-			     stringsAsFactors=FALSE)
-    marker.set <- marker.set[order(marker.set$Top),]
-    return(marker.set)
-}
-names(result) <- levels(cluster)
-
-# Save data
-saveRDS(result,"../data/Robjects/DEList.rds")
+saveRDS(markers,"../data/Robjects/DEList.rds")
