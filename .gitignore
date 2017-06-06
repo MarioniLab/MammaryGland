@@ -1,1 +1,5 @@
 *.rds
+data/
+paper/
+!paper/*.tex
+!paper/*.bib
