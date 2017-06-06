@@ -19,59 +19,8 @@ m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
 
-# ---- OnlyLuminal ----
-condComb <- c("NP","G")
-# Cells
-keepCells <- pD$PassAll & !pD$isImmuneCell & !pD$isOutlier & !(pD$cluster %in% c(6,7,9)) & pD$Condition %in% condComb
-m <- m[,keepCells]
-pD <- pD[keepCells,]
-
-# Genes 
-keep <- rowMeans(m)>0.1
-m <- m[keep,]
-fD <- fD[keep,]
-
-# Normalize
-m.norm <- t(t(m)/pD$sf)
-
-# HVGs
-brennecke <- BrenneckeHVG(m.norm,suppress.plot=TRUE)
-fD$highVar <- fD$id %in% brennecke
-
-# Prepare expression matrix by selecting only HVGs and log-transformation
-exps <- m.norm[fD$highVar,]
-exps <- t(log(exps+1))
-
-# Compute Diffusion map
-set.seed(rnd_seed)
-dm <- DiffusionMap(exps,n_eigs=20,k=50)
-dcs <- eigenvectors(dm)[,1:2]
-
-#Define tips as the cells at the corners of the triangluar shape
-t1 <- which.min(dcs[,2])
-t2 <- which.min(dcs[,1])
-t3 <- which.max(dcs[,1])
-
-# Compute Pseudotime and branching
-set.seed(rnd_seed)
-dpt <- DPT(dm, branching=TRUE, tips=c(t1,t2,t3))
-root <- which(dpt@tips[,1])[3]
-rootdpt <- paste0("DPT",root)
-
-# Rename branches
-branch <- dpt@branch[,1]
-branch[is.na(branch)]  <- "Intermediate"
-branch[branch==1] <- "Root"
-branch[branch==2] <- "Secretory lineage"
-branch[branch==3] <- "Hormone-sensing lineage"
-
-#add branches and pseudotime to pD
-pD$branch <- factor(branch,levels=c("Root","Intermediate",
-				    "Secretory lineage",
-				    "Hormone-sensing lineage"))
-pD$dpt<- dpt[["dpt"]]
-pD$DC1 <- eigenvectors(dm)[,1]
-pD$DC2 <- eigenvectors(dm)[,2]
+dms <- read.csv("../data/Robjects/dm_luminal.csv")
+pD <- right_join(pD,dms,by="barcode")
 
 # ---- PlotWithBranchDPT -----
 
@@ -104,6 +53,12 @@ pb2 <- ggplot(pD,aes(x=DC1,y=-DC2)) +
 
 branches <- plot_grid(pb2,NULL,pb1,NULL,nrow=1,
 		      rel_widths=c(1,.2,1,.4))
+
+######## Cont here
+######## Cont here
+######## Cont here
+######## Cont here
+######## Cont here
 
 # ---- BranchDE ----
 
