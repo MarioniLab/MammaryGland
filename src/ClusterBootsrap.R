@@ -13,7 +13,6 @@ require(clValid)
 source("functions.R")
 
 # Load Data
-rnd_seed <- 300
 dataList <- readRDS("../data/Robjects/ExpressionList_QC.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]

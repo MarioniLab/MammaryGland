@@ -13,7 +13,6 @@ dataList <- readRDS("../data/Robjects/ExpressionList.rds")
 m <- dataList[["counts"]]
 pD <- dataList[["phenoData"]]
 fD <- dataList[["featureData"]]
-rnd_seed <- 300
 
 # ---- QCOverview ----
 

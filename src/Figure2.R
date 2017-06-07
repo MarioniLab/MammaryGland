@@ -12,7 +12,6 @@ library(gridExtra)
 source("functions.R")
 
 # Load Data
-rnd_seed <- 300
 dataList <- readRDS("../data/Robjects/ExpressionList_Clustered.rds")
 dms <- read.csv("../data/Robjects/dm_all.csv")
 pD <- dataList[[2]]

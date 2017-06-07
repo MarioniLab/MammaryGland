@@ -8,7 +8,6 @@ library(ggplot2)
 library(DT)
 source(file.path("functions.R"))
 
-rnd_seed <- 300
 dataList <- readRDS(file.path("../data/Robjects/ExpressionList_Clustered.rds"))
 deList <- readRDS(file.path("../data/Robjects/DEList.rds"))
 #Commence
