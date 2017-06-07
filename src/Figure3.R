@@ -54,98 +54,11 @@ pb2 <- ggplot(pD,aes(x=DC1,y=-DC2)) +
 branches <- plot_grid(pb2,NULL,pb1,NULL,nrow=1,
 		      rel_widths=c(1,.2,1,.4))
 
-######## Cont here
-######## Cont here
-######## Cont here
-######## Cont here
-######## Cont here
-
 # ---- BranchDE ----
 
-lineages <- c("Hormone-sensing lineage",
-	      "Secretory lineage")
-out <- list()
-for (lin in lineages) {
-    #Subset to lineage+root
-    pD.sub <- pD[pD$branch %in% c("Root","Intermediate", 
-			      lin),]
-    pD.sub$DPTRank <- rank(pD.sub$dpt, ties.method="first")
-    m.sub <- log2(m.norm[,as.character(pD.sub$barcode)]+1)
-    fD.sub <- fD
+out <- readRDS("../data/Robjects/BranchDEList.rds")
 
-    ids <- colnames(pD.sub)
-    yhet <- data.frame(t(m.sub))
-
-    #change ensemblIDs to geneSymbol
-    stopifnot(identical(rownames(m.sub),as.character(fD.sub$id)))
-    rownames(m.sub) <- colnames(yhet) <- genes <- fD.sub$symbol
-    yhet$barcode <- colnames(m.sub)
-    fullDat <- join(pD.sub,yhet, by="barcode")
-
-    #initialize m.smooth matrix
-    m.smooth <- matrix(nrow=length(genes),ncol=nrow(fullDat))
-    colnames(m.smooth) <- as.character(fullDat$barcode)
-    rownames(m.smooth) <- genes
-    # take m.smooth het to allow allocation of vectors for columns
-    m.smooth <- t(m.smooth)
-
-    #initialize result df
-    res <- data.frame()
-    for (gene in genes) {
-	# Set x and y
-	x <- fullDat$dpt
-	y <- fullDat[,gene]
-
-	# Define null and alternative model
-	mod0 <- lm(y ~ 1)
-	mod1 <- lm(y ~ ns(x,df=3))
-
-	# Extract coefficients
-	cfs <- mod1$coefficients
-	names(cfs) <- paste0("c",c(0:(length(cfs)-1)))
-
-	# Likelihood ratio test
-	lrt <- lrtest(mod0,mod1)
-	p <- lrt[2,5]
-
-	# Linear model for gradient
-	lmmod <- lm(mod1$fitted.values~x)
-	pgrad <- summary(lmmod)[[4]][2,4]
-	gradient <- ifelse(pgrad < 0.01, lmmod$coefficients[2],0)
-
-	# Combine in df
-	tmp <- data.frame(Gene=gene,
-			  PValue=p,
-			  gradient=gradient)
-	tmp <- cbind(tmp,t(cfs))
-	res <- rbind(res,tmp)
-
-	# Update fitted Value gene expression matrix
-	m.smooth[,gene] <- mod1$fitted.values
-    }
-
-    # m.smooth back to p*n
-    m.smooth <- t(m.smooth)
-
-    # Adjust for multiple testing
-    res$PAdjust<- p.adjust(res$PValue)
-
-    # Store all results in one list per branch
-    ord <- arrange(pD.sub, DPTRank) %>% .$barcode %>% as.character()
-    m.smooth <- m.smooth[,ord]
-    out[[lin]] <- list("Results"=res,
-		       "mSmooth"=m.smooth,
-		       "m"=m.sub,
-		       "pD"=pD.sub)
-}
-
-#Combine results from both branches in one DF
-hrm <- out[[1]][["Results"]]
-colnames(hrm) <- c("Gene",paste0("hrm.",colnames(hrm)[-1]))
-
-alv <- out[[2]][["Results"]]
-colnames(alv) <- c("Gene",paste0("alv.",colnames(alv)[-1]))
-res <- inner_join(hrm,alv,id="Gene")
+# ---- Heatmap -----
 
 m.hrm <- out[[1]][["mSmooth"]]
 m.alv <- out[[2]][["mSmooth"]]
@@ -159,47 +72,10 @@ m.both[m.both>3] <- 3 # cut at 3 for visualization
 m.both[m.both<-3] <- -3 # cut at -3 for visualization
 
 
-# ---- BranchSpecificDefinition ----
-
-# Set1 DE on both same gradient
-res1 <- filter(res, (hrm.PAdjust < 0.01 & alv.PAdjust < 0.01)
-	       & (sign(hrm.gradient)==sign(alv.gradient)))
-
-res1 <- mutate(res1, pValRank=rank(pmin(hrm.PAdjust,alv.PAdjust),ties.method="first"))
-genes1 <- arrange(res1, pValRank) %>% .[1:50,"Gene"] %>% as.character()
-# order genes for heatmap
-swtch1 <- apply(m.both[genes1,],1,function(x) max(which(x>0.5)))
-genes1 <- genes1[order(swtch1)]
-
-# save as supps
-
-forxls1 <-res1[,!grepl("c",colnames(res1))]
-forxls1$hrm.gradient <- sign(forxls1$hrm.gradient)
-forxls1$alv.gradient <- sign(forxls1$alv.gradient)
-colnames(forxls1) <- gsub("hrm","HormoneSensing",colnames(forxls1))
-colnames(forxls1) <- gsub("alv","Secretory",colnames(forxls1))
-# write.csv(forxls1,"../paper/supps/DE_sameGradient.csv",quote=FALSE,row.names=FALSE)
-
-# Set2 DE with different trends
-res2 <- filter(res, (hrm.PAdjust < 0.01 | alv.PAdjust < 0.01)
-	       & (sign(hrm.gradient)!=sign(alv.gradient)))
-
-res2 <- mutate(res2, pValRank=rank(pmin(hrm.PAdjust,alv.PAdjust),ties.method="first"))
-genes2 <- arrange(res2, pValRank) %>% .[1:50,"Gene"] %>% as.character()
-# order genes for heatmap
-swtch2 <- apply(m.both[genes2,],1,function(x) max(which(x>0.5)))
-genes2 <- genes2[order(swtch2)]
-
-# save as supps
-forxls2 <-res2[,!grepl("c",colnames(res2))]
-forxls2$hrm.gradient <- sign(forxls2$hrm.gradient)
-forxls2$alv.gradient <- sign(forxls2$alv.gradient)
-colnames(forxls2) <- gsub("hrm","HormoneSensing",colnames(forxls2))
-colnames(forxls2) <- gsub("alv","Secretory",colnames(forxls2))
-# write.csv(forxls2,"../paper/supps/DE_diffGradient.csv",quote=FALSE,row.names=FALSE)
-
 # Matrix for heatmap
-genes <- c(genes1,genes2)
+genes <- c(out[["genes.sameGrad"]][1:50],
+	   out[["genes.diffGrad"]][1:50])
+
 m.heat <- m.both[genes,]
 
 # Annotation Data
