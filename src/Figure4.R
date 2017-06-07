@@ -1,18 +1,15 @@
 # Figure 4
 
-library(scran)
-library(plyr)
 library(dplyr)
 library(ggplot2)
 library(ggrepel)
 library(reshape2)
 library(pheatmap)
-library(RColorBrewer)
 library(edgeR)
 library(cowplot)
+library(RColorBrewer)
 source("functions.R")
 
-rnd_seed <- 300
 dataList <- readRDS("../data/Robjects/ExpressionList_Clustered.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
@@ -31,7 +28,8 @@ fD <- fD[keep,]
 # Normalize
 m.norm <- t(t(m)/pD$sf)
 
-# Similarity Matrix
+# ---- ClusterSimilarity ----
+
 pD$cluster <- factor(pD$cluster) #drop unused levels
 out <- data.frame("C1"=numeric(nrow(m)))
 for (clust in levels(pD$cluster)) {
@@ -48,65 +46,15 @@ simMat <- pheatmap(meanSim,
 dev.off()
 
 
-# ---- DEProgenitorVsRest ----
+# ---- ProgenitorvsLuminal ----
 
-#reload data
-m <- dataList[[1]]
-pD <- dataList[[2]]
-fD <- dataList[[3]]
-
-m <- m[,keepCells]
-pD <- pD[keepCells,]
-
-comps <- c(5,4)
-out <- list()
-
-# DE for each progenitor cluster versus all other luminal cells
-for (choice in comps) {
-    # subset data
-    rmClust <- setdiff(c(5,4),choice)
-    pD.sub <- filter(pD, !(cluster %in% c(6,7,9,rmClust)))
-    m.sub <- m[,as.character(pD.sub$barcode)]
-    keep <- rowMeans(m.sub) > 0.1
-    m.sub <- m.sub[keep,]
-    fD.sub <- fD[keep,]
-    rownames(m.sub) <- fD.sub$symbol
-
-    # DGEList object 
-    nf <- log(pD.sub$sf/pD.sub$UmiSums)
-    pD.sub$nf <- exp(nf-mean(nf))
-    y <- DGEList(counts=m.sub,
-		 samples=pD.sub,
-		 genes=fD.sub,
-		 norm.factors=pD.sub$nf)
-
-
-    # DE
-    cluster <- factor(as.numeric(pD.sub$cluster==choice))
-    de.design <- model.matrix(~cluster)
-    y <- estimateDisp(y, de.design, prior.df=0,trend="none")
-    fit <- glmFit(y, de.design)
-    res <- glmTreat(fit,lfc=1)
-    resTab <- topTags(res,n=Inf,sort.by="PValue")
-    topTab <- resTab$table
-    out[[paste0("C",choice)]] <- topTab
-}
-tabNulPar <- out[["C5"]][1:500,]
-tabPar <- filter(out[["C4"]],symbol %in% tabNulPar$symbol)
-rownames(tabNulPar) <- tabNulPar$symbol
-tabNulPar <- tabNulPar[tabPar$symbol,]
-
-forPlot <- data.frame("NullParFC"=tabNulPar$logFC,
-		      "ParousFC"=tabPar$logFC,
-		      "Gene"=tabPar$symbol)
-
-
+progenitorDE <- read.csv("../data/Robjects/ProgenitorDE.csv")
 # genes to highlight
-interest <- filter(forPlot, Gene %in% c("Kit","Hey1","Cd14",
+interest <- filter(progenitorDE, Gene %in% c("Kit","Hey1","Cd14",
 					"Prlr","Esr1","Pgr"))
 
 # FC plot
-p <- ggplot(forPlot, aes(x=NullParFC,y=ParousFC)) +
+p <- ggplot(progenitorDE, aes(x=NullParFC,y=ParousFC)) +
     geom_point(color="grey50",size=2) +
     geom_point(data=interest, aes(x=NullParFC, y=ParousFC), color="black") +
     geom_label_repel(data=interest, aes(x=NullParFC,y=ParousFC,label=Gene)) +
@@ -122,51 +70,12 @@ subP0 <- plot_grid(simMat[[4]],p,labels=c("a","b"))
 
 # ---- DEC4vsC5 ----
 
-# reload data
-m <- dataList[[1]]
-pD <- dataList[[2]]
-fD <- dataList[[3]]
-
-m <- m[,keepCells]
-pD <- pD[keepCells,]
-
-# DE C4 vs C5
-
-# subset data
-pD.sub <- filter(pD, (cluster %in% c(4,5)))
-m.sub <- m[,as.character(pD.sub$barcode)]
-keep <- rowMeans(m.sub) > 0.1
-m.sub <- m.sub[keep,]
-fD.sub <- fD[keep,]
-rownames(m.sub) <- fD.sub$symbol
-
-# DGEList object
-nf <- log(pD.sub$sf/pD.sub$UmiSums)
-pD.sub$nf <- exp(nf-mean(nf))
-y <- DGEList(counts=m.sub,
-	     samples=pD.sub,
-	     genes=fD.sub,
-	     norm.factors=pD.sub$nf)
-
-
-# DE
-choice <- 4
-cluster <- factor(as.numeric(pD.sub$cluster==choice))
-de.design <- model.matrix(~cluster)
-y <- estimateDisp(y, de.design, prior.df=0,trend="none")
-fit <- glmFit(y, de.design)
-res <- glmTreat(fit,lfc=1)
-resTab <- topTags(res,n=Inf,sort.by="PValue")
-topTab <- resTab$table
+topTab <- read.csv("../data/Robjects/C4vsC5DE.csv")
 
 # Highlight genes with lactation/immune annotation
 lac <- c("Btn1a1","Lalba","B4galt1","Csn3","Csn1s2a","Csn1s1","Csn2","Hk2","Xdh","Vegfa")
 immuno <- c("Hp","Slpi","H2-K1", "B2m", "H2-Q7", "Lbp", "Tlr2", "Ltf", "Ifit1",
 	    "Cd1d1")
-
-# Write DE table for supps
-forxls <- select(topTab, id, symbol, logFC, unshrunk.logFC, logCPM, PValue, FDR)
-# write.csv(forxls,file="../paper/supps/DE_C4vsC5.csv",quote=FALSE)
 
 # Highlight top DE genes in Volcano plot
 topUp <- filter(topTab, FDR < 0.01) %>%
@@ -207,8 +116,6 @@ dumleg <- get_legend(dumleg)
 
 # ---- DEmaintainedInPI ----
 
-#Normalize
-m.norm <- t(t(m)/pD$sf)
 rownames(m.norm) <- as.character(fD$symbol)
 genes <- c("Csn2","Csn1s1","Csn1s2a","Csn3")
 
