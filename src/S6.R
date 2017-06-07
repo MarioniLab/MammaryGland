@@ -24,6 +24,7 @@ keepCells <- pD$PassAll & !(pD$isImmuneCell | pD$isOutlier)
 m <- m[,keepCells]
 pD <- pD[keepCells,]
 
+# This DEAnalysis differs to the ProgenitorDE.R script, progenitors are compared to luminals from a specific timepoint
 comps <- c("NP","PI")
 out <- list()
 for (comp in comps) {
@@ -80,46 +81,11 @@ pLoad <- ggplot(ld, aes(x=Genes,y=Loadings)) +
 subp0 <- plot_grid(pcplot, pLoad, rel_widths=c(1,.8),labels="auto") 
 
 
-
 # ---- DEAnalysis4vs5 ----
-
-m <- dataList[[1]]
-pD <- dataList[[2]]
-fD <- dataList[[3]]
-
-# Cells
-keepCells <- pD$PassAll & !(pD$isImmuneCell | pD$isOutlier)
-m <- m[,keepCells]
-pD <- pD[keepCells,]
-
-pD.sub <- filter(pD, (cluster %in% c(4,5)))
-m.sub <- m[,as.character(pD.sub$barcode)]
-keep <- rowMeans(m.sub) > 0.1
-m.sub <- m.sub[keep,]
-fD.sub <- fD[keep,]
-rownames(m.sub) <- fD.sub$symbol
-
-library(edgeR)
-nf <- log(pD.sub$sf/pD.sub$UmiSums)
-pD.sub$nf <- exp(nf-mean(nf))
-y <- DGEList(counts=m.sub,
-	     samples=pD.sub,
-	     genes=fD.sub,
-	     norm.factors=pD.sub$nf)
-
-
-choice <- 4
-cluster <- factor(as.numeric(pD.sub$cluster==choice))
-de.design <- model.matrix(~cluster)
-y <- estimateDisp(y, de.design, prior.df=0,trend="none")
-fit <- glmFit(y, de.design)
-res <- glmTreat(fit,lfc=1)
-resTab <- topTags(res,n=Inf,sort.by="PValue")
-topTab <- resTab$table
+topTab <- read.csv("../data/Robjects/C4vsC5DE.csv")
 
 deGenes <- filter(topTab, FDR < 0.01, logFC > 0) %>%. $symbol
 allGenes <- topTab$symbol
-
 
 # ---- Data ----
 univrs <- allGenes
