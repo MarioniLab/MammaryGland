@@ -70,14 +70,10 @@ dynamicCluster <- function(m, dm="euclidean", lk="average", ds=0, output="ForBoo
     trafM <- log2(m+1)
 
     #Dissimilarity Measure
-    if(dm!="euclidean") {
-	if(lk=="ward.D2") {
-    dis <- as.dist(sqrt((1-cor(t(trafM),method=dm))/2))
-	}else {
-	    dis <- as.dist((1-cor(t(trafM),method=dm))/2)
-	}
-    } else {
+    if(dm=="euclidean") {
 	dis <- dist(trafM,method=dm)
+    } else {
+	dis <- as.dist((1-cor(t(trafM),method=dm))/2)
     }
 
 
