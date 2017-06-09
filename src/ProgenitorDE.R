@@ -57,7 +57,7 @@ progenitorDE <- data.frame("NullParFC"=tabNulPar$logFC,
 		      "ParousFC"=tabPar$logFC,
 		      "Gene"=tabPar$symbol)
 
-write.csv(progenitorDE,file="../data/Robjects/ProgenitorDE.csv"
+write.csv(progenitorDE,file="../data/Robjects/ProgenitorDE.csv",
 	  row.names=FALSE)
 
 # ---- DEC4vsC5 ----
