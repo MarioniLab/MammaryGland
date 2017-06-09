@@ -1,0 +1,473 @@
+\documentclass[titlepage, 12pt, oneside]{amsart}
+\usepackage[backend=bibtex,
+	    natbib=true,
+	    autocite=superscript,
+	    style=nature,
+	    sorting=none,
+	    isbn=false]{biblatex} 
+\addbibresource{references.bib}
+\usepackage{geometry}
+\usepackage{amssymb,amsmath,amsaddr}
+\usepackage{siunitx}
+\usepackage{fixltx2e} % provides \textsubscript
+\usepackage{hyperref}
+\PassOptionsToPackage{usenames,dvipsnames}{color} % color is loaded by hyperref
+\hypersetup{unicode=true,
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setcounter{secnumdepth}{0}
+
+%---------------- fake figures ------------------------
+\newcommand{\fakefigure}[1]% #1 = label name
+{\refstepcounter{figure}\label{#1}}
+%------------------------------------------------------
+
+%---------------- fake tables ------------------------
+\newcommand{\faketable}[1]% #1 = label name
+{\refstepcounter{table}\label{#1}}
+%------------------------------------------------------
+
+\begin{document}
+
+\begin{titlepage}
+\large
+\textbf{Differentiation dynamics of mammary epithelial cells revealed by
+single-cell RNA-sequencing}
+\normalsize
+
+\small
+Karsten Bach\textsuperscript{1,2,5}, Sara Pensa\textsuperscript{1,5},
+Marta Grzelak\textsuperscript{2,5}, James Hadfield\textsuperscript{2,5},
+David J. Adams\textsuperscript{3,5}, John C.
+Marioni\textsuperscript{2,3,4}, Walid T. Khaled\textsuperscript{1,5 }
+
+1. Department of Pharmacology, University of Cambridge, Cambridge, UK\\
+2. Cancer Research UK Cambridge Institute, University of Cambridge,
+Cambridge, UK\\
+3. Wellcome Trust Sanger Institute, Wellcome Genome Campus, Hinxton,
+Cambridge, UK\\
+4. European Bioinformatics Institute, European Molecular Biology
+Laboratory, Hinxton, UK\\
+5. Cancer Research UK Cambridge Cancer Centre, Cambridge, UK
+
+Correspondence to: Walid T. Khaled
+(\href{mailto:wtk22@cam.ac.uk}{\emph{wtk22@cam.ac.uk}}) or John C.
+Marioni (\href{mailto:marioni@ebi.ac.uk}{\emph{marioni@ebi.ac.uk}})
+
+\normalsize
+\textbf{Keywords: Single cell RNAseq, Development, Mammary gland }
+\end{titlepage}
+
+\textbf{Abstract:}
+\textbf{The mammary gland is a unique organ as it undergoes most of its development during puberty and adulthood.
+Characterising the hierarchy of the various mammary epithelial cells and how they are regulated in response to gestation, lactation and involution is important for understanding how breast cancer develops.
+Recent studies have used various markers to enrich, isolate and characterise the different epithelial cell compartments within the adult mammary gland.
+However, in all of these studies only a handful of markers were used to isolate, define and trace cell populations.
+Therefore, there is a need for an unbiased and comprehensive description of mammary epithelial cells within the gland at different developmental stages.
+To this end we herein use single cell RNA sequencing (scRNAseq) to determine the gene expression profile of individual mammary epithelial cells across four adult developmental stages; nulliparous, mid gestation, lactation and post weaning (full natural involution).
+Our data from 3,471 individual cells identifies 9 distinct mammary epithelial cell populations and allows their hierarchical structure across development to be charted.
+Interestingly, the effect of gestation and lactation appeared to be more pronounced for some cell types.
+For example, our analysis revealed a cluster of luminal progenitor cells in post involution glands, which is distinct from progenitors found in nulliparous glands.
+The data also showed that only few clusters could be fully characterized by a single marker gene.
+We argue instead that the epithelial cells -- especially in the luminal compartment -- should rather be conceptualized as being part of a continuous spectrum of differentiation.
+This view highlights the plasticity of the tissue and might help to explain some of the conflicting results from lineage tracing studies.}
+
+\section{Introduction}
+The purpose of the mammary gland is to provide nourishment and passive immunity to the young until they are capable of feeding themselves.
+From a developmental biology perspective, the mammary gland is a unique organ as it undergoes most of its development during puberty and adulthood\autocite{Watson2008,Hennighausen2005,Hennighausen1998,Inman2015}
+In the pre-pubertal mouse the mammary gland consists of a rudimentary epithelial ductal structure embedded within a mammary fatpad, which is connected to the nipple\autocite{Mikkola2006,Hens2005}
+At the onset of puberty and in response to hormonal changes, the rudimentary ductal structure will proliferate and migrate to fill the entire mammary fatpad leaving a developed network of ductal structures that later serve as channels for milk transport during lactation.
+At the onset of pregnancy a highly proliferative stage is initiated characterised by further ductal side-branching and widespread lobuloalveolar development\autocite{Watson2008}.
+Differentiation of the epithelial cells within alveoli prepares the gland for milk production and secretion.
+Towards the end of pregnancy the gland is extremely dense and primarily occupied by epithelial cells and very little fat.
+This morphology is largely maintained throughout lactation.
+However, in response to cessation of suckling the gland undergoes involution, which is characterised by extensive cell death and tissue remodelling \autocite{Inman2015,Watson2006} .
+Towards the end of involution the gland reaches a morphology resembling that prior to pregnancy and subsequent pregnancies will trigger the same chain of events.
+
+Recent efforts have focused on the identification and characterisation of the various mammary epithelial cell lineages within the gland that contribute to this developmental homeostasis.
+Pioneering fat-pad transplantation studies nearly 70 years ago were the first to demonstrate the regenerative and differentiation capacity of small numbers of cells\autocite{Faulkin1960,Daniel197,Smalley1998}.
+More recently the use of cell surface markers coupled with flow cytometry has been used to enrich for various progenitor and stem cell compartments\autocite{Smalley1998,Stingl2006,Shackleton2006,Asselin2007} and shown that the imbalance of such cell populations results in cellular transformation and subsequently breast cancer\autocite{Lim2009,Molyneux2010}.
+Other studies, inspired by breast cancer transcriptomic profiling, have identified transcriptional regulators of mammary epithelial cell types such as \textit{GATA3} in the luminal cells\autocite{Asselin2007,Kouros2006}.
+More recently, elegant lineage-tracing studies used key markers to address the contribution of each lineage to adult mammary epithelial cell homeostasis\autocite{Inman2015}.
+However, in all of these studies only a handful of markers and genes were used to define the cellular hierarchy of the mammary epithelial cells, with a principal focus on the nulliparous developmental stage.
+Therefore, to properly understand its changing role throughout life, there is a need for an unbiased and comprehensive characterisation of mammary epithelial cell compartments at different developmental stages.
+
+To this end we herein use single cell RNA sequencing (scRNAseq) to map the cellular dynamics of mammary epithelial cells across four adult developmental stages; nulliparous, mid gestation, lactation and post weaning (full natural involution).
+Our data from 3,471 individual cells, identifies 9 distinct cell populations within the gland and allows their hierarchical structure across developmental time points to be charted.
+
+\section{Results}
+
+\textbf{Single cell RNA sequencing identifies 9 clusters of mammary epithelial cells}
+
+First, we isolated mammary epithelial cells from four developmental time points; nulliparous (NP), day 14.5 gestation (G), day 6 lactation (L) and two weeks post natural involution (PI).
+For each time point we sorted mammary epithelial cells based on the Epcam cell surface marker from two independent mice (\autoref{F1}a).
+All samples were then prepared for single-cell RNA-sequencing using the 10x Chromium platform\autocite{Zheng2017}.
+Following quality control (materials and methods), this yielded an average of 11,175 unique transcripts and 3,113 genes detected from 3,471 cells (1,681 from NP, 609 from G, 604 from L and 605 from PI) (Supplementary \autoref{F1}a).
+
+Visual inspection of the data using t-distributed stochastic neighbour embedding (t-SNE) suggested that although there is some grouping of cells by time-point, there are also other factors that underlie structure within the dataset (\autoref{F1}b and Supplementary Fig 2a).
+We used unsupervised hierarchical clustering based on the expression of 594 highly variable genes to identify 9 clusters of epithelial cells (C1-C9).
+Importantly, these clusters were consistent with the groups observed in the t-SNE (\autoref{F1}c).
+Based on the expression of \textit{Krt18,} \textit{Krt8, Krt5, Krt14 and Acta2} we grouped the clusters into 6 luminal (C1, C2, C3, C4, C5 \& C8) and 3 basal clusters (C6, C7 \& C9) (\autoref{F1}D, Supplementary Fig 2b and 2c).
+Differential gene expression analysis allowed us to further characterise the clusters and infer putative identities (\autoref{F1}d, \autoref{T1} and Supplementary Table 1).
+For example, C2 expresses high levels of beta-casein, \textit{Csn2,} and is composed exclusively from cells from the gestation and lactation time-points, suggesting that these cells are secretory alveolar cells (\autoref{F1}d).
+C1 and C3 on the other hand represent the clusters with the highest expression of hormone receptors.
+C5 expresses high levels of the luminal progenitor marker \textit{Aldh1a3} suggesting progenitor function, while C7 shows characteristics of myoepithelial cells such as high levels of \textit{Acta2}, \textit{Oxtr} and \textit{Krt15} (\autoref{F1}d).
+
+\textbf{Reconstruction of the luminal differentiation hierarchy}
+
+We focused on cells from the NP and G time-points to investigate mammary epithelial differentiation states of the gland.
+These differentiation states and the transitions between them can be computationally reconstructed using diffusion maps.
+Briefly, the method embeds the data in a low-dimensional space, where distances between cells represent the progression through a gradual but stochastic process such as differentiation.
+In diffusion maps constructed from all epithelial cells, we observed a clear segregation between the luminal and basal clusters, with virtually no transition states between the two (\autoref{F2}a).
+This supports the hypothesis that during normal tissue homoeostasis the two lineages are largely self-maintained, which is in agreement with the majority of the lineage tracing studies\autocite{VanKeymeulen2011,VanAmerongen2012,Davis2016}.
+In contrast, the luminal compartment showed a distinct structure, with gradual transitions between different clusters and cells originating from a common origin (\autoref{F2}b).
+We confirmed the robustness of this bifurcation by verifying that it was present when different methods of feature selection, algorithms for trajectory inference and down-sampling were employed (Supplementary Fig. 3).
+
+The expression of the progenitor marker \textit{Aldh1a3} gradually decreased as cells progressed away from their common origin (\autoref{F2}b right panel), which was largely composed of C5.
+We further noted that the left arm of the differentiation trajectory terminates at C2 and shows increasing expression of \textit{Csn2} (\autoref{F2}b bottom panel), consistent with a secretory phenotype.
+Between C5 and C2 we found cells from C8 (\autoref{F2}b).
+C8 is the second rarest cell population after C9 and is found in all developmental stages in approximately equal numbers (6 cells in NP, 5 cells in G, 8 cells in L and 7 cells in PI).
+C8 cells express \textit{Aldh3a1, Elf5, Cd14 and Kit} similar to C5 but in addition express high levels of prolactin induced protein \textit{(Pip)} and apolipoprotein D \textit{(Apod)} (\autoref{F1}d).
+On the right arm of the differentiation trajectory, cells in C5 transitioned to C3 and C1, during which the expression of \textit{Esr1} and \textit{Pgr} increase suggesting that this branch represents differentiation towards hormone-sensing luminal cells (\autoref{F2}b, bottom panel).
+
+Being confident that the diffusion map recapitulates the luminal differentiation process, we then computationally inferred the two branches and ordered the cells according to their progression through ``pseudotime''\autocite{Haghverdi2016} (see materials and methods for further explanation) (\autoref{F3}a).
+We found 806 genes that showed a pseudotime-dependent expression with the same directionality along both differentiation trajectories (\autoref{F3}b, top panel of heatmap, Supplementary Table 2, Supplementary Fig 4a).
+These included genes associated with known progenitor characteristics such as \textit{Aldh1a3}, \textit{Kit}, \textit{Cd14} and \textit{Tspan8} as well as transcription factors that have not previously been associated with luminal differentiation such as \textit{Creb5}, \textit{Hey1} and \textit{Fosl1} (\autoref{F3}c).
+In addition, we identified 1478 genes with branch-specific expression patterns (\autoref{F3}b, bottom panel of heatmap, Supplementary Table 3, Supplementary Fig 4b), including milk related genes (\textit{Wap}, \textit{Csn1s1}, \textit{Csn3}) as well as genes involved in hormone-receptor signalling (\textit{Pgr, Prlr, S100a6, Cited1, Areg}).
+Amongst the branch-specific transcription factors we found for example \textit{Runx1, Tox2} and \textit{Bhlhe41} (also known as \textit{Sharp1}) to be transcribed during differentiation towards the hormone-sensing lineage (\autoref{F3}d) and \textit{Elf5, Foxs1} and \textit{Ehf} in the secretory lineage (\autoref{F3}e).
+Interestingly, \textit{Runx1} is a known repressor of \textit{Elf5} and its deletion has been shown to be deleterious for ductal morphogenesis\autocite{VanBragt2014}.
+The expression of the known progenitor master regulator \textit{Elf5} is maintained and further increased during secretory differentiation suggesting that its transcriptional level is fine-tuned in luminal progenitors (\autoref{F3}e).
+
+\textbf{Cluster 4 represents a post involution specific progenitor cell}
+
+From the initial clustering analysis we noticed that C4 appeared only after the animals had undergone a full pregnancy and was predominantly made up of cells from PI (0 cells from NP, 0 cells from G, 83 cells from L and 339 cells from PI) (\autoref{F1}b).
+Moreover, multiple progenitor marker genes from C5 were also to be present in C4 (\autoref{F1}c, Supplementary Fig 5).
+The similarity between the two clusters also held true on transcriptome-wide level (\autoref{F4}a, Supplementary Fig 10c).
+We thus hypothesised that C4 represents the luminal progenitor population in the post-parous gland, which is supported by the observation that C5 virtually disappears after parity (Table 1).
+To further support this hypothesis, we identified genes that distinguish C5 from the rest of the luminal compartment to see if they are also characteristic for the proposed post-parity progenitor population C4.
+Indeed, we find genes that are differentially expressed between C5 and the rest of the luminal compartment to show the same trend between C4 and the luminal compartment (\autoref{F4}b).
+In a similar manner we can distinguish C4 from the rest of the PI gland in a principal component analysis (PCA) using the identified progenitor genes (Supplementary Fig 6a and b).
+Given this high degree of similarity we were not surprised that only 120 genes were differentially expressed between C4 and C5 (Supplementary Table 4).
+Interestingly, genes that were up-regulated in C4 were significantly enriched for pathways that are involved in the immune response and lactation (\autoref{F4}c, Supplementary Fig 6c).
+Furthermore, the expression of milk genes was surprisingly maintained at high levels in C4 even after lactation (\autoref{F4}d).
+Of note, the genes of the casein locus (\textit{Csn2}, \textit{Csn1s1}, \textit{Csn1s2a}, \textit{Csn3}) have previously been reported to be up-regulated in the parous gland, most likely due to changes in chromatin accessibility\autocite{Dos2015,Rijnkels2013}.
+However, it has not been shown before that this effect is confined to the progenitor population of the luminal compartment (Supplementary Fig 7).
+Together, the data suggest that luminal progenitor cells maintain memory of having undergone gestation and involution.
+This memory could potentially prime progenitor cells towards the alveolar fate to facilitate alveologenesis in subsequent pregnancies.
+
+\section{Discussion}
+
+We have reported here the use of single cell RNA sequencing to comprehensively map the transcriptomes of thousands of mammary epithelial cells across four developmental time-points.
+Our analysis identified 9 clusters of epithelial cells, some of which are only present during specific developmental stage (e.g. C2 and C4).
+This study provides a rich dataset that can be mined online (see link in materials and methods) to identify marker genes and lineage specific promoters that can be used to trace populations of cells \textit{in vivo}.
+We note, however, that only some of the clusters can be fully characterized by a single marker gene.
+Instead we argue that the epithelial cells - especially in the luminal compartment - should rather be conceptualized as being part of a continuous spectrum of differentiation as visualised in \autoref{F2}.
+This view highlights the plasticity of the tissue and might help to explain some of the conflicting results from lineage tracing studies\autocite{Inman2015}.
+In this study we could not provide any evidence for contribution of a putative mutlipotent stem cell to the day-to-day homoeostasis of the gland.
+We do note, however, that the cluster C9 is placed between the luminal and basal cells in \autoref{F2}a.
+C9 represents the cluster with the fewest numbers of cells captured and expresses low levels of both luminal and basal markers, high levels of the stem cell marker \textit{Procr}\autocite{Wang2015} and high levels of the luminal progenitor marker \textit{Notch3}\autocite{Lafkas2013} (\autoref{F1}d).
+Yet, we did not capture cells in transition between C9 and any other clusters suggesting that if these cells are indeed, multi-potent progenitors their involvement in tissue homoeostasis is negligible.
+Alternatively, we cannot exclude the possibility that C9 is enriched for doublets.
+Based on the gene expression data presented here, the luminal compartment appears to have one common progenitor population (C5).
+We also identified a previously described progenitor population with expression of hormone-receptor related genes (C3) that appears to represent a meta-stable state on the differentiation path from luminal progenitors towards fully differentiated hormone-sensing cells (C1).
+Furthermore, we characterised gene expression patterns along the differentiation hierarchy, thus enabling to disentangle the cellular hierarchy in the mammary gland.
+By analysing the mammary gland at various stages of development we were also able to describe the molecular effects of parity at cellular resolution.
+We found that the luminal progenitor compartment undergoes lasting changes at the transcriptional level.
+This is especially interesting in the light of the protective effect of pregnancies against breast cancer and the role of luminal progenitors as cell of origin.
+The majority of the changes were related to pathways involved in immunity and lactation, suggesting that, in particular, the luminal progenitors maintain a memory of gestation and involution.
+It is reasonable to assume that C4 overlaps with the previously parity-induced mammary epithelial cells (PI-MECs)\autocite{Wagner2002}.
+
+In summary, the study provides a novel view of mammary gland development.
+This unbiased approach helps support some previously formed hypotheses in the mammary gland field and describes differentiation processes at a high cellular resolution.
+The dataset will be a useful resource for future studies that aim to understand the relationship of the different cell types in the gland and how breast cancer develops and progresses.
+
+\section{Figure legends}
+
+%---------------------------------------------Figure 1--------------------------------------------------------------
+\textbf{Figure 1. Single cell RNA sequencing identifies 9 clusters of
+mammary epithelial cells }
+\fakefigure{F1}
+\textbf{(a)} Schematic diagram highlighting the experimental setup for isolating and sequencing the RNA of single cells using the 10X chromium system.
+\textbf{(b)} t-SNE plot of 3,471 cells visualizes general structure in the data.
+Cells are coloured by the four developmental time points Pink=NP, Dark Green=G, Light Green=L, Purple=PI.
+\textbf{(c)} Same as \textbf{(b)} but colouring cells by clusters.
+\textbf{(d)} Heatmap highlighting some key marker genes.
+Colour scale represents log-transformed and normalized UMI counts scaled to a maximum of 1 per row.
+The upper panel shows genes that were used to distinguish between luminal and basal cells.
+Upper bars represent the cluster assignment and stages for the individual cells.
+For visualization purposes only 100 randomly selected cells were shown for each of the large clusters.
+The list of differentially expressed genes between clusters can be found in Supplementary Table 1.
+%-------------------------------------------------------------------------------------------------------------------
+
+
+%---------------------------------------------Figure 2--------------------------------------------------------------
+\textbf{Figure 2. Computational reconstruction of differentiation
+processes in the mammary gland}
+\fakefigure{F2}
+\textbf{(a)} Diffusion map of epithelial cells from the NP and G time points, showing the first three diffusion components.
+\textbf{(b)} Differentiation trajectory of the luminal compartment based on the first two diffusion components.
+The right panel depicts the log-transformed normalized expression levels of the luminal progenitor marker \textit{Aldh1a3} in all cells along component 2, the bottom panel shows the levels of \textit{Csn2} and \textit{Pgr} along component 1.
+Expression trends represent natural cubic spline fits with five degrees of freedom.
+%-------------------------------------------------------------------------------------------------------------------
+
+
+%---------------------------------------------Figure 3--------------------------------------------------------------
+\textbf{Figure 3. Pseudotime ordering identifies genes associated with
+luminal differentiation}
+\fakefigure{F3}
+\textbf{(a)} Definition of the hormone-sensing and secretory differentiation branch.
+Cells are coloured by their progression through pseudotime, where low values represent undifferentiated cells.
+\textbf{(b)} Heatmap of the top 50 pseudotime-dependent genes (rows) with the same overall trend along both branches (top panel) or branch-specific trends (bottom panel, see materials and methods for definition).
+The black vertical line represents the common origin from the progenitor population.
+Arrows highlight differentiation direction.
+Pseudotime and the cluster assignment are annotated above the heatmap.
+The values in the heatmap represent z-scaled, spline-smoothed expression values.
+\textbf{(c-e)} Examples of transcription factors with pseudotime-dependent expression with the same overall trend on both branches \textbf{(c)} or branch specific trends \textbf{(d,e)}.
+%-------------------------------------------------------------------------------------------------------------------
+
+
+%---------------------------------------------Figure 4--------------------------------------------------------------
+\textbf{Figure 4. The effect of parity on the transcriptomic landscape
+of the luminal progenitor compartment}
+\fakefigure{F4}
+\textbf{(a)} Colour-coded similarity matrix between the log-transformed mean expression values of the 9 epithelial cell clusters.
+Similarities are based on Euclidean distances.
+\textbf{(b)} Comparison of fold changes from C5 versus luminal compartment and fold changes from C4 versus the luminal cells.
+The genes represent the top 500 differentially expressed genes between C5 and luminal cells.
+\textbf{(c)} Volcano plot illustrates differential expression between C5 and C4, coloured dots represent significant genes with known function in lactation and immunity, dashed lines highlight the P value threshold of 0.01 and a log fold change of 1.
+P values are adjusted for multiple testing using Benjamini-Hochberg.
+\textbf{(d)} Visualization of expression difference for some lactation related genes from \textbf{(c)}, where C4 is split according to the developmental time point.
+%-------------------------------------------------------------------------------------------------------------------
+
+\textbf{Table 1. Summary of mammary epithelial cell clusters}
+\fakefigure{T1}
+Overview of the different clusters including number of cells captured for each time-point and key genes that were used to infer their identities.
+
+\textbf{Supplementary Figure 1. Quality control of sequencing data}
+
+\textbf{(a)} Table summarizing quality control criteria per sample.
+Number of unique molecules, genes detected and number of reads represent the median value for each sample.
+\textbf{(b-c)} Histograms for the four conditions showing the distributions of the number of genes detected \textbf{(b)} or total number of molecules \textbf{(c)} metric with indicated threshold (dashed line).
+\textbf{(d)} Scatterplot of number of genes detected versus percentage of mitochondrial RNA molecules, the threshold at 5\% is indicated.
+For choice of thresholds see materials and methods.
+
+\textbf{Supplementary Figure 2. Biological replicates explain little
+structure in the data }
+
+\textbf{(a)} t-SNE plot coloured by the eight different samples. Some minor structures (e.g. two groups PI1 and PI2 at the top) are mainly replicate dependent, but all of the clusters identified in the analysis are represented by multiple replicates.
+\textbf{(b-c)} t-SNE plots highlighting the expression of luminal \textbf{(b)} and basal \textbf{(c)} genes in all 3,471 cells.
+
+\textbf{Supplementary Figure 3. Testing the robustness of the diffusion
+map}
+
+\textbf{(a-b)} Eigenvalues for the diffusion map used in \autoref{F2}a
+\textbf{(a)} and \autoref{F2}b \textbf{(b)}. 
+\textbf{(c)} The differentiation trajectory as determined by Monocle (see materials and methods) coloured by cluster assignment.
+\textbf{(d)} The diffusion map is robust towards down-sampling of cells (100, 50 or 25\% of all cells were used in the left, middle or right panel, respectively) as well as the method of feature selection (all= all genes with mean expression level above 0.1, HVG= highly variable genes, PCA= first 50 components from PCA, selected= a manually selected choice of genes that are known to be involved in luminal cell differentiation).
+The gene list included: \textit{Csn2, Gata3, Prlr, Elf5, Esr1, Pgr, Aldh1a3, Wap, Tspan8, Krt18, Krt8, Areg, Fgfr1, Fgfr2, Notch1, Notch3, Foxc1} and \textit{Zeb2}.
+
+\textbf{Supplementary Figure 4. Full heatmaps of pseudo-time dependent
+expression}
+
+Heatmaps as in \autoref{F3}, showing all genes that are pseudo-time dependent in their expression along the trajectories with the same overall trend \textbf{(a)} or opposing trend \textbf{(b)}.
+
+\textbf{Supplementary Figure 5. Expression of progenitors markers in C4}
+
+Panel of t-SNE plots (compare to \autoref{F1}) with coloured normalized log-expression values of progenitor markers.
+
+\textbf{Supplementary Figure 6. C4 is a post-parity progenitor
+population }
+
+\textbf{(a)} Principal component analysis (PCA) on all luminal cells from the PI time-point.
+The PCA was computed on the top 500 differentially expressed genes between C5 and the rest of the luminal NP gland.
+PC1 separates the progenitors and the differentiated cells, with the progenitors showing negative PC1 values.
+\textbf{(b)} Genes that are higher expressed in C5 compared to the rest of the NP gland also have negative PC1 loadings.
+\textbf{(c)} Top 20 GO-terms (biological processes) that are significantly enriched in upregulated genes from \autoref{F4}c.
+Dashed line indicates p values threshold at 0.001.
+
+\textbf{Supplementary Figure 7. Overexpression of milk genes after
+parity is restricted to the progenitor compartment}
+
+Panel of t-SNE plots (compare to \autoref{F1}) with coloured normalized log-expression values of milk genes from \autoref{F4}d.
+
+\textbf{Supplementary Figure 8. Quality control of cells from the}
+\textbf{Lactation sample}
+
+t-SNE plot computed only on the lactation sample.
+Cells that were flagged as low quality are highlighted in grey and cells that passed the QC are shown in black.
+Although a majority of the sample was removed, the cells that passed represent at least all major groups from this sample (see materials and methods).
+
+\textbf{Supplementary Figure 9. Outline of the clustering strategy }
+
+\textbf{(a)} Dendrogram of the hierarchical clustering using Euclidean distances and average linkage.
+Colour bars indicate the animal (binary, only comparable within one condition), the condition and cluster assignment.
+\textbf{(b)} Cluster stability as determined by the overlap between the original cluster and the most similar cluster in the bootstrap samples.
+The distributions of jaccard indeces are shown as a boxplot for 100 bootstrap samples.
+Stability is shown for three values of the deepSplit parameter (0,1,2).
+Deep split 1 was chosen as this maintained overall a high cluster stability while identifying relevant cell types (see materials and methods).
+
+\textbf{Supplementary Figure 10. Clustering} \textbf{Quality Control and
+removal of C10}
+
+\textbf{(a)} Total molecule count grouped by different clusters.
+\textbf{(b)} Markers that were used to identify C10 as lymphocyte cluster\autocite{Scheele2017} \textbf{(c)} Separation of C10 from all other clusters as shown by a PCA on the cluster average gene expression.
+
+\textbf{Table S1.} Differentially expressed genes between clusters
+
+\textbf{Table S2.} List of genes with pseudo-time dependent gene
+expression with same overall trend in the two branches
+
+\textbf{Table S3.} List of genes with pseudo-time dependent gene
+expression with different trends in the two branches
+
+\textbf{Table S4.} Genes differentially expressed between C4 and C5
+
+\section{Materials and methods}
+
+\textbf{Animals}
+
+All experimental animal work was performed in accordance to the Animals (Scientific Procedures) Act 1986, UK and approved by the Ethics Committee at the Sanger Institute.
+C57BL/6N mice were housed in individually ventilated cages under a 12:12~h light-dark cycle, with water and food available \textit{ad libitum}.
+The experiment was set up to allow for all of the developmental time points to be collected and tissues to be processed at the same time.
+Mice were euthanized by terminal anaesthesia.
+Females were mated with studs and allowed to litter.
+Tissues were then harvested at gestation day 14.5 (G), lactation day 6 (L) and day 11 post natural weaning of the pups (PI).
+Tissue from NP females was harvested at 8 weeks of age.
+Two individual mice per developmental time point were used in the study.
+
+\textbf{Mammary gland dissociation into single-cell suspension}
+
+Lymph node divested mammary glands (excluding the cervical pair and the proximal region of one of the fourth glands) were dissected from the mice and mechanically dissociated.
+The finely minced tissue was transferred to a digestion mix consisting of DMEM/F12 (Gibco) + 10 mM HEPES (Gibco) + 1 mg ml\textsuperscript{-1} collagenase (Roche) + 100 U ml\textsuperscript{-1} hyaluronidase (Sigma) + 50 mycg ml\textsuperscript{-1} gentamicin (Gibco) for 2.5 hours at \SI{37}{\celsius} and vortexed every 30 minutes.
+After the lysis of red blood cells in NH\textsubscript{4}Cl, cells were briefly digested with warm 0.05\% Trypsin-EDTA (Gibco), 5 mg ml\textsuperscript{-1} dispase (Sigma) and 1 mg ml\textsuperscript{-1} DNase (Sigma), and filtered through a 40 mycm cell strainer (BD Biosciences).
+
+\textbf{Cell labelling, flow cytometry and sorting}
+
+Single cell suspensions were incubated in HF medium (Hank's balanced salt solution (Gibco) + 1\% foetal bovine serum, Gibco) + 10\% normal rat serum (Sigma) for 20 min on ice to pre-block before antibody staining.
+All antibody incubations were performed for 10 min on ice in HF media.
+Mammary cells were stained with the following primary antibodies: 1 mycg ml\textsuperscript{-1} CD31-biotin (eBioscience); 1 mycg ml\textsuperscript{-1} CD45-biotin (eBioscience); 1 mycg ml\textsuperscript{-1} Ter119-biotin (eBioscience) and 0.5 mycg ml\textsuperscript{-1} EpCAM--PE (Biolegend).
+Cells were then stained with 0.4 mycg ml\textsuperscript{-1} streptavidin-PE-CF594 (BD-Biosciences).
+Propidium Iodide (PI, 1 mycg ml\textsuperscript{-1}; Sigma) was used to detect dead cells.
+Cells were filtered through a 30 mycm cell strainer (Partec) before sorting.
+Sorting of cells was done using a SH800 sorter (SONY).
+Single-stained control cells were used to perform compensation manually and unstained cells were used to set gates.
+Chip alignment and sorting calibration was performed with automatic setup beads (SONY) immediately prior to sorting.
+Doublets, dead cells and contaminating haematopoietic, endothelial and stromal cells were gated out and EpCAM positive cells were sorted in FACS tubes (BD Biosciences) containing 1 mL of HF.
+After sorting, cells were transferred to a 1.5 ml tube through a 30 mycm cell strainer, spun down and resuspended in 15-50 mycl of HF according to the number of cells sorted per sample.
+Representative samples were manually counted using an improved Neubauer chamber to estimate sample loss from centrifugation and filtering.
+Equal numbers of cells per sample were processed for scRNA library preparation.
+Samples were processed for scRNA library preparation within 10 hours from tissue isolation.
+
+\textbf{Library preparation and sequencing}
+
+Library preparation was performed according to instruction in the 10X chromium single cell kit.
+
+\textbf{RNA-seq data processing }
+
+Read processing was performed as previously reported\autocite{Zheng2017}.
+Briefly, the Cell Ranger Single-Cell Software Suite was used for demultiplexing, barcode assignment and UMI quantification (\href{http://software.10xgenomics.com/single-cell/overview/welcome}{\textit{http://software.10xgenomics.com/single-cell/overview/welcome}}).
+The reads were aligned to the mm10 reference genome using a pre-built annotation package obtained from the 10X Genomics website.
+All lanes per sample were processed using the ``cellranger count'' function.
+The output from different lanes were then aggregated using ``cellranger aggr'' with --normalize set to ``none''.
+
+\textbf{Quality control and preprocessing}
+
+In total the Cell Ranger software identified 5,598 barcodes that contained enough unique molecules to be considered as cells (1,707 in NP, 623 in G, 2,648 in L and 620 in PI).
+Libraries prepared from the NP, G and P time points all showed high quality that was reproducible between the two biological replicates (Supplementary 1a).
+We used the following metrics to flag poor quality cells: number of genes detected, total number of unique molecules (UMIs) and percentage of molecules mapped to mitochondrial genes.
+For these samples we then identified poor quality cells by setting a threshold on the number of genes and number of UMIs that was defined as four median absolute deviations (MAD) below the median for each sample (Supplementary 1b and c).
+The samples from the lactation sample, however, showed on average nearly one order of magnitude fewer genes detected and total number of UMIs.
+As this was specific to both lactation samples, we inferred that this was driven by the biological phenotype of the sample rather than technical artefacts.
+Nonetheless, we flagged a substantial amount of the lactation sample as poor quality cells by setting a fixed threshold of 500 detected genes and 1000 total molecules detected (Supplementary Fig 1b and c).
+This was necessary in order to allow for normalisation of all samples; otherwise, keeping more cells of lower quality would inflate the range of normalisation factors amplifying technical noise due to cell-specific biases and adversely impact downstream analyses.
+We ensured that we still sampled cells from all major structures present in the lactation sample (Supplementary Fig 8).
+Finally, all cells with 5\% or more of UMIs mapping to mitochondrial genes were defined as non-viable or apoptotic and removed form the analysis (Supplementary Fig 1d).
+This left us with a total number of 3,499 cells (1,681 in NP, 609 in G, 604 in L and 605 in P).
+The cells were then normalised by size factors as previously described\autocite{Lun2016}.
+The log-transformed (log2(counts+1)) counts of highly variable genes (HVGs) were used as features for dimensionality reduction and clustering.
+HVGs were defined using the method from Brennecke et al.\autocite{Brennecke2013}.
+Genes with a Benjamini-Hochberg adjusted P value smaller than 0.1 were considered to be significant.
+The t-SNE embedding in \autoref{F1} was computed using the ``Rtsne'' package with default settings and perplexity set to 25 (\href{https://github.com/jkrijthe/Rtsne}{\textit{https://github.com/jkrijthe/Rtsne}}).
+
+\textbf{Clustering}
+
+As we expected the epithelial compartment to show a hierarchical organisation, we used agglomerative hierarchical clustering to identify cell types.
+We first computed the pairwise Euclidean distances between cells based on the log-transformed counts of HVGs.
+The dissimilarity matrix was used to perform hierarchical clustering (Supplementary Fig 9a) with the 'hclust' function in R using average linkage, as this resulted in the highest cophenetic correlation coefficient between the tree and the dissimilarity matrix (average:0.91 single: 0.73, complete: 0.83, ward.D2: 0.73).
+Clusters were then defined with the 'cutreeDynamic' function from the 'dynamicTreeCut' package (minClusterSize= 15, deepSplit=1, method=''hybrid'')\autocite{Langfelder2008}.
+The deepSplit parameter was set to 1 based on evaluating the robustness of the clustering.
+At a deepSplit of 0, all clusters were highly robust as determined by bootstrapping\autocite{Henning2015}.
+Increasing the parameter to 1, led to splitting C1 from C3 as well as C9 from C6.
+C1, C3 and C6 were highly robust in the bootstrap (see Supplementary Fig 9b).
+C9 showed a below average robustness.
+However, due to the expression of marker genes for a previously reported cell type\autocite{Wang2015} we decided to keep it as a separate cluster.
+Interestingly, the putative cell type of C9 is known to have an expression profile that is in between luminal and basal cells (see main text), which might explain its assignment to other clusters during the bootstrap.
+Further increasing the deepSplit parameter led to unstable clusters (Supplementary Fig 9b).
+With this method, we identified ten clusters. In addition, the dynamic tree cut method allows for a ``noise component'' for cells that do not match to any cluster.
+1 cell from the lactation sample was flagged as noise by the algorithm and removed from further analysis.
+C10 (27 cells) expressed lymphocyte related genes was also removed from all downstream analyses (as previously reported\autocite{Scheele2017}, Supplementary Fig 10).
+
+\textbf{Differential expression analysis }
+
+Differential gene expression analysis was performed using ``edgeR''\autocite{Robinson2010}.
+Genes with a mean expression level below 0.1 counts were removed from the analysis.
+A negative binomial generalized log-linear model was fitted to the remaining genes with the cluster assignments as covariate(s).
+The 'glmTreat' function was used to identify genes that have a significantly higher log fold change than 1 at an FDR of 0.01.
+
+\textbf{Diffusion maps and pseudotime inference}
+
+For inferring the differentiation trajectory we used diffusion maps.
+First, we selected all cells from the NP and G time point (\autoref{F2}a) and detected the HVGs as described above.
+The log-transformed (log2(count+1)) gene counts were then used to compute the first twenty diffusion components using the 'DiffusionMap' function (k=50, otherwise the default parameters as in 'destiny'\autocite{Angerer2016}.
+After inspecting the fraction of explained variation for the first twenty components, we decided to retain the first 3.
+In \autoref{F2}b we then focused on the luminal compartment and recomputed the diffusion map based only on the luminal cells, using the aforementioned procedure.
+Here we retained only the first two components (Supplementary Fig 3a).
+Notably, the structure inferred by the diffusion map algorithm was robust to the choice of features and down-sampling of cells (Supplementary Fig 3d).
+The structure of a common origin and the two branches could also be inferred using Monocle with standard settings\autocite{Trapnell2014} (Supplementary Fig 3c).
+For inferring the branches and pseudotime ordering, we defined the following three tips, the cell with the smallest value for the second eigenvector (which was set as root) and the cells with the largest and smallest values for the first eigenvector (compare \autoref{F2}b).  
+
+\textbf{Pseudotime-dependent expression}
+
+To identify genes whose expression was significantly associated with the pseudotime we first fitted a natural cubic spline with three degrees of freedom to the log-transformed (log2(counts+1)) expression data in each branch.
+A likelihood ratio test was then used to assess statistical significance of the fit compared to a null (pseudotime-independent) model.
+Genes with a Benjamini-Hochberg corrected P value below 0.001 were considered to be significantly pseudotime-dependent.
+We then used a heuristic definition of branch-specific expression instead of modelling the branch assignment explicitly.
+This was motivated as follows. We were interested in general expression trends of genes, i.e. increase or decrease along the differentiation towards one of the two cell types, rather than comparing the exact timing of gene activation/inactivation between the branches.
+Any approach trying to do the latter would have been complicated by the different cell densities along the branches and by the difficulty of verifying any such hypotheses \textit{in vivo}.
+Hence, we defined genes to be branch-specific when they were pseudotime-dependent in their expression in at least one of the two branches and when the gradient differed in signs between two branches.
+The gradient was determined as the coefficient of a linear model fit to the spline-smoothed expression values, which was set to 0 if the coefficient was not significantly different from 0 at alpha=0.01.
+Consequently, the gradient of a gene could either be -1 (decreasing), 0 (flat) or 1 (increasing).
+
+\textbf{Gene set enrichment analysis}
+
+A gene set enrichment analysis based on gene-ontology (GO) terms was conducted to characterize genes that were up-regulated in C4 compared to C5.
+Genes with positive log fold changes were compared to all genes that were tested for differential expression using topGO with default settings\autocite{Alexa2016}.
+
+\textbf{Code availability}
+
+All computational analyses were performed in R (Version 3.3.3) using standard functions unless otherwise indicated.
+Code is available online at \href{https://github.com/MarioniLab/MammaryGland}{\textit{https://github.com/MarioniLab/MammaryGland}}.
+Data can be accessed at this link (\url{https://karstenbach.shinyapps.io/webapp/}).
+
+\textbf{Author contribution}
+
+K.B. performed most of the experiments and all the computational analysis.
+S.P. and K.B. setup and collected the mammary epithelial cells.
+M.G. and J.H performed the 10X library production and sequencing.
+J.C.M, D.A., K.B and W.T.K conceptualised the study and wrote the manuscript.
+
+\textbf{Acknowledgements }
+
+We would like to thank the staff at Sanger Institute, Research Service Facility (RSF) for their assistance.
+We would like to thank Dr. Aaron T. Lun (CRUK CI) for helpful discussions and comments on manuscript.
+K.B. is funded by a Cambridge Cancer Centre studentship.
+D.A. is funded by CRUK and Wellcome Trust.
+S.P. is funded by CRUK.
+J.C.M is funded by CRUK and EMBL.
+W.T.K is funded by a CRUK career establishment award (C47525/A17348), University of Cambridge and Magdalene College, Cambridge.
+
+\printbibliography
+\end{document}
