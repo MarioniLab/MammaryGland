@@ -186,9 +186,16 @@ m.norm <- t(t(m.filtered)/pD.filtered$sf)
 brennecke <- BrenneckeHVG(m.norm,fdr=0.1)
 fD.filtered$highVar <- fD.filtered$id %in% brennecke
 
+# Compute tSNE 
+fPCA <- log2(t(m.norm[brennecke,])+1)
+fPCA <- scale(fPCA,scale=TRUE,center=TRUE)
+set.seed(300)
+tsn <- Rtsne(fPCA,perplexity=25)
+pD.filtered$tSNE1 <- tsn$Y[,1]
+pD.filtered$tSNE2 <- tsn$Y[,2]
 
 # ---- SaveData ----
-pD.add <- select(pD.filtered, barcode, sf)
+pD.add <- select(pD.filtered, barcode, sf, tSNE1, tSNE2)
 fD.add <- select(fD.filtered, id, highVar)
 pD <- left_join(pD,pD.add, by="barcode")
 fD <- left_join(fD,fD.add, by="id")
