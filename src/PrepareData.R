@@ -30,7 +30,7 @@ tfCheck <- read.table("../data/miscData/TFcheckpoint_WithENSID.tsv",
 		header=TRUE, sep="\t")
 
 fDat <- mutate(fDat,
-	       Mitochondrial=id %in% mitoGenes$x,
+	       Mitochondrial=id %in% mitoGenes$V1,
 	       TranscriptionFactor=id %in% tfCheck$ensembl_gene_id)
 
 
