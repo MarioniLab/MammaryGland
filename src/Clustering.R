@@ -38,11 +38,12 @@ ds <- 1
 minSize <- 15
 
 # Clustering
-clust <- dynamicCluster(t(m.sub), dm=dm,
-				 lk=lk,
-				 ds=ds,
-				 output="Cluster",
-				 minSize=minSize)
+dis <- asDis(m.sub, dm=dm)
+clust <- dynamicCluster(dis=dis,dm=dm,
+			  	lk=lk,
+				ds=ds,
+				output="Cluster",
+				minSize=minSize)
 
 pD$cluster <- clust$cluster
 

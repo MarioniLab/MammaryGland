@@ -2,11 +2,7 @@
 
 library(scran)
 library(dplyr)
-library(knitr)
-library(ggplot2)
 library(dynamicTreeCut)
-library(Rtsne)
-library(pheatmap)
 require(doParallel)
 require(fpc)
 require(clValid)
@@ -27,11 +23,11 @@ fD <- fD[fD$keep,]
 m <- t(t(m)/pD$sf)
 
 # Feature Selection
-m.sub <- t(m[fD$highVar,])
+m.sub <- m[fD$highVar,]
 
 # Combinations of clustering parameters
-dms <- c("euclidean")
-lks <- c("average")
+dms <- c("euclidean","pearson","spearman")
+lks <- c("average","complete")
 dss <- c(0,1,2)
 nCores <- 3
 cl <-makeCluster(nCores, type="FORK")
@@ -41,8 +37,10 @@ result <- foreach(i=seq_along(dss), .combine=c) %dopar% {
     tmp0 <- list()
 	for (lk in lks) {
 	    for (dm in dms) {
-		res <- clusterboot(data=m.sub, B=100, clustermethod=dynamicCluster,
-				   dm=dm, ds=ds, lk=lk)
+
+		dis <- asDis(m.sub,dm=dm)
+		res <- clusterboot(data=dis, B=100, clustermethod=dynamicCluster,
+				   ds=ds, lk=lk)
 		id <- paste(dm,lk,ds,sep="_")
 		tmp0[[id]] <- res
 	    }}

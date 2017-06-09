@@ -36,8 +36,8 @@ dm <- "euclidean"
 lk <- "average"
 ds <- 1
 minSize <- 15
-clust <- dynamicCluster(t(m.sub), dm=dm,
-				 lk=lk,
+dis <- asDis(m.sub,dm=dm)
+clust <- dynamicCluster(dis=dis, lk=lk,
 				 ds=ds,
 				 output="Cluster",
 				 minSize=minSize)

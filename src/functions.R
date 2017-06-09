@@ -65,18 +65,9 @@ BrenneckeHVG <- function (m, suppress.plot = FALSE, fdr = 0.1,
 	}
 	return(names(means)[sig])
     }
-dynamicCluster <- function(m, dm="euclidean", lk="average", ds=0, output="ForBootstrap", minSize=15) {
-    print("Clustering on n*p matrix")
-    trafM <- log2(m+1)
-
-    #Dissimilarity Measure
-    if(dm=="euclidean") {
-	dis <- dist(trafM,method=dm)
-    } else {
-	dis <- as.dist((1-cor(t(trafM),method=dm))/2)
-    }
-
-
+dynamicCluster <- function(dis, lk="average", ds=0, output="ForBootstrap", minSize=15) {
+    # ensure dis is dis matrix
+    dis <- as.dist(dis)
     #Hierarchical Clustering
     htree <- hclust(dis, method=lk)
     #Tree Cut
@@ -125,7 +116,56 @@ asSim <- function(distance) {
     simMat <- 1-(distance-min(distance))/(max(distance)-min(distance))
 }
 
+asDis <- function(m, dm="euclidean") {
+		logM <- t(log2(m+1))
+		#Dissimilarity Measure
+		if(dm=="euclidean") {
+		    dis <- dist(logM,method=dm)
+		} else {
+		    dis <- as.dist((1-cor(t(logM),method=dm))/2)
+		}
+		return(dis)
+}
+
+
 grab_grob <- function(){
   grid.echo()
   grid.grab()
 }
+compClustering <- function(m,fD,fs="brennecke",dm="spearman",lk="ward.D2",ds=0,minSize=15) {
+
+    #Feature Selection
+    keep <- fD[,fs]
+    trafM <- log2(m[keep,]+1)
+
+    #Dissimilarity Measure
+    if(dm=="euclidean") {
+	dis <- dist(trafM,method=dm)
+    } else {
+	dis <- as.dist((1-cor(t(trafM),method=dm))/2)
+    }
+
+    #Hierarchical Clustering
+    htree <- hclust(dis, method=lk)
+    #Tree Cut
+    cluss <- cutreeDynamic(htree,distM=as.matrix(dis),deepSplit=ds,minClusterSize=minSize)
+
+    #Compute Validation Statistics
+    clstats <- cluster.stats(d=dis, cluss)
+    asw <- clstats$avg.silwidth
+    rss <- clstats$within.cluster.ss
+    con <- connectivity(distance=dis,clusters=cluss)
+
+    #Compile output
+    out <- data.frame("FeatureSelection"=fs,
+		      "Dissimilarity"=dm,
+		      "Linkage"=lk,
+		      "DeepSplit"=ds,
+		      "Statistic"=c("Average Silhouette Width",
+				    "Within Cluster SS",
+				    "Connectivity"),
+		      "Value"=c(asw,rss,con),
+		      "K"=max(cluss),
+		      "m"=length(cluss))
+}
+
