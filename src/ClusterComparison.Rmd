@@ -60,9 +60,10 @@ m <- t(t(m)/pD$sf)
 clustDat <- filter(clustDat, Statistic=="Average Silhouette Width")
 compPlot <- ggplot(clustDat, aes(x=as.character(DeepSplit), y=Value, color=Linkage,
 			    group=Linkage)) +
-geom_point() +
 geom_path() +
-facet_grid(.~Dissimilarity, scales="free_y")
+geom_point(aes(size=K)) +
+facet_grid(.~Dissimilarity, scales="free_y") +
+ylab("Average Silhouette Width") +
 compPlot
 
 #Which Linkage is best
@@ -218,41 +219,4 @@ renderPlot({
 	 plotGeneDist(m, pD, fD, genes, colorBy="cluster")
    }, width=800, height=800)
 
-
-
-
-#Compare Cluster stability 
-# boot1 <- bootDat[["euclidean_average_0"]]
-
-#Clustering
-# clust1 <- dynamicCluster(m.sub, dm="euclidean",
-#                          lk="average",
-#                          ds=0,
-#                          output="Cluster")
-# clust2 <- dynamicCluster(m.sub, dm="pearson",
-#                          lk="average",
-#                          ds=0,
-#                          output="Cluster")
-# clust3 <- dynamicCluster(m.sub, dm="pearson",
-#                          lk="ward.D2",
-#                          ds=0,
-#                          output="Cluster")
-
-#Looking a different clusters in depth
-# 
-# fPCA <- t(trafM)
-# fPCA <- scale(fPCA,scale=TRUE,center=TRUE)
-# set.seed(rnd_seed)
-# tsn <- Rtsne(fPCA,perplexity=10,initial_dims=5)
-# pD$tSNE1 <- tsn$Y[,1]
-# pD$tSNE2 <- tsn$Y[,2]
-# tsnePlot <- ggplot(pD, aes(x=tSNE1, y=tSNE2, shape=Condition, color=as.factor(cluster))) +
-#     geom_point(alpha=0.8,size=2) +
-#     theme_bw()
-# tsnePlot
-# 
-# tsnePlot <- ggplot(pD.filtered, aes(x=tSNE1, y=tSNE2, color=log2(Acta2+1), shape=Replicate)) +
-#     geom_point(alpha=0.8,size=2) +
-#     theme_bw()
-# tsnePlot
 ```

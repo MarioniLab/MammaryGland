@@ -27,7 +27,7 @@ m.sub <- m[fD$highVar,]
 
 # Combinations of clustering parameters
 dms <- c("euclidean","pearson","spearman")
-lks <- c("average","complete")
+lks <- c("average","complete","ward.D2")
 dss <- c(0,1,2)
 nCores <- 3
 cl <-makeCluster(nCores, type="FORK")

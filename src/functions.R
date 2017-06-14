@@ -136,7 +136,7 @@ compClustering <- function(m,fD,fs="brennecke",dm="spearman",lk="ward.D2",ds=0,m
 
     #Feature Selection
     keep <- fD[,fs]
-    trafM <- log2(m[keep,]+1)
+    trafM <- t(log2(m[keep,]+1))
 
     #Dissimilarity Measure
     if(dm=="euclidean") {
