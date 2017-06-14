@@ -3,3 +3,8 @@ data/
 paper/*
 !paper/main.tex
 !paper/references.bib
+
+submissions/resubmission/*
+!submissions/resubmission/letter.tex
+!submissions/resubmission/response.tex
+!submissions/ncomm_130417/127278_0_merged_pdf_2284711_llcbl4.pdf
