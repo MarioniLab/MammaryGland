@@ -1,0 +1,79 @@
+\documentclass{article}
+\usepackage[a4paper]{geometry}
+\usepackage{pdfpages}
+\begin{document}
+\includepdf{letter.pdf}
+
+%---------------------Index-Swapping--------------------------------------
+\section*{Index swapping}
+After the submission of our manuscript the life science community has been made aware of substantial technical issues of the HiSeq4000.
+This is referred to as index-swapping and leads to the missassignment of reads to samples during de-multiplexing.
+The full scope of index-swapping has been extensively document by CITE and a response from Illumina can be found HERE.
+At the time of submission we were unaware of the mere possibility of this artifact and had thus not looked into this further.
+We will briefly summarize what index swapping is and how it affected our data.
+We show that 
+\subsection*{What is index-swapping}
+\subsection*{Impact on the presented data}
+\subsection*{Biological conclusion remain unaffected}
+\subsection*{Conclusions}
+
+%---------------------Addressing comments--------------------------------------
+\section*{Reviewers' Comments}
+\subsection*{Reviewer \#1}
+\textbf{1. Can it be excluded that Cluster 9 is a non-epithelial contamination? For instance, microvascular or perivascular cells? Cluster 9 cells, similar to myoepithelial cells, express some smooth muscle markers at low/medium level, however, they hardly express any epithelial marker.}\\
+\ldots
+
+\textbf{2. Samples from nulliparous and post-involution mice - NP1, NP2, PI1 and PI2. It is not mentioned at what stage of estrus cycle these mice were sacrificed, yet, it is known that gene expression is differentially regulated at different estrus stages. The data shown in Supplementary Figure 2a reveal significant differences in cell distribution between NP1 and NP2, as well as between PI1 and PI2. In pregnancy and lactation, hormonal levels should not differ significantly between individuals 1 and 2. Consistently, the samples 1 and 2 from pregnant and lactating mice, look similar within each stage - L1 and L2 samples, as well as G1 and G2 samples perfectly overlap in Supplementary Figure 2a. Ideally, cycling (NP and PI) mice should have been synchronized prior to cell sorting. This issue should be mentioned in the discussion.}\\
+\ldots
+
+\textbf{3. Why is Acta2 relatively high in some luminal clusters shown in Supplementary Figure 2c, – for instance, in Cluster 2, secretory luminal population? Is it “experimental noise”? Could the authors comment.
+Page 7, lines 148-149.”… as well as transcription factors that have not previously been associated with luminal differentiation such as Creb5, Hey1…”. This statement is inexact. On the contrary, Hey1 is a well established marker of luminal progenitors (Bouras et al., 2008. Notch Signaling Regulates Mammary Stem Cell Function and Luminal Cell-Fate Commitment, Cell Stem Cell, 3: 429).
+Page 9, lines 203-205. In contrast to authors’ statement, it is not clear how the results of this work “might help to explain some of the conflicting results from lineage tracing studies”. The contradictions in lineage tracing data concern mostly the bipotency of basal stem cells, whilst, as the authors mention, the results of this work rather support the concept of lineage-restricted progenitor/stem cells in both compartments (Figure 2a).}\\
+\ldots
+
+\textbf{4. Page 4, lines 87-88 “…from two independent mice.” What does “independent” stand for? Littermates?}\\
+\ldots
+
+\textbf{5. Page 9, lines 189-190 “…luminal progenitor cells maintain memory of having undergone gestation and involution.” Maybe, “gestation and lactation”?}\\
+\ldots
+
+\subsection*{Reviewer \#2}
+\textbf{1. A major consideration with this paper is the use of Epcam to sort epithelial cells. Prior seminal publications (eg doi:10.1038/nm.2000) using human cells demonstrate an important contribution of Epcam negative epithelial cells to stem / progenitor activity in the mammary gland. What is the evidence that Epcam quantitatively recovers mouse mammary epithelia? The consequence of this methodology is the possible exclusion of subsets of mammary epithelial cells from the data capture.}\\
+\ldots
+
+\textbf{2. Very few studies have used this system to sample diverse epithelial cell types, so it is not yet clear what sampling bias might be present in this method. The authors should compare the proportion of cell types represented in the single cell data with equivalents identified by flow cytometry at these developmental stages to address sampling bias.}\\
+\ldots
+
+\textbf{3. The authors conducted analysis on biological replicates, however this is not described in the results section. This is an important consideration with a new technology and the variability between replicates should be appropriately quantitated and addressed in the results. }\\
+\ldots
+
+\textbf{4. Given that the authors see this dataset as a resource, data should be made available for download.}\\
+\ldots
+
+\textbf{5. Terminal End Buds (TEBs) are a critical mediator of pubertal development, with unique gene expression and function. TEBs start to disappear by the 8 weeks of age point used for nulliparous animals, so these cell types may not have been sampled. Do the authors observe TEBs at this time point?}\\
+\ldots
+
+\textbf{Minor issues: \\
+1. The link to the scripts on github is not operational \\ 
+2. Was estrous stage controlled, measured or considered for the nulliparous mice? This will impact gene expression. \\
+3. Please include a summary table of the number of cells captured from each animal, both total and in each cluster \\
+4. The description of Fig 1 could use more cross referencing to known markers of each subset. \\
+5. The colours of dots in each figure are very hard to discriminate, especially for those with diminished colour vision. Please try to choose a higher contrast palette or the use of patterns to distinguish groups. \\
+6. Please label all axes, Eg. Fig A,D,E \\
+7. Please conduct pathway and ontology analysis of the genes changing through pseudotime- described in lines 144-151. \\
+8. C7 doesn’t appear in Fig 2A. Please correct. \\
+9. The genes referred to in lines 134-136 can’t all be seen in Fig 1d.}\\
+\ldots
+
+
+\subsection*{Reviewer \#3}
+\textbf{1. The authors need to do independent experiments to confirm that the lactation stage cells really express so low number of genes. I am not convinced that an individual cell at L1 stage only express 400 genes. The authors should did single cell RNA-seq using SMART-seq2 protocol for all of these four stages of cells, probably five to ten single cells for each stage and check if lactation stage cells really express so low number of genes compared with the other three stages of cells.}\\
+\ldots
+
+\textbf{2. For Cluster 9, it seems that only 15 cells are there. And for Cluster 8, it seems that only 26 cells are there. Are they real clusters or just doublets? The authors should analyze further of these two clusters. For example, are C8 cells are really intermediate state of C2 \& C5? Or they are merely doublets of C2+C5 cells? Probably the authors should capture all of the differentially expressed genes between C2 and C5 and check if C8 cells in general express these genes at 1/2 of the level of sum of C2+C5. Or maybe do some immunostaining to see if the cells double positive for C2 and C5 markers are really there.}\\
+\ldots
+
+\textbf{3. The authors should give the details of the filtration of the poor quality cells: exactly how many genes detected, how many UMI detected, what percentage of reads mapped to mitochondrial genes. Are they the same for all of the four stages of cells? Or different criteria for different stages of cells?}\\
+\ldots
+
+\end{document}
