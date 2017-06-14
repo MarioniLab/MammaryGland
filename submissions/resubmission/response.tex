@@ -1,4 +1,14 @@
 \documentclass{article}
+\usepackage[backend=bibtex,
+	    natbib=true,
+	    autocite=superscript,
+	    style=nature,
+	    url=true,
+	    sorting=none,
+	    isbn=false]{biblatex} 
+\addbibresource{../../paper/references.bib}
+\usepackage{hyperref}
+\usepackage{url}
 \usepackage[a4paper]{geometry}
 \usepackage{pdfpages}
 \begin{document}
@@ -6,12 +16,15 @@
 
 %---------------------Index-Swapping--------------------------------------
 \section*{Index swapping}
-After the submission of our manuscript the life science community has been made aware of substantial technical issues of the HiSeq4000.
+After the submission of our manuscript \citeauthor{Sinha2017} reported a spreading-of-signal from multiplexed samples on the HiSeq 4000 \autocite{Sinha2017}.
 This is referred to as index-swapping and leads to the missassignment of reads to samples during de-multiplexing.
-The full scope of index-swapping has been extensively document by CITE and a response from Illumina can be found HERE.
-At the time of submission we were unaware of the mere possibility of this artifact and had thus not looked into this further.
-We will briefly summarize what index swapping is and how it affected our data.
-We show that 
+The full scope of index-swapping has been extensively documented in \autocite{Sinha2017} to which Illumina has responed in the form of a white paper \autocite{Illumina}.
+At the time of submission we were unaware of the mere possibility of this artifact and have thus only now analysed our data in this regard.
+
+We found that index swapping although strongly affecting our data has not altered our biological conclusions.
+
+For this we have re-sequenced the library on a HiSeq2500 as well as repeated the entire experiment.
+In both instance our biological conclusions held, which we see as strong support for the validity of our claims.
 \subsection*{What is index-swapping}
 \subsection*{Impact on the presented data}
 \subsection*{Biological conclusion remain unaffected}
@@ -76,4 +89,5 @@ Page 9, lines 203-205. In contrast to authors’ statement, it is not clear how 
 \textbf{3. The authors should give the details of the filtration of the poor quality cells: exactly how many genes detected, how many UMI detected, what percentage of reads mapped to mitochondrial genes. Are they the same for all of the four stages of cells? Or different criteria for different stages of cells?}\\
 \ldots
 
+\printbibliography
 \end{document}
