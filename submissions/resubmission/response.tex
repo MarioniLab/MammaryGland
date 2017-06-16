@@ -8,6 +8,7 @@
 	    isbn=false]{biblatex} 
 \addbibresource{../../paper/references.bib}
 \usepackage{hyperref}
+\usepackage{graphicx, subcaption}
 \usepackage{url}
 \usepackage[a4paper]{geometry}
 \usepackage{pdfpages}
@@ -17,16 +18,89 @@
 %---------------------Index-Swapping--------------------------------------
 \section*{Index swapping}
 After the submission of our manuscript \citeauthor{Sinha2017} reported a spreading-of-signal from multiplexed samples on the HiSeq 4000 \autocite{Sinha2017}.
-This is referred to as index-swapping and leads to the missassignment of reads to samples during de-multiplexing.
-The full scope of index-swapping has been extensively documented in \autocite{Sinha2017} to which Illumina has responed in the form of a white paper \autocite{Illumina}.
+This is referred to as index-swapping and leads to wrongly assigning reads to samples during de-multiplexing.
+The full scope of index-swapping has been extensively documented in \autocite{Sinha2017} to which Illumina has responded in the form of a white paper \autocite{Illumina}.
 At the time of submission we were unaware of the mere possibility of this artifact and have thus only now analysed our data in this regard.
+We found that index swapping although substantially affecting our data has not altered our biological conclusions.
+To show this we have re-sequenced the library on a HiSeq 2500, which is almost not affected by index-swapping.
+In addition, we have performed an independent repeat experiment, meaning that we have prepared fresh libraries from new samples and sequenced again on a HiSeq 2500.
+In both instances our biological conclusions held, which we see as strong support for the validity of our findings.
 
-We found that index swapping although strongly affecting our data has not altered our biological conclusions.
+%-------------------------------------------------------------------------
+\subsection*{Introduction}
+As mentioned above the underlying mechanisms and effects on de-multiplexing are extensively covered in \autocite{Sinha2017}, hence we only briefly introduce the topic to improve readability.
+Index-swapping is defined as the priming and extension of library molecules by free indexing primers.
+Mispriming of free indexing primers and extensions lead to the duplication of reads and incorporation of a new indexing sequence (\autoref{F1}A).
+Essentially, this allows information from one sample to bleed into other samples as exemplified in plate based scRNA-seq data from \autocite{Sinha2017}, where reads bleed into the rows or columns due to the swapping of one of the two indices (\autoref{F1}B).\\
+The library design of 10x libraries differs in the regard that the Illumina indices are used to identify samples (in our case e.g. ``Virgin Replicate 1'') instead of cells (\autoref{F1}C).
+Cells are distinguished by a 14bp cellular barcode which is drawn at random from a pool of $\sim$750,000 possible barcodes \autocite{Zheng2017}.
+In the event of index-swapping we would see the same read appearing in two or more samples, in which case the sequence of the cell barcode would also be identical.
+Hence, all reads that have swapped between samples can only be present in cells that share barcode sequences between samples.
+Now there are two potential scenarios.\\
+In the first scenario, two samples contain two cells that share the same barcode by pure chance, which would mean that reads between the two cells could be swapped between samples.
+The impact of this on 10x data is however expected to be small due to the small chance of observing one out of $\sim$750,000 possible barcodes in two samples.
+The second possibility is that a cell from sample A bleeds enough into sample B to provide sufficient reads to create a miniature copy of itself in sample B.
+The amount of bleedthrough necessary to create copies depends on the library size distribution of the cells present in the ``recipient'' sample due to how CellRanger distinguishes between cells and background.
 
-For this we have re-sequenced the library on a HiSeq2500 as well as repeated the entire experiment.
-In both instance our biological conclusions held, which we see as strong support for the validity of our claims.
-\subsection*{What is index-swapping}
+\begin{figure}
+    \begin{subfigure}[c]{0.5\textwidth}
+	\includegraphics[width=\textwidth]{img/swapping.png}
+    \caption{}
+    \end{subfigure}
+    \begin{subfigure}[c]{0.5\textwidth}
+	\includegraphics[width=\textwidth]{img/swapping2.png}
+    \caption{}
+    \end{subfigure}
+    \begin{subfigure}[c]{0.5\textwidth}
+	\includegraphics[width=\textwidth]{img/library.png}
+    \caption{}
+    \end{subfigure}
+    \caption{Overview of index swapping.
+	(\textbf{A}) illustrates the process of index-swapping during cluster generation with the ExAmp chemistry.
+	(\textbf{B}) shows the spreading-of-signal observed when a cell expresses high levels of a gene that is not expressed in other cells on the plate.
+	Swapping of a single barcode on either end then leads to the cross-hair pattern.
+	(\textbf{C}) illustration of the library generated from the 10x, Illumina barcodes that swap are highlighted. 
+	Figures \textbf{A} and \textbf{B} are adopted from \autocite{Sinha2017}.
+    }
+    \label{F1}
+\end{figure}
+
 \subsection*{Impact on the presented data}
+We first noted that the samples in our data share a high number of barcodes (\autoref{F2}A).
+In a one-by-one comparison between samples all possible comparisons show a higher number of barcodes shared than expected by chance (\autoref{F2}B).
+This suggests the presence of the aboved described second scenario, where index swapping causes cells to create minitaure copies in other samples.
+If this is the case we would also expect cells that share barcodes across samples to be highly similar.
+Indeed, we found that cells sharing the same barcode were almost always part of the same cluster, suggesting a high similarity \autoref{F2}C). \\
+Even if the rate of index swapping can be as high as 10\% \autocite{Sinha2017}, the ``pseudo-cells'' should be substantially smaller than the cell that gave rise to it. 
+Conclusively, in order for CellRanger to identify the ``pseudo-cells'' as cells the real cells in this sample need to have contained few cDNA molecules.
+
+
+\begin{enumerate}
+    \item More shared barcodes than expected
+    \item Cells sharing barcodes are highly similar
+\end{enumerate}
+\begin{enumerate}
+    \item Lactation sample is only composed of swapped barcodes
+    \item Lowest library size
+    \item Cells from all samples created fake cells
+\end{enumerate}
+\begin{figure}
+    \begin{subfigure}[c]{0.5\textwidth}
+	\includegraphics[width=\textwidth]{img/p1.pdf}
+    \caption{}
+    \end{subfigure}
+    \begin{subfigure}[c]{0.5\textwidth}
+	\includegraphics[width=\textwidth]{img/p2.pdf}
+    \caption{}
+    \end{subfigure}
+    \begin{subfigure}[c]{0.5\textwidth}
+	\includegraphics[width=\textwidth]{img/p3.pdf}
+    \caption{}
+    \end{subfigure}
+    \caption{Overview of index swapping.
+    }
+    \label{F2}
+\end{figure}
 \subsection*{Biological conclusion remain unaffected}
 \subsection*{Conclusions}
 
