@@ -12,6 +12,8 @@
 \usepackage{url}
 \usepackage[a4paper]{geometry}
 \usepackage{pdfpages}
+\renewcommand{\thesubfigure}{\Alph{subfigure}}
+\newcommand{\comment}[1]{\textit{\textcolor{blue}{Comment: #1}}}
 \begin{document}
 \includepdf{letter.pdf}
 
@@ -21,7 +23,7 @@ After the submission of our manuscript \citeauthor{Sinha2017} reported a spreadi
 This is referred to as index-swapping and leads to wrongly assigning reads to samples during de-multiplexing.
 The full scope of index-swapping has been extensively documented in \autocite{Sinha2017} to which Illumina has responded in the form of a white paper \autocite{Illumina}.
 At the time of submission we were unaware of the mere possibility of this artifact and have thus only now analysed our data in this regard.
-We found that index swapping although substantially affecting our data has not altered our biological conclusions.
+We found that index-swapping although substantially affecting our data has not altered our biological conclusions.
 To show this we have re-sequenced the library on a HiSeq 2500, which is almost not affected by index-swapping.
 In addition, we have performed an independent repeat experiment, meaning that we have prepared fresh libraries from new samples and sequenced again on a HiSeq 2500.
 In both instances our biological conclusions held, which we see as strong support for the validity of our findings.
@@ -36,11 +38,17 @@ The library design of 10x libraries differs in the regard that the Illumina indi
 Cells are distinguished by a 14bp cellular barcode which is drawn at random from a pool of $\sim$750,000 possible barcodes \autocite{Zheng2017}.
 In the event of index-swapping we would see the same read appearing in two or more samples, in which case the sequence of the cell barcode would also be identical.
 Hence, all reads that have swapped between samples can only be present in cells that share barcode sequences between samples.
-Now there are two potential scenarios.\\
-In the first scenario, two samples contain two cells that share the same barcode by pure chance, which would mean that reads between the two cells could be swapped between samples.
-The impact of this on 10x data is however expected to be small due to the small chance of observing one out of $\sim$750,000 possible barcodes in two samples.
-The second possibility is that a cell from sample A bleeds enough into sample B to provide sufficient reads to create a miniature copy of itself in sample B.
-The amount of bleedthrough necessary to create copies depends on the library size distribution of the cells present in the ``recipient'' sample due to how CellRanger distinguishes between cells and background.
+Conceptually, we can distinguish three potential scenarios.\\
+In the first scenario, two samples contain two cells that share the same barcode by pure chance, which would mean that reads between the two cells could be swapped between samples in either direction.
+The impact of this is however expected to be small due to the small chance of observing one out of $\sim$750,000 possible barcodes in two samples.
+In the second scenario, only one of two samples (sample A) contains a cell with a specific barcode whereas the other does not (sample B).
+In this case, the swapping is mostly uni-directional, where sample A bleeds into B.
+Sample B only contains some background levels of reads for this barcode and the absolute number of reads swapped into the other sample should be insignificant.
+The third possibility arises when reads from sample A bleed enough into sample B to provide sufficient reads to create a miniature copy of itself in sample B.
+The amount of bleedthrough necessary to create copies depends on the library size distribution of the cells present in the ``recipient'' sample due to how CellRanger distinguishes between cells and background.\\
+In summary, the first scenario is a rare event that only affects very few cells.
+The effect of the second case on the data is negligible as this might only increase the general noise in the data to a small extent.
+The third scenario can be more severe depending on the library size distribution of the samples that were run together on the HiSeq 4000.
 
 \begin{figure}
     \begin{subfigure}[c]{0.5\textwidth}
@@ -55,7 +63,7 @@ The amount of bleedthrough necessary to create copies depends on the library siz
 	\includegraphics[width=\textwidth]{img/library.png}
     \caption{}
     \end{subfigure}
-    \caption{Overview of index swapping.
+    \caption{Overview of index-swapping.
 	(\textbf{A}) illustrates the process of index-swapping during cluster generation with the ExAmp chemistry.
 	(\textbf{B}) shows the spreading-of-signal observed when a cell expresses high levels of a gene that is not expressed in other cells on the plate.
 	Swapping of a single barcode on either end then leads to the cross-hair pattern.
@@ -66,24 +74,15 @@ The amount of bleedthrough necessary to create copies depends on the library siz
 \end{figure}
 
 \subsection*{Impact on the presented data}
-We first noted that the samples in our data share a high number of barcodes (\autoref{F2}A).
+\paragraph{Index swapping occurred}
+First, we noted that the samples in our data share a high number of barcodes (\autoref{F2}A).
 In a one-by-one comparison between samples all possible comparisons show a higher number of barcodes shared than expected by chance (\autoref{F2}B).
-This suggests the presence of the aboved described second scenario, where index swapping causes cells to create minitaure copies in other samples.
-If this is the case we would also expect cells that share barcodes across samples to be highly similar.
-Indeed, we found that cells sharing the same barcode were almost always part of the same cluster, suggesting a high similarity \autoref{F2}C). \\
-Even if the rate of index swapping can be as high as 10\% \autocite{Sinha2017}, the ``pseudo-cells'' should be substantially smaller than the cell that gave rise to it. 
-Conclusively, in order for CellRanger to identify the ``pseudo-cells'' as cells the real cells in this sample need to have contained few cDNA molecules.
+This suggests the presence of the third scenario, where index-swapping creates ``pseudo-cells''.
+If this is the case we would also expect cells that share barcodes across samples to be highly similar, which again would otherwise be non-expected.
+Indeed, we found that cells sharing the same barcode were almost always part of the same cluster, suggesting a high similarity (\autoref{F2}C).
+Lastly, we also identified a pattern per barcode of one cell with substantially more mRNA molecules than the remaining cells for that barcode (\autoref{F2}D). \\
+All of this suggested to us that index-swapping occurred and has led to the identification of ``pseudo-cells'' that are in fact only copies of other cells from other samples.\\
 
-
-\begin{enumerate}
-    \item More shared barcodes than expected
-    \item Cells sharing barcodes are highly similar
-\end{enumerate}
-\begin{enumerate}
-    \item Lactation sample is only composed of swapped barcodes
-    \item Lowest library size
-    \item Cells from all samples created fake cells
-\end{enumerate}
 \begin{figure}
     \begin{subfigure}[c]{0.5\textwidth}
 	\includegraphics[width=\textwidth]{img/p1.pdf}
@@ -97,13 +96,45 @@ Conclusively, in order for CellRanger to identify the ``pseudo-cells'' as cells 
 	\includegraphics[width=\textwidth]{img/p3.pdf}
     \caption{}
     \end{subfigure}
-    \caption{Overview of index swapping.
+    \begin{subfigure}[c]{0.5\textwidth}
+	\includegraphics[width=\textwidth]{img/p4.pdf}
+    \caption{}
+    \end{subfigure}
+    \caption{Index swapping compromised parts of the presented data.
+	(\textbf{A}) Number of barcodes detected in each samples, colored by the number of times each barcode appears in the entire dataset.
+	(\textbf{B}) Volcano-plot based of the number of shared barcodes versus the P value to observe at that many or more barcodes shared between any two samples.
+	P values are based on a hypergeometric test for all possible two-sample comparisons. \comment{add more detail about test?}
+	(\textbf{C}) Histogram of the fraction of cells with the same barcode that were identified in our analysis as being part of one cluster.
+	(\textbf{D}) Kernel density estimates of the distribution of ratios between the largest cell and the mean of the remaining cells for each barcode that was shared between multiple samples.
     }
     \label{F2}
 \end{figure}
+
+\paragraph{Cells identified in the lactation sample derive from index-swapping}
+We were surprised to find that the lactation samples only contained one single cell with a unique barcode.
+In addition, 313 out of all 314 non-unique barcodes across the entire dataset had at least one barcode appearing in the lactation sample and in 298 case was the cell with the largest library size not coming from the lactation sample (\autoref{F1}A, \autoref{F3}A).
+Further, we can look at the pattern of index-swapping in more detail, assuming that for each barcode the cell with the largest number of UMIs is the cell that gave rise to ``pseudo-cells'' with fewer UMIs.
+Here it becomes evident again that in the majority of cases one or both lactation samples received reads from swapping (\autoref{F3}B).
+This suggested to us that the vast majority of cells in the lactation samples are ``pseudo-cells'' derived from index-swapping from other samples. \\
+\autoref{F3}B also shows that in the few cases were reads were not swapped into the lactation samples, the lactation samples themselves appeared to be the one that were the donor samples.
+
+\begin{figure}
+    \begin{subfigure}[c]{0.5\textwidth}
+	\includegraphics[width=\textwidth]{img/p5.pdf}
+    \caption{}
+    \end{subfigure}
+    \begin{subfigure}[c]{0.5\textwidth}
+	\includegraphics[width=\textwidth]{img/p6.pdf}
+    \caption{}
+    \end{subfigure}
+    \caption{Lactation sample contained no cells.
+    }
+    \label{F3}
+\end{figure}
+
 \subsection*{Biological conclusion remain unaffected}
 \subsection*{Conclusions}
-
+\newpage
 %---------------------Addressing comments--------------------------------------
 \section*{Reviewers' Comments}
 \subsection*{Reviewer \#1}

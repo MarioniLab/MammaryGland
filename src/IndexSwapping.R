@@ -48,8 +48,8 @@ pD <- dplyr::left_join(pD,pD.add)
 # P1
 p1 <- ggplot(pD, aes(x=SampleID, fill=as.factor(bc.obs.Freq))) +
     geom_bar() +
-    ggtitle("Samples contain many shared barcodes") +
-    scale_fill_discrete(name="# Barcode observed") +
+    #     ggtitle("Samples contain many shared barcodes") +
+    scale_fill_discrete(name="Times barcode observed") +
     theme(legend.position="bottom",
 	  legend.direction="horizontal")
 
@@ -61,8 +61,8 @@ p2 <- ggplot(compDf, aes(x=shared, y=-log10(p.val))) +
     geom_point() +
     xlab("# shared Barcodes") +
     ylab("-log10(P)") +
-    geom_hline(yintercept=2,lty="dashed",color="red") +
-    ggtitle("Samples share more barcodes than expected by chance") 
+    geom_hline(yintercept=2,lty="dashed",color="red") 
+    #     ggtitle("Samples share more barcodes than expected by chance") 
 
 ggsave("../submissions/resubmission/img/p2.pdf",p2)
 
@@ -70,45 +70,113 @@ bcTab <- as.matrix(table(pD$bcs,pD$cluster))
 dupBcs <- pD[pD$bc.obs.Freq>1,"bcs"]
 bcTab <- bcTab[pD[pD$bcs %in% dupBcs,"bcs"],]
 freq <-  apply(bcTab,1,function(x) ifelse(max(x)>1,max(x),0))/apply(bcTab,1,sum) * 100
+freq <- freq[unique(names(freq))]
 pD.add <- data.frame("bcs"=names(freq),
 		   "freqSameCluster"=freq)
 pD <- dplyr::left_join(pD,pD.add,by="bcs")
 
 p3 <- ggplot(pD, aes(x=freqSameCluster)) +
-    geom_bar(color="black",fill="white") +
+    geom_bar(color="black",fill="grey") +
     xlab("Fraction of cells per shared barcode in the same cluster") +
-    ylab("Count") +
-    ggtitle("Cells that share barcodes cluster together")
+    ylab("Count") 
+    #     ggtitle("Cells that share barcodes cluster together")
 
 ggsave("../submissions/resubmission/img/p3.pdf",p3)
 
-# ---------- Lactation sample did not contain real cells --------------
-p4 <- ggplot(pD, aes(y=UmiSums,x=SampleID,fill=Condition)) +
-    geom_violin(draw_quantiles=0.5) +
-    scale_y_log10() +
-    theme(legend.position="bottom",
-	  legend.direction="horizontal")
+library(dplyr)
+
+ratioDf <- group_by(pD,bcs) %>%
+    mutate(largestCell=UmiSums==max(UmiSums)) %>%
+    mutate(largestSample=SampleID[largestCell]) %>%
+    mutate(ratio=max(UmiSums)/((sum(UmiSums)-max(UmiSums))/(n()-1))) %>%
+    ungroup() %>%
+    filter(largestCell)
+
+p4 <- ggplot(ratioDf, aes(x=ratio, fill=largestSample)) +
+    geom_density() +
+    xlab("Library size ratio of largest cell versus mean of remaining cells") 
+    #     ggtitle("Barcode groups contain one large cell and many small ones")
 
 ggsave("../submissions/resubmission/img/p4.pdf",p4)
 
-bleedBcs <- pD[pD$bc.obs.Freq==3 & pD$Condition=="L","bcs"]
-pD.add <- pD[pD$bcs %in% bleedBcs & pD$Condition!="L",]
-# pD.add$potOrigin <- paste(pD.add$Condition,pD.add$cluster,sep="-")
-pD.add$potOrigin <- pD.add$SampleID
-pD.add <- pD.add[,c("bcs","potOrigin")]
-pD <- dplyr::left_join(pD,pD.add)
-pD$potOrigin[pD$Condition!="L"] <- NA
+# ---------- Lactation sample did not contain real cells --------------
 
-p1 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=potOrigin,
-		     shape=Condition)) +
-    geom_point(size=1.5) +
+
+p5 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=Condition)) +
     theme_void(base_size=12) +
+    geom_point(size=1.5) +
+    geom_line(aes(group=bcs, color=NULL), lty="dashed",size=0.3, alpha=0.7) +
     guides(colour = guide_legend(override.aes = list(size=3))) +
-    ggtitle("t-SNE colored by condition-cluster combination of the cell that bled into lactation sample")  +
     theme(legend.position="bottom",legend.direction="horizontal",
 	  legend.title=element_blank()) 
 
-p1    
+p5    
+ggsave("../submissions/resubmission/img/p5.pdf",p5)
+
+fPlot <- filter(pD, bc.obs.Freq > 1) %>%
+    group_by(bcs) %>%
+    summarise(potOrigin=Condition[which.max(UmiSums)],
+	      targets=paste(sort(SampleID[-which.max(UmiSums)]),collapse="-")) %>% 
+    mutate(pattern=paste(potOrigin,targets,"_"))
+
+
+p6 <- ggplot(fPlot, aes(x=targets, fill=potOrigin)) +
+    geom_bar() +
+    theme(axis.text.x=element_text(angle=45,hjust=1)) +
+    xlab("Sample ID of smaller cells") +
+    scale_fill_discrete(name="Largest cell from") 
+
+ggsave("../submissions/resubmission/img/p6.pdf",p6)
+
+test <- filter(pD, bc.obs.Freq > 1) %>%
+    group_by(bcs) %>%
+    summarise(conts=any(Condition=="L"),
+	      LacSmall=Condition[which.max(UmiSums)]!="L")
+
+trueL <- group_by(pD, bcs) %>%
+    summarise(conts=Condition[which.max(UmiSums)]) %>%
+    filter(conts=="L") %>%
+    .$bcs
+
+sbst <- filter(pD, bcs %in% trueL) %>%
+    mutate(cluster=paste0("C",cluster))
+
+p7 <- ggplot(sbst, aes(x=bcs,y=UmiSums,fill=SampleID)) +
+    geom_bar(stat="identity",position="dodge") +
+    facet_grid(~cluster, scales="free") +
+    scale_color_brewer("Paired") +
+    ylab("Library Size") +
+    xlab("Barcode") +
+    coord_flip()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
