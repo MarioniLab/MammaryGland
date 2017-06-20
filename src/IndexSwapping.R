@@ -152,8 +152,37 @@ ggsave("../submissions/resubmission/img/p7.pdf",p7)
 
 
 
+# Load Data
+sbst <- pD[pD$Condition !="L" & !(pD$bcs %in% trueL), !(colnames(pD) %in% c("sample","bcs","bc.obs.Freq"))]
+barcodes <- as.character(sbst$barcode)
+spt <- strsplit(barcodes, split = "-", fixed = T)
+sbst$sample <- sapply(spt, function(x) x[2])
+sbst$bcs <- sapply(spt, function(x) x[1])
+sbst.add <- data.frame(bcs=names(table(sbst$bcs)),
+		     bc.obs=(table(sbst$bcs)))
+sbst.add <- sbst.add[,-2]
+sbst <- dplyr::left_join(sbst,sbst.add)
 
 
+p8 <- ggplot(sbst, aes(x=SampleID, fill=as.factor(bc.obs.Freq))) +
+    geom_bar() +
+    #     ggtitle("Samples contain many shared barcodes") +
+    scale_fill_discrete(name="Times barcode observed") +
+    theme(legend.position="bottom",
+	  legend.direction="horizontal")
+compDf <- compare(sbst$bcs, sbst$SampleID)
+p9 <- ggplot(compDf, aes(x=shared, y=-log10(p.val))) +
+    geom_point() +
+    xlab("# shared Barcodes") +
+    ylab("-log10(P)") +
+    geom_hline(yintercept=2,lty="dashed",color="red") 
+    #     ggtitle("Samples share more barcodes than expected by chance")
+
+p10 <- plot_grid(p8,p9,nrow=2)
+
+ggsave("../submissions/resubmission/img/p10.pdf",p10)
+
+# end
 
 
 
