@@ -101,7 +101,6 @@ ggsave("../submissions/resubmission/img/p4.pdf",p4)
 
 # ---------- Lactation sample did not contain real cells --------------
 
-
 p5 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=Condition)) +
     theme_void(base_size=12) +
     geom_point(size=1.5) +
@@ -141,13 +140,15 @@ trueL <- group_by(pD, bcs) %>%
 sbst <- filter(pD, bcs %in% trueL) %>%
     mutate(cluster=paste0("C",cluster))
 
-p7 <- ggplot(sbst, aes(x=bcs,y=UmiSums,fill=SampleID)) +
+p7 <- ggplot(sbst, aes(x=bcs,y=UmiSums /1000,fill=SampleID)) +
     geom_bar(stat="identity",position="dodge") +
     facet_grid(~cluster, scales="free") +
     scale_color_brewer("Paired") +
-    ylab("Library Size") +
+    ylab("Library Size [x1000]") +
     xlab("Barcode") +
     coord_flip()
+
+ggsave("../submissions/resubmission/img/p7.pdf",p7)
 
 
 

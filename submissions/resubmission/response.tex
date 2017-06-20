@@ -78,9 +78,9 @@ The third scenario can be more severe depending on the library size distribution
 First, we noted that the samples in our data share a high number of barcodes (\autoref{F2}A).
 In a one-by-one comparison between samples all possible comparisons show a higher number of barcodes shared than expected by chance (\autoref{F2}B).
 This suggests the presence of the third scenario, where index-swapping creates ``pseudo-cells''.
-If this is the case we would also expect cells that share barcodes across samples to be highly similar, which again would otherwise be non-expected.
+If this is the case we would also expect cells that share barcodes across samples to be highly similar, which again would otherwise not be expected.
 Indeed, we found that cells sharing the same barcode were almost always part of the same cluster, suggesting a high similarity (\autoref{F2}C).
-Lastly, we also identified a pattern per barcode of one cell with substantially more mRNA molecules than the remaining cells for that barcode (\autoref{F2}D). \\
+Lastly, we also identified a pattern per barcode where one cell has substantially more mRNA molecules than the remaining cells for that barcode (\autoref{F2}D). \\
 All of this suggested to us that index-swapping occurred and has led to the identification of ``pseudo-cells'' that are in fact only copies of other cells from other samples.\\
 
 \begin{figure}
@@ -111,12 +111,33 @@ All of this suggested to us that index-swapping occurred and has led to the iden
 \end{figure}
 
 \paragraph{Cells identified in the lactation sample derive from index-swapping}
-We were surprised to find that the lactation samples only contained one single cell with a unique barcode.
-In addition, 313 out of all 314 non-unique barcodes across the entire dataset had at least one barcode appearing in the lactation sample and in 298 case was the cell with the largest library size not coming from the lactation sample (\autoref{F1}A, \autoref{F3}A).
+\autoref{F1}A suggests that the lactation samples in particular were severely affected with only a single cell having a unique barcode.
+In addition, 313 out of all 314 non-unique barcodes across the entire dataset appeared at least once in the lactation sample and in 298 case was the cell with the largest library size not coming from the lactation sample (\autoref{F1}A, \autoref{F3}A).
+This suggests that these were the samples that were mainly involved in index swapping by soaking up reads from other samples.
 Further, we can look at the pattern of index-swapping in more detail, assuming that for each barcode the cell with the largest number of UMIs is the cell that gave rise to ``pseudo-cells'' with fewer UMIs.
 Here it becomes evident again that in the majority of cases one or both lactation samples received reads from swapping (\autoref{F3}B).
-This suggested to us that the vast majority of cells in the lactation samples are ``pseudo-cells'' derived from index-swapping from other samples. \\
-\autoref{F3}B also shows that in the few cases were reads were not swapped into the lactation samples, the lactation samples themselves appeared to be the one that were the donor samples.
+Together, this suggested to us that the vast majority of cells in the lactation samples are ``pseudo-cells'' derived from index-swapping.
+The most likely explanation for this is that the cells form the lactation sample either did not lyse properly or lysed before they were encapsulated in the beads.
+This explains the low amount of cDNA we observed for these samples (data not shown).
+On a HiSeq 2500 this would have led to the detection of only few cells.
+However, due to the index-swapping on the HiSeq 4000 these samples acted as a pool that soaked up index-swapped reads from other samples.\\
+\autoref{F3}B also shows that in the few cases were reads were not swapped into the lactation samples, the lactation samples themselves bled into the other samples.
+In total we found 17 barcodes that appeared to stem from true cells in the lactation samples, notably all cells of cluster 7 and 8 were part of this (\autoref{F3}C).
+The fact that the cells from lactation were highly likely to bleed into other samples can be explained by the high relative concentration of their cDNA.
+As all cDNA were pooled at equal amounts for sequencing the lactation samples contained much more cDNA per cell than the other samples, increasing the likelihood of index-swapping.
+This also explains why the ratio of total number of unique molecules in \autoref{F1}C is low when the reads came from lactation.\\
+
+In summary, the data we presented was compromised by index swapping, a technical artifact specific to the Illumina HiSeq 4000 that leads to a spreading-of-signal.
+This had a substantial effect on the lactation samples, which - considering the new evidence - are most likely to have been almost completely avoid of any true cells.
+This means that all inference based on these two sample are meaningless. 
+In addition, two of the identified clusters (C7, C8) are now also questionable as they are made up of much fewer cells than previously thought.\\
+In order to gauge how much this has impacted the biological conclusion we drew from our analysis we re-sequenced the same cDNA library on a HiSeq 2500.
+Furthermore, we have repeated the entire experiment taking some of the reviewers' comments into consideration in order to be fully confident of our statements.
+In the following we will summarize the re-analysis of the HiSeq 2500 data from the first experiment.
+The second experiment can then be found in the revised version of the manuscript.
+
+
+
 
 \begin{figure}
     \begin{subfigure}[c]{0.5\textwidth}
@@ -127,12 +148,16 @@ This suggested to us that the vast majority of cells in the lactation samples ar
 	\includegraphics[width=\textwidth]{img/p6.pdf}
     \caption{}
     \end{subfigure}
+    \begin{subfigure}[c]{0.5\textwidth}
+	\includegraphics[width=\textwidth]{img/p7.pdf}
+    \caption{}
+    \end{subfigure}
     \caption{Lactation sample contained no cells.
     }
     \label{F3}
 \end{figure}
 
-\subsection*{Biological conclusion remain unaffected}
+\subsection*{Biological conclusions remain unaffected}
 \subsection*{Conclusions}
 \newpage
 %---------------------Addressing comments--------------------------------------
