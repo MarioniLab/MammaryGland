@@ -24,7 +24,7 @@ This is referred to as index-swapping and leads to wrongly assigning reads to sa
 The full scope of index-swapping has been extensively documented in \autocite{Sinha2017} to which Illumina has responded in the form of a white paper \autocite{Illumina}.
 At the time of submission we were unaware of the mere possibility of this artifact and have thus only now analysed our data in this regard.
 We found that index-swapping although substantially affecting our data has not altered our biological conclusions.
-To show this we have re-sequenced the library on a HiSeq 2500, which is almost not affected by index-swapping.
+To show this we have re-sequenced the cDNA library on a HiSeq 2500, which is almost not affected by index-swapping.
 In addition, we have performed an independent repeat experiment, meaning that we have prepared fresh libraries from new samples and sequenced again on a HiSeq 2500.
 In both instances our biological conclusions held, which we see as strong support for the validity of our findings.
 
@@ -51,26 +51,29 @@ The effect of the second case on the data is negligible as this might only incre
 The third scenario can be more severe depending on the library size distribution of the samples that were run together on the HiSeq 4000.
 
 \begin{figure}
-    \begin{subfigure}[c]{0.5\textwidth}
-	\includegraphics[width=\textwidth]{img/swapping.png}
-    \caption{}
-    \end{subfigure}
-    \begin{subfigure}[c]{0.5\textwidth}
-	\includegraphics[width=\textwidth]{img/swapping2.png}
-    \caption{}
-    \end{subfigure}
-    \begin{subfigure}[c]{0.5\textwidth}
-	\includegraphics[width=\textwidth]{img/library.png}
-    \caption{}
-    \end{subfigure}
-    \caption{Overview of index-swapping.
-	(\textbf{A}) illustrates the process of index-swapping during cluster generation with the ExAmp chemistry.
-	(\textbf{B}) shows the spreading-of-signal observed when a cell expresses high levels of a gene that is not expressed in other cells on the plate.
-	Swapping of a single barcode on either end then leads to the cross-hair pattern.
-	(\textbf{C}) illustration of the library generated from the 10x, Illumina barcodes that swap are highlighted. 
-	Figures \textbf{A} and \textbf{B} are adopted from \autocite{Sinha2017}.
-    }
-    \label{F1}
+\begin{minipage}[c][13cm][t]{.5\textwidth}
+  \vspace*{\fill}
+  \centering
+  \includegraphics[width=\textwidth]{img/swapping.png}
+  \subcaption{}
+\end{minipage}%
+\begin{minipage}[c][11cm][t]{.5\textwidth}
+  \vspace*{\fill}
+  \centering
+  \includegraphics[width=\textwidth]{img/swapping2.png}
+  \subcaption{}
+  \par\vfill
+  \includegraphics[width=\textwidth]{img/library.png}
+  \subcaption{}
+\end{minipage}
+\caption{Overview of index-swapping.
+    (\textbf{A}) illustrates the process of index-swapping during cluster generation with the ExAmp chemistry.
+    (\textbf{B}) shows the spreading-of-signal observed when a cell expresses high levels of a gene that is not expressed in other cells on the plate.
+    Swapping of a single barcode on either end then leads to the cross-hair pattern.
+    (\textbf{C}) illustration of the library generated from the 10x, Illumina barcodes that swap are highlighted. 
+    Figures \textbf{A} and \textbf{B} are adopted from \autocite{Sinha2017}.
+}
+\label{F1}
 \end{figure}
 
 \subsection*{Impact on the presented data}
@@ -124,8 +127,8 @@ However, due to the index-swapping on the HiSeq 4000 these samples acted as a po
 \autoref{F3}B also shows that in the few cases were reads were not swapped into the lactation samples, the lactation samples themselves bled into the other samples.
 In total we found 17 barcodes that appeared to stem from true cells in the lactation samples, notably all cells of cluster 7 and 8 were part of this (\autoref{F3}C).
 The fact that the cells from lactation were highly likely to bleed into other samples can be explained by the high relative concentration of their cDNA.
-As all cDNA were pooled at equal amounts for sequencing the lactation samples contained much more cDNA per cell than the other samples, increasing the likelihood of index-swapping.
-This also explains why the ratio of total number of unique molecules in \autoref{F1}C is low when the reads came from lactation.\\
+As all cDNA libraries were pooled at equal amounts for sequencing the lactation samples had much more cDNA per cell than the other samples, increasing the likelihood of index-swapping.
+\comment{explain why ratio in \autoref{F1}C is low for lactation?}
 
 In summary, the data we presented was compromised by index swapping, a technical artifact specific to the Illumina HiSeq 4000 that leads to a spreading-of-signal.
 This had a substantial effect on the lactation samples, which - considering the new evidence - are most likely to have been almost completely avoid of any true cells.
@@ -134,9 +137,7 @@ In addition, two of the identified clusters (C7, C8) are now also questionable a
 In order to gauge how much this has impacted the biological conclusion we drew from our analysis we re-sequenced the same cDNA library on a HiSeq 2500.
 Furthermore, we have repeated the entire experiment taking some of the reviewers' comments into consideration in order to be fully confident of our statements.
 In the following we will summarize the re-analysis of the HiSeq 2500 data from the first experiment.
-The second experiment can then be found in the revised version of the manuscript.
-
-
+The repeat experiment can then be found in the revised version of the manuscript.
 
 
 \begin{figure}
