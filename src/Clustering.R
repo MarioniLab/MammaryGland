@@ -13,7 +13,7 @@ source("functions.R")
 
 # Load Data
 rnd_seed <- 300
-dataList <- readRDS("../data/Robjects/ExpressionList_QC.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
 
 m.full <- dataList[[1]]
 pD.full <- dataList[[2]]
@@ -115,4 +115,4 @@ out <- list()
 out[[1]] <- m.full
 out[[2]] <- pD.out
 out[[3]] <- fD.out
-saveRDS(out,file="../data/Robjects/ExpressionList_Clustered.rds")
+saveRDS(out,file="../data/Robjects/secondRun_2500/ExpressionList_Clustered.rds")

@@ -3,7 +3,7 @@
 library(scran)
 
 # Load Data
-dataList <- readRDS("../data/Robjects/ExpressionList_Clustered.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Clustered.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
@@ -36,4 +36,4 @@ m <- log2(m+1)
 cls <- as.character(pD$cluster)
 markers <- findMarkers(m,cls)
 
-saveRDS(markers,"../data/Robjects/DEList.rds")
+saveRDS(markers,"../data/Robjects/secondRun_2500/DEList.rds")

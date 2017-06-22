@@ -36,4 +36,4 @@ fDat <- mutate(fDat,
 
 # Save data
 DataList <- list("phenoData"=pDat, "featureData"=fDat, "counts"=cDat)
-saveRDS(DataList,file="../data/Robjects/ExpressionList.rds")
+saveRDS(DataList,file="../data/Robjects/secondRun_2500/ExpressionList.rds")

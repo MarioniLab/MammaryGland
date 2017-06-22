@@ -8,8 +8,8 @@ library(ggplot2)
 library(DT)
 source(file.path("functions.R"))
 
-dataList <- readRDS(file.path("../data/Robjects/ExpressionList_Clustered.rds"))
-deList <- readRDS(file.path("../data/Robjects/DEList.rds"))
+dataList <- readRDS(file.path("../data/Robjects/secondRun_2500/ExpressionList_Clustered.rds"))
+deList <- readRDS(file.path("../data/Robjects/secondRun_2500/DEList.rds"))
 #Commence
 m <- dataList[[1]]
 pD <- dataList[[2]]

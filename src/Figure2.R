@@ -12,8 +12,8 @@ library(gridExtra)
 source("functions.R")
 
 # Load Data
-dataList <- readRDS("../data/Robjects/ExpressionList_Clustered.rds")
-dms <- read.csv("../data/Robjects/dm_all.csv")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Clustered.rds")
+dms <- read.csv("../data/Robjects/secondRun_2500/dm_all.csv")
 pD <- dataList[[2]]
 pD <- right_join(pD,dms,by="barcode")
 
@@ -69,7 +69,7 @@ clustLeg <- ggplot(forcLeg, aes(x=tSNE1,y=tSNE2,color=cluster)) +
 clustLeg <- get_legend(clustLeg)
 
 # ---- LuminalOnly ----
-dms <- read.csv("../data/Robjects/dm_luminal.csv")
+dms <- read.csv("../data/Robjects/secondRun_2500/dm_luminal.csv")
 pD <- dataList[[2]]
 pD <- right_join(pD,dms,by="barcode")
 

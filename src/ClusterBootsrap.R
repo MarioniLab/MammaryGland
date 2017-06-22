@@ -9,7 +9,7 @@ require(clValid)
 source("functions.R")
 
 # Load Data
-dataList <- readRDS("../data/Robjects/ExpressionList_QC.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
@@ -47,4 +47,4 @@ result <- foreach(i=seq_along(dss), .combine=c) %dopar% {
     return(tmp0)}
 stopCluster(cl)
 # Save
-saveRDS(result, "../data/Robjects/ClusterBootstrap.rds")
+saveRDS(result, "../data/Robjects/secondRun_2500/ClusterBootstrap.rds")

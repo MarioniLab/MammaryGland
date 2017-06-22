@@ -12,7 +12,7 @@ source("functions.R")
 
 # Load Data
 rnd_seed <- 300
-dataList <- readRDS("../data/Robjects/ExpressionList_Clustered.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Clustered.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
@@ -133,11 +133,11 @@ p <- ggplot(out, aes(DC1,DC2, color=cluster)) +
 pal <- brewer.pal(n=9,name="Paired")[c(1,2,3,5,8,9)]
 
 # Run script if not done yet
-if (!file.exists("../data/Robjects/ExpressionList_Monocle.rds")){
+if (!file.exists("../data/Robjects/secondRun_2500/ExpressionList_Monocle.rds")){
     source("Monocle.R")
 }
 
-monoc <- readRDS("../data/Robjects/ExpressionList_Monocle.rds")
+monoc <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Monocle.rds")
 monoc.plt <- monoc[["plot"]] %+% guides(color=FALSE)
 
 # Combine plots

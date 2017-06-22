@@ -5,7 +5,7 @@ source("functions.R")
 
 # Load Data
 rnd_seed <- 300
-dataList <- readRDS("../data/Robjects/ExpressionList_Clustered.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Clustered.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 
@@ -80,7 +80,7 @@ for (cell in cells) {
     }
 
     # save
-    fileName <- sprintf("../data/Robjects/dm_%s.csv",cell)
+    fileName <- sprintf("../data/Robjects/secondRun_2500/dm_%s.csv",cell)
     write.csv(dms, file=fileName, row.names=FALSE)
 }
 

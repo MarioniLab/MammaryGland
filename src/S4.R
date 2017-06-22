@@ -5,9 +5,9 @@ library(viridis)
 library(cowplot)
 library(RColorBrewer)
 
-out <- readRDS("../data/Robjects/BranchDEList.rds")
-dataList <- readRDS("../data/Robjects/ExpressionList_Clustered.rds")
-dms <- read.csv("../data/Robjects/dm_luminal.csv")
+out <- readRDS("../data/Robjects/secondRun_2500/BranchDEList.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Clustered.rds")
+dms <- read.csv("../data/Robjects/secondRun_2500/dm_luminal.csv")
 
 pD <- dataList[[2]]
 pD <- right_join(pD,dms,by="barcode")

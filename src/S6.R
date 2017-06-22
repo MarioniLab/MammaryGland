@@ -12,7 +12,7 @@ library(RColorBrewer)
 source("functions.R")
 
 # Load Data
-dataList <- readRDS("../data/Robjects/ExpressionList_Clustered.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Clustered.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
@@ -81,7 +81,7 @@ subp0 <- plot_grid(pcplot, pLoad, rel_widths=c(1,.8),labels="auto")
 
 
 # ---- DEAnalysis4vs5 ----
-topTab <- read.csv("../data/Robjects/C4vsC5DE.csv")
+topTab <- read.csv("../data/Robjects/secondRun_2500/C4vsC5DE.csv")
 
 deGenes <- filter(topTab, FDR < 0.01, logFC > 0) %>%. $symbol
 allGenes <- topTab$symbol

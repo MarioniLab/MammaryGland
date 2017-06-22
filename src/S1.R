@@ -11,7 +11,7 @@ library(cowplot)
 source("functions.R")
 
 # Load Data
-dataList <- readRDS("../data/Robjects/ExpressionList.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList.rds")
 m <- dataList[["counts"]]
 pD <- dataList[["phenoData"]]
 fD <- dataList[["featureData"]]

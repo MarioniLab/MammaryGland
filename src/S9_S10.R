@@ -15,8 +15,8 @@ library(gridExtra)
 source("functions.R")
 
 # Load Data
-bootDat <- readRDS("../data/Robjects/ClusterBootstrap.rds")
-dataList <- readRDS("../data/Robjects/ExpressionList_QC.rds")
+bootDat <- readRDS("../data/Robjects/secondRun_2500/ClusterBootstrap.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
 
 m.full <- dataList[[1]]
 pD.full <- dataList[[2]]

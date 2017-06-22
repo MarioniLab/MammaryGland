@@ -10,7 +10,7 @@ library(cowplot)
 library(RColorBrewer)
 source("functions.R")
 
-dataList <- readRDS("../data/Robjects/ExpressionList_Clustered.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Clustered.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
@@ -48,7 +48,7 @@ dev.off()
 
 # ---- ProgenitorvsLuminal ----
 
-progenitorDE <- read.csv("../data/Robjects/ProgenitorDE.csv")
+progenitorDE <- read.csv("../data/Robjects/secondRun_2500/ProgenitorDE.csv")
 # genes to highlight
 interest <- filter(progenitorDE, Gene %in% c("Kit","Hey1","Cd14",
 					"Prlr","Esr1","Pgr"))
@@ -70,7 +70,7 @@ subP0 <- plot_grid(simMat[[4]],p,labels=c("a","b"))
 
 # ---- DEC4vsC5 ----
 
-topTab <- read.csv("../data/Robjects/C4vsC5DE.csv")
+topTab <- read.csv("../data/Robjects/secondRun_2500/C4vsC5DE.csv")
 
 # Highlight genes with lactation/immune annotation
 lac <- c("Btn1a1","Lalba","B4galt1","Csn3","Csn1s2a","Csn1s1","Csn2","Hk2","Xdh","Vegfa")

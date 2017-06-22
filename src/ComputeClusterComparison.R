@@ -8,7 +8,7 @@ library(pheatmap)
 source("functions.R")
 
 rnd_seed <- 300
-dataList <- readRDS("../data/Robjects/ExpressionList_QC.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
 
 m <- dataList[[1]]
 pD <- dataList[[2]]
@@ -46,4 +46,4 @@ result <- foreach (i=seq_along(dms), .combine=rbind) %dopar% {
     return(tmp0)}
 stopCluster(cl)
 
-saveRDS(result,file="../data/Robjects/ClusterComparison.rds")
+saveRDS(result,file="../data/Robjects/secondRun_2500/ClusterComparison.rds")

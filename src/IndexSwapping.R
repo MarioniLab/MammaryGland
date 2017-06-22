@@ -29,7 +29,7 @@ compare <- function(barcodes, samples) {
 }
 
 # Load Data
-dList <- readRDS("../data/Robjects/ExpressionList_Clustered.rds")
+dList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Clustered.rds")
 pD <- dList[[2]]
 
 # Extract barcodes by removing sampleID from bc
