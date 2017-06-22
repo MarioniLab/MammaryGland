@@ -1,4 +1,5 @@
 *.rds
+*.html
 data/
 paper/*
 !paper/main.tex
