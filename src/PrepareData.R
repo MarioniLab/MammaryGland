@@ -6,7 +6,7 @@ library(dplyr)
 # ---- ReadData ----
 
 # Read in output from cell ranger using cellrangerRkit
-gene_bc_matrix <- load_cellranger_matrix("../data/CellRangerData/MammaryGland",
+gene_bc_matrix <- load_cellranger_matrix("../data/CellRangerData/secondRun_2500/MammaryGland",
 					 genome="mm10")
 pDat <- data.frame(pData(gene_bc_matrix))
 fDat <- data.frame(fData(gene_bc_matrix))
@@ -17,8 +17,8 @@ cDat <- as.matrix(exprs(gene_bc_matrix))
 # Add more info to phenotype Data
 pDat <- mutate(pDat, SeqID=substr(barcode,18,18)) %>%
 	       mutate(SeqID=mapvalues(SeqID,c("1","2","3","4","5","6","7","8"),
-					 c("A1","B1","C1","D1","E1","F1","G1","H1"))) %>%
-        mutate(SampleID=mapvalues(SeqID,c("A1","B1","C1","D1","E1","F1","G1","H1"),
+					 c("A7","B7","C7","D7","E7","F7","G7","H7"))) %>%
+        mutate(SampleID=mapvalues(SeqID,c("A7","B7","C7","D7","E7","F7","G7","H7"),
 				  c("NP1","G2","PI2","G1","L2","L1","NP2","PI1"))) %>%
 	mutate(Replicate=as.factor(substr(SampleID,nchar(SampleID),nchar(SampleID))),
 	       Condition=factor(substr(SampleID,1,nchar(SampleID)-1),levels=c("NP","G","L","PI"))) %>%
