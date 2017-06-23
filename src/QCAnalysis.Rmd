@@ -39,8 +39,6 @@ smPlot <- ggplot(smry, aes(x=as.factor(SampleID),y=value,fill=SampleID)) +
     facet_wrap(~variable, scale="free") +
     theme(axis.text.x=element_blank()) +
     xlab("Sample")
-
-
 smPlot
 ```
 
@@ -116,111 +114,6 @@ rm(mMito)
 rm(mTop)
 ```
 
-## Thresholds
-
-```{r}
-smryByGroup <- group_by(pD,Condition) %>%
-    summarize(medianPrcntMito=median(prcntMito),
-	      madPrcntMito=mad(prcntMito),
-	      threshold_PrcntMito=0.05,
-	      mGenesDetected=median(log10(GenesDetected)),
-	      madGenesDetected=mad(log10(GenesDetected)),
-	      threshold_GenesDetected=mGenesDetected-2*madGenesDetected,
-	      mUmiSums=median(log10(UmiSums)),
-	      madUmiSums=mad(log10(UmiSums)),
-	      threshold_UmiSums=mUmiSums-2*madUmiSums) %>%
-    select(Condition,starts_with("threshold")) 
-kable(smryByGroup)
-
-thrGenesDetected <- median(log10(pD$GenesDetected))-3*mad(log10(pD$GenesDetected))
-thrUmiSums <- median(log10(pD$UmiSums))-3*mad(log10(pD$UmiSums))
-```
-
-# Per Condition
-```{r}
-MitoCutOff <- 0.05
-gdHist <- ggplot(pD, aes(x=GenesDetected,y=..density..)) +
-    geom_histogram(fill="white",color="black") +
-    geom_vline(data=smryByGroup,aes(xintercept=10^threshold_GenesDetected),color="red",lty="longdash") +
-    scale_x_log10() +
-    xlab("Total number of genes detected") +
-    facet_wrap(~Condition) 
-
-libSizeHist <- ggplot(pD, aes(x=UmiSums,y=..density..)) +
-    geom_histogram(fill="white",color="black") +
-    geom_vline(data=smryByGroup,aes(xintercept=10^threshold_UmiSums),color="red",lty="longdash") +
-    scale_x_log10() +
-    facet_wrap(~Condition) +
-    xlab("Total number of unique molecules") 
-
-cellViability <- cellViability %+% pD
-cellViability <- cellViability + 
-    annotate("rect",ymin=-Inf, ymax=Inf, xmax=Inf, xmin=MitoCutOff,
-	     fill="grey", alpha=0.3) 
-
-gdHist
-libSizeHist
-cellViability
-```
-
-# In total
-
-```{r}
-gdHist <- ggplot(pD, aes(x=GenesDetected,y=..density..)) +
-    geom_histogram(fill="white",color="black") +
-    geom_vline(aes(xintercept=10^thrGenesDetected),color="red",lty="longdash") +
-    scale_x_log10() +
-    xlab("Total number of genes detected") 
-
-libSizeHist <- ggplot(pD, aes(x=UmiSums,y=..density..)) +
-    geom_histogram(fill="white",color="black") +
-    geom_vline(aes(xintercept=10^thrUmiSums),color="red",lty="longdash") +
-    scale_x_log10() +
-    xlab("Total number of unique molecules") 
-
-
-gdHist
-libSizeHist
-pD2 <- mutate(pD,
-	     PassViability=prcntMito < MitoCutOff,
-	     PassGenesDet=GenesDetected > thrGenesDetected ,
-	     PassLibSize=UmiSums > thrUmiSums,
-	     PassAll= PassViability & PassGenesDet & PassLibSize)
-table(pD2$PassViability,pD2$SampleID)
-table(pD2$PassGenesDet,pD2$SampleID)
-table(pD2$PassLibSize,pD2$SampleID)
-table(pD2$PassAll,pD2$SampleID)
-```
-
-```{r}
-#Thresholding per group
-#inititae Df
-pD <- mutate(pD,
-	     ThresholdViability = 0,
-	     ThresholdGenesDet = 0,
-	     ThresholdLibSize = 0)
-
-grps <- as.character(unique(pD$Condition))
-for (grp in grps) {
-    thrs <- filter(smryByGroup, Condition==grp) %>% select(-Condition) %>% t() %>% as.vector()
-    names(thrs) <- filter(smryByGroup, Condition==grp) %>% select(-Condition) %>% t() %>% rownames()
-    pD <- mutate(pD,
-		 ThresholdViability= ifelse(Condition==grp, MitoCutOff, ThresholdViability),
-		 ThresholdGenesDet= ifelse(Condition==grp, 10^thrs["threshold_GenesDetected"],ThresholdGenesDet),
-		 ThresholdLibSize= ifelse(Condition==grp, 10^thrs["threshold_UmiSums"],ThresholdLibSize))
-}
-
-pD <- mutate(pD,
-	     PassViability=prcntMito < ThresholdViability,
-	     PassGenesDet=GenesDetected > ThresholdGenesDet,
-	     PassLibSize=UmiSums > ThresholdLibSize,
-	     PassAll= PassViability & PassGenesDet & PassLibSize)
-table(pD$PassViability,pD$SampleID)
-table(pD$PassGenesDet,pD$SampleID)
-table(pD$PassLibSize,pD$SampleID)
-table(pD$PassAll,pD$SampleID)
-```
-
 ## Index Swapping
 
 ```{r}
@@ -278,108 +171,86 @@ p1
 p2
 ```
 
-#Apply Thresholds
+
+## Thresholds
 
 ```{r}
-pD <- filter(pD, PassAll)
-m <- m[,as.character(pD$barcode)]
-
-#Thresholding on lowly expressed genes
-isexpThreshold <- 10
-expThreshold <- 50*isexpThreshold
-keep1 <- rowSums(m!=0) > isexpThreshold
-keep2 <- rowSums(m) > expThreshold
-fD$keep <- keep1 & keep2
-m <- m[fD$keep,]
-fD <- fD[fD$keep,]
-#Final matrix
-dim(m)
+smryByGroup <- group_by(pD,Condition) %>%
+    summarize(threshold_PrcntMito=0.05,
+	      mGenesDetected=median(log10(GenesDetected)),
+	      madGenesDetected=mad(log10(GenesDetected)),
+	      threshold_GenesDetected=mGenesDetected-3*madGenesDetected,
+	      mUmiSums=median(log10(UmiSums)),
+	      madUmiSums=mad(log10(UmiSums)),
+	      threshold_UmiSums=mUmiSums-3*madUmiSums) %>%
+    select(Condition,starts_with("threshold")) 
+kable(smryByGroup)
 ```
 
-
-# Normalization and Highly Variable Gene Selection
+# Per Condition
 ```{r}
-clusters <- quickCluster(m,method="igraph")
-pD$sf <- computeSumFactors(m,clusters=clusters)
-plot(log10(colSums(m))~log10(pD$sf),main="Library Size versus Size Factors")
-m <- t(t(m)/pD$sf)
-# 
-#HVG definition by Brennecke
-brennecke <- BrenneckeHVG(m.norm,fdr=0.1,minBiolDisp=0.25)
-fD$highVar <- fD$id %in% brennecke
-
-VarPlot <- ggplot(fD, aes(x=meanExpression,y=CV2, color=highVar)) +
-    geom_point() +
+MitoCutOff <- 0.05
+gdHist <- ggplot(pD, aes(x=GenesDetected,y=..density..)) +
+    geom_histogram(fill="white",color="black") +
+    geom_vline(data=smryByGroup,aes(xintercept=10^threshold_GenesDetected),color="red",lty="longdash") +
     scale_x_log10() +
-    scale_y_log10() +
-    theme_bw()
-VarPlot
+    xlab("Total number of genes detected") +
+    facet_wrap(~Condition) 
+
+libSizeHist <- ggplot(pD, aes(x=UmiSums,y=..density..)) +
+    geom_histogram(fill="white",color="black") +
+    geom_vline(data=smryByGroup,aes(xintercept=10^threshold_UmiSums),color="red",lty="longdash") +
+    scale_x_log10() +
+    facet_wrap(~Condition) +
+    xlab("Total number of unique molecules") 
+
+cellViability <- cellViability %+% pD
+cellViability <- cellViability + 
+    annotate("rect",ymin=-Inf, ymax=Inf, xmax=Inf, xmin=MitoCutOff,
+	     fill="grey", alpha=0.3) 
+
+gdHist
+libSizeHist
+cellViability
 ```
 
-# First Visualization
 ```{r}
-fPCA <- log2(t(m.norm[fD.filtered$highVar,])+1)
-fPCA <- scale(fPCA,scale=TRUE,center=TRUE)
-pc <- prcomp(fPCA)
-set.seed(rnd_seed)
-tsn <- Rtsne(fPCA,perplexity=25)
+#Thresholding per group
+#inititae Df
+pD <- mutate(pD,
+	     ThresholdViability = 0,
+	     ThresholdGenesDet = 0,
+	     ThresholdLibSize = 0)
 
-pD.filtered$PC1 <- pc$x[,1]
-pD.filtered$PC2 <- pc$x[,2]
-pD.filtered$PC3 <- pc$x[,3]
-pD.filtered$PC4 <- pc$x[,4]
-pD.filtered$tSNE1 <- tsn$Y[,1]
-pD.filtered$tSNE2 <- tsn$Y[,2]
+grps <- as.character(unique(pD$Condition))
+for (grp in grps) {
+    thrs <- filter(smryByGroup, Condition==grp) %>% select(-Condition) %>% t() %>% as.vector()
+    names(thrs) <- filter(smryByGroup, Condition==grp) %>% select(-Condition) %>% t() %>% rownames()
+    pD <- mutate(pD,
+		 ThresholdViability= ifelse(Condition==grp, MitoCutOff, ThresholdViability),
+		 ThresholdGenesDet= ifelse(Condition==grp, 10^thrs["threshold_GenesDetected"],ThresholdGenesDet),
+		 ThresholdLibSize= ifelse(Condition==grp, 10^thrs["threshold_UmiSums"],ThresholdLibSize))
+}
 
-Acta2 <- filter(fD.filtered, symbol=="Acta2") %>% .$id
-pD.filtered$Acta2 <- t(m.norm)[,Acta2]
-Csn2 <- filter(fD.filtered, symbol=="Csn2") %>% .$id
-pD.filtered$Csn2 <- t(m.norm)[,Csn2]
-# 
-pcaPlot <- ggplot(pD.filtered, aes(x=PC1, y=PC2, color=Condition, shape=Replicate)) +
-    geom_point(alpha=0.8,size=2) +
-    theme_bw() 
-pcaPlot
+pD <- mutate(pD,
+	     PassViability=prcntMito < ThresholdViability,
+	     PassGenesDet=GenesDetected > ThresholdGenesDet,
+	     PassLibSize=UmiSums > ThresholdLibSize,
+	     PassAll= PassViability & PassGenesDet & PassLibSize & bc.obs.Freq == 1)
+table(pD$PassViability,pD$SampleID)
+table(pD$PassGenesDet,pD$SampleID)
+table(pD$PassLibSize,pD$SampleID)
+table(pD$PassAll,pD$SampleID)
+```
 
-pcaPlot <- ggplot(pD.filtered, aes(x=PC1, y=PC3, color=log2(Csn2+1), shape=Replicate)) +
-    geom_point(alpha=0.8,size=2) +
-    theme_bw() 
-pcaPlot
+# Save Data
 
-pcaPlot <- ggplot(pD.filtered, aes(x=PC1, y=PC2, color=log2(Acta2+1), shape=Replicate)) +
-    geom_point(alpha=0.8,size=2) +
-    theme_bw() 
-pcaPlot
-
-tsnePlot <- ggplot(pD.filtered, aes(x=tSNE1, y=tSNE2, color=Condition, shape=Replicate)) +
-    geom_point(alpha=0.8,size=2) +
-    theme_bw()
-tsnePlot
-
-tsnePlot <- ggplot(pD.filtered, aes(x=tSNE1, y=tSNE2, color=log2(Acta2+1), shape=Replicate)) +
-    geom_point(alpha=0.8,size=2) +
-    theme_bw()
-tsnePlot
-
-tsnePlot <- ggplot(pD.filtered, aes(x=tSNE1, y=tSNE2, color=log2(Csn2+1), shape=Replicate)) +
-    geom_point(alpha=0.8,size=2) +
-    theme_bw()
-tsnePlot
-
-#tsnePlot based on cell Cycle
-library(scLVM)
-ens_ids_cc <- getEnsembl('GO:0007049')
-sel <- rownames(m.norm) %in% ens_ids_cc
-fPCA <- log2(t(m.norm[sel,])+1)
-fPCA <- scale(fPCA,scale=TRUE,center=TRUE)
-set.seed(rnd_seed)
-tsn <- Rtsne(fPCA,perplexity=25)
-
-pD.filtered$cc_tSNE1 <- tsn$Y[,1]
-pD.filtered$cc_tSNE2 <- tsn$Y[,2]
-
-tsnePlot <- ggplot(pD.filtered, aes(x=cc_tSNE1, y=cc_tSNE2, color=Condition, shape=Replicate)) +
-    geom_point(alpha=0.8,size=2) +
-    theme_bw()
-tsnePlot
+```{r}
+stopifnot(identical(as.character(pD$barcode),colnames(m)))
+stopifnot(identical(as.character(fD$id),rownames(m)))
+out <- list()
+out[[1]] <- m
+out[[2]] <- pD
+out[[3]] <- fD
+saveRDS(out,file="../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
 ```
