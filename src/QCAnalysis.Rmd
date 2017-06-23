@@ -241,6 +241,9 @@ table(pD$PassViability,pD$SampleID)
 table(pD$PassGenesDet,pD$SampleID)
 table(pD$PassLibSize,pD$SampleID)
 table(pD$PassAll,pD$SampleID)
+
+### FD
+fD$keep <- rowSums(m) > 0.01
 ```
 
 # Save Data
