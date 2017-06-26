@@ -5,7 +5,7 @@ library(Rtsne)
 source("functions.R")
 
 dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
-dataList <- subSample(dataList, cell.number=1000)
+# dataList <- subSample(dataList, cell.number=1000)
 m <- dataList[["counts"]]
 pD <- dataList[["phenoData"]]
 fD <- dataList[["featureData"]]
@@ -16,8 +16,9 @@ m <- m[fD$keep,pD$PassAll]
 pD <- pD[pD$PassAll,]
 fD <- fD[fD$keep,]
 
-clusters <- quickCluster(m,method="hclust")
-pD$sf <- computeSumFactors(m,clusters=clusters)
+clusters <- quickCluster(m,method="igraph")
+minSize <- min(table(clusters))
+pD$sf <- computeSumFactors(m, sizes=seq(20,min(100,minSize),5),clusters=clusters)
 
 plot(log10(colSums(m))~log10(pD$sf),main="Library Size versus Size Factors")
 # pD$sf <- colSums(m)
