@@ -178,6 +178,7 @@ subSample <- function(dataList, cell.filter=NULL, cell.number=5000, group=NULL) 
     out <- list()
     out[["phenoData"]] <- pD[pD$barcode %in% cells,]
     out[["featureData"]] <- dataList[["featureData"]]
-    out[["counts"]] <- dataList[["counts"]][,pD$barcode]
+    out[["counts"]] <- dataList[["counts"]][,out[["phenoData"]][,"barcode"]]
+    return(out)
 }
 

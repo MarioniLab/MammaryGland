@@ -5,9 +5,10 @@ library(Rtsne)
 source("functions.R")
 
 dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
-m <- dataList[[1]]
-pD <- dataList[[2]]
-fD <- dataList[[3]]
+dataList <- subSample(dataList, cell.number=1000)
+m <- dataList[["counts"]]
+pD <- dataList[["phenoData"]]
+fD <- dataList[["featureData"]]
 rm(dataList)
 
 # Gene and cell filtering
@@ -15,22 +16,25 @@ m <- m[fD$keep,pD$PassAll]
 pD <- pD[pD$PassAll,]
 fD <- fD[fD$keep,]
 
-test <- dist(m)
 clusters <- quickCluster(m,method="hclust")
 pD$sf <- computeSumFactors(m,clusters=clusters)
 
+plot(log10(colSums(m))~log10(pD$sf),main="Library Size versus Size Factors")
 # pD$sf <- colSums(m)
 
 # Normalize count matrix
 m <- t(t(m)/pD$sf)
 
 
-# Highly variable genes
-brennecke <- BrenneckeHVG(m,fdr=0.1)
-fD$highVar <- fD$id %in% brennecke
+# Highly variable genes 
+varDf <- technicalCV2(m, is.spike=NA)
+plot(varDf$mean, varDf$cv2, log="xy",pch=19)
+points(varDf$mean, varDf$trend, col="red", pch=16, cex=0.5)
+points(varDf[varDf$FDR < 0.1,"mean"], varDf[varDf$FDR < 0.1, "cv2"], col="blue", pch=16, cex=0.5)
+fD$highVar <- fD$id %in% rownames(varDf[varDf$FDR < 0.1,])
 
 # Compute tSNE 
-fPCA <- log2(t(m[brennecke,])+1)
+fPCA <- log2(t(m[fD$highVar,])+1)
 fPCA <- scale(fPCA,scale=TRUE,center=TRUE)
 set.seed(300)
 tsn <- Rtsne(fPCA,perplexity=50)
@@ -40,13 +44,16 @@ pD$tSNE2 <- tsn$Y[,2]
 pcs <- prcomp(fPCA)
 pD$PC1 <- pcs$x[,1]
 pD$PC2 <- pcs$x[,2]
+pD$PC3 <- pcs$x[,3]
 
 # save
-pD.add <- pD[,c("barcode","sf","tSNE1","tSNE2","PC1","PC2")]
+pD.add <- pD[,c("barcode","sf","tSNE1","tSNE2","PC1","PC2","PC3")]
 fD.add <- fD[,c("id","highVar")]
 
+ggplot(pD, aes(x=tSNE1, y=tSNE2, color=Condition, shape=Replicate)) +
+    geom_point()
 
 dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
-pD <- left_join(dataList[[2]],pD.add)
-fD <- left_join(dataList[[3]],fD.add)
+pD <- left_join(dataList[["phenoData"]],pD.add)
+fD <- left_join(dataList[["featureData"]],fD.add)
 saveRDS(dataList,file="../data/Robjects/secondRun_2500/test.rds")
