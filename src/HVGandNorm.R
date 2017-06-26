@@ -54,6 +54,6 @@ pD.add <- pD[,c("barcode","sf","tSNE1","tSNE2","PC1","PC2","PC3")]
 fD.add <- fD[,c("id","highVar")]
 
 dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
-pD <- left_join(dataList[["phenoData"]],pD.add)
-fD <- left_join(dataList[["featureData"]],fD.add)
+dataList[["phenoData"]] <- left_join(dataList[["phenoData"]],pD.add)
+dataList[["featureData"]] <- left_join(dataList[["featureData"]],fD.add)
 saveRDS(dataList,file="../data/Robjects/secondRun_2500/test.rds")
