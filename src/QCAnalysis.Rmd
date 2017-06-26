@@ -252,8 +252,8 @@ fD$keep <- rowMeans(m) > 0.01
 stopifnot(identical(as.character(pD$barcode),colnames(m)))
 stopifnot(identical(as.character(fD$id),rownames(m)))
 out <- list()
-out[[1]] <- m
-out[[2]] <- pD
-out[[3]] <- fD
+out[["counts"]] <- m
+out[["phenoData"]] <- pD
+out[["featureData"]] <- fD
 saveRDS(out,file="../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
 ```
