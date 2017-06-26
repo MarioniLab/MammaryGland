@@ -236,7 +236,7 @@ pD <- mutate(pD,
 	     PassViability=prcntMito < ThresholdViability,
 	     PassGenesDet=GenesDetected > ThresholdGenesDet,
 	     PassLibSize=UmiSums > ThresholdLibSize,
-	     PassAll= PassViability & PassGenesDet & PassLibSize & bc.obs.Freq == 1)
+	     PassAll= PassViability & PassGenesDet & PassLibSize)
 table(pD$PassViability,pD$SampleID)
 table(pD$PassGenesDet,pD$SampleID)
 table(pD$PassLibSize,pD$SampleID)

@@ -169,3 +169,15 @@ compClustering <- function(m,fD,fs="brennecke",dm="spearman",lk="ward.D2",ds=0,m
 		      "m"=length(cluss))
 }
 
+subSample <- function(dataList, cell.filter=NULL, cell.number=5000, group=NULL) {
+    require(dplyr)
+    pD <- dataList[["phenoData"]]
+    if(!is.null(cell.filter)) pD <- pD[cell.filter,]
+    if(!is.null(group)) pD <- group_by_(pD,group)
+    cells <- sample_n(pD,size=cell.number, replace=FALSE) %>% .$barcode
+    out <- list()
+    out[["phenoData"]] <- pD[pD$barcode %in% cells,]
+    out[["featureData"]] <- dataList[["featureData"]]
+    out[["counts"]] <- dataList[["counts"]][,pD$barcode]
+}
+

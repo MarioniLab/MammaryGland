@@ -1,6 +1,8 @@
 # Estimate size factors using scran
 library(dplyr)
 library(scran)
+library(Rtsne)
+source("functions.R")
 
 dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
 m <- dataList[[1]]
@@ -13,8 +15,11 @@ m <- m[fD$keep,pD$PassAll]
 pD <- pD[pD$PassAll,]
 fD <- fD[fD$keep,]
 
-clusters <- quickCluster(m,method="igraph")
+test <- dist(m)
+clusters <- quickCluster(m,method="hclust")
 pD$sf <- computeSumFactors(m,clusters=clusters)
+
+# pD$sf <- colSums(m)
 
 # Normalize count matrix
 m <- t(t(m)/pD$sf)
@@ -32,8 +37,12 @@ tsn <- Rtsne(fPCA,perplexity=50)
 pD$tSNE1 <- tsn$Y[,1]
 pD$tSNE2 <- tsn$Y[,2]
 
+pcs <- prcomp(fPCA)
+pD$PC1 <- pcs$x[,1]
+pD$PC2 <- pcs$x[,2]
+
 # save
-pD.add <- pD[,c("barcode","sf","tSNE1","tSNE2")]
+pD.add <- pD[,c("barcode","sf","tSNE1","tSNE2","PC1","PC2")]
 fD.add <- fD[,c("id","highVar")]
 
 
