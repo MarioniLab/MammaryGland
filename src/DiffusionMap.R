@@ -5,19 +5,20 @@ source("functions.R")
 
 # Load Data
 rnd_seed <- 300
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Clustered.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
+rm(dataList)
 
 # Remove QC-fails,outlier and immune cells
-keepCells <- pD$PassAll & !pD$isImmuneCell & !pD$isOutlier 
+keepCells <- pD$PassAll # & !pD$isImmuneCell & !pD$isOutlier 
 m <- m[,keepCells]
 pD <- pD[keepCells,]
 
 # ---- BasalAndLuminalNPandG ----
 
 condComb <- c("NP","G")
-cells <- list("all","luminal")
+cells <- list("all")
 
 for (cell in cells) {
     if(cell=="luminal") {
@@ -31,7 +32,7 @@ for (cell in cells) {
     pD.vp <- pD[keepCells,]
 
     # Remove genes below 0.1 mean
-    keep <- rowMeans(m.vp)>0.1
+    keep <- rowMeans(m.vp)>0.01
     m.vp <- m.vp[keep,]
 
     # Normalize 

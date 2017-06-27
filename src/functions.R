@@ -132,11 +132,7 @@ grab_grob <- function(){
   grid.echo()
   grid.grab()
 }
-compClustering <- function(m,fD,fs="brennecke",dm="spearman",lk="ward.D2",ds=0,minSize=15) {
-
-    #Feature Selection
-    keep <- fD[,fs]
-    trafM <- t(log2(m[keep,]+1))
+compClustering <- function(trafM,fs="brennecke",dm="spearman",lk="ward.D2",ds=0,minSize=15) {
 
     #Dissimilarity Measure
     if(dm=="euclidean") {

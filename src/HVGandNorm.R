@@ -30,7 +30,7 @@ m <- t(t(m)/pD$sf)
 
 
 # Highly variable genes 
-varDf <- technicalCV2(t(t(m)/(1/pD$sf)), is.spike=NA, sf.cell=pD$sf,sf.spike=pD$sf)
+varDf <- technicalCV2(t(t(m)/(1/pD$sf)), is.spike=NA, sf.cell=pD$sf, sf.spike=pD$sf)
 plot(varDf$mean, varDf$cv2, log="xy",pch=19)
 points(varDf$mean, varDf$trend, col="red", pch=16, cex=0.5)
 points(varDf[varDf$FDR < 0.1,"mean"], varDf[varDf$FDR < 0.1, "cv2"], col="blue", pch=16, cex=0.5)
@@ -56,4 +56,4 @@ fD.add <- fD[,c("id","highVar")]
 dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
 dataList[["phenoData"]] <- left_join(dataList[["phenoData"]],pD.add)
 dataList[["featureData"]] <- left_join(dataList[["featureData"]],fD.add)
-saveRDS(dataList,file="../data/Robjects/secondRun_2500/test.rds")
+saveRDS(dataList,file="../data/Robjects/secondRun_2500/ExpressionList_QC_norm.rds")
