@@ -6,7 +6,7 @@ source("functions.R")
 
 dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
 # set.seed(300)
-# dataList <- subSample(dataList, cell.number=1000)
+# dataList <- subSample(dataList, cell.number=2000)
 m <- dataList[["counts"]]
 pD <- dataList[["phenoData"]]
 fD <- dataList[["featureData"]]
@@ -34,7 +34,16 @@ varDf <- technicalCV2(t(t(m)/(1/pD$sf)), is.spike=NA, sf.cell=pD$sf, sf.spike=pD
 plot(varDf$mean, varDf$cv2, log="xy",pch=19)
 points(varDf$mean, varDf$trend, col="red", pch=16, cex=0.5)
 points(varDf[varDf$FDR < 0.1,"mean"], varDf[varDf$FDR < 0.1, "cv2"], col="blue", pch=16, cex=0.5)
-fD$highVar <- fD$id %in% rownames(varDf[order(varDf$FDR),])[1:2000]
+
+# Select only correlated genes
+param <- MulticoreParam(workers=detectCores())
+cors <- correlatePairs(m[rownames(varDf[varDf$FDR < 0.1,]),],BPPARAM=param,
+		       per.gene=TRUE)
+highVar.genes <- cors[cors$FDR <= 0.1, "gene"]
+
+fD$highVar <- fD$id %in% highVar.genes
+
+
 
 # Compute tSNE 
 fPCA <- log2(t(m[fD$highVar,])+1)
@@ -44,13 +53,8 @@ tsn <- Rtsne(fPCA,perplexity=50)
 pD$tSNE1 <- tsn$Y[,1]
 pD$tSNE2 <- tsn$Y[,2]
 
-pcs <- prcomp(fPCA)
-pD$PC1 <- pcs$x[,1]
-pD$PC2 <- pcs$x[,2]
-pD$PC3 <- pcs$x[,3]
-
 # save
-pD.add <- pD[,c("barcode","sf","tSNE1","tSNE2","PC1","PC2","PC3")]
+pD.add <- pD[,c("barcode","sf","tSNE1","tSNE2")]
 fD.add <- fD[,c("id","highVar")]
 
 dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
