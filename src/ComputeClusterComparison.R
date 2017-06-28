@@ -3,8 +3,9 @@ library(dplyr)
 library(dynamicTreeCut)
 source("functions.R")
 
-rnd_seed <- 300
 dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm.rds")
+set.seed(300)
+dataList <- subSample(dataList,cell.number=10000)
 
 m <- dataList[["counts"]]
 pD <- dataList[["phenoData"]]
@@ -25,26 +26,25 @@ m <- t(log2(m[fD$highVar,]+1))
 
 #Run various clustering combinations
 gc()
-fss <- c("highVar")
 dms <- c("pearson","spearman","euclidean")
-lks <- c("complete","average","ward.D2")
+lks <- c("average")
 dss <- c(0,1,2,3,4)
 require(doParallel)
 require(fpc)
 require(clValid)
-nCores <- 6
+nCores <- detectCores()
 cl <-makeCluster(nCores, type="FORK")
 registerDoParallel(cl)
-result <- foreach (i=seq_along(dms), .combine=rbind) %dopar% {
+result <- foreach (i=seq_along(dms)) %dopar% {
     dm <- dms[i]
-    tmp0 <- NULL
-    for (fs in fss) {
+    tmp0 <- list() 
 	for (lk in lks) {
 	    for (ds in dss) {
-		res <- compClustering(trafM=m,fs=fs,dm=dm,lk=lk,ds=ds)
-		tmp0 <- rbind(tmp0,res)
-	    }}}
+		res <- compClustering(trafM=m, dm=dm, lk=lk, ds=ds)
+		tmp0[[paste(dm,lk,ds,sep="_")]] <- res
+	    }}
     return(tmp0)}
 stopCluster(cl)
 
+result <- unlist(result,recursive=FALSE)
 saveRDS(result,file="../data/Robjects/secondRun_2500/ClusterComparison.rds")

@@ -132,7 +132,7 @@ grab_grob <- function(){
   grid.echo()
   grid.grab()
 }
-compClustering <- function(trafM,fs="brennecke",dm="spearman",lk="ward.D2",ds=0,minSize=15) {
+compClustering <- function(trafM, dm="spearman", lk="ward.D2", ds=0, minSize=15) {
 
     #Dissimilarity Measure
     if(dm=="euclidean") {
@@ -153,8 +153,7 @@ compClustering <- function(trafM,fs="brennecke",dm="spearman",lk="ward.D2",ds=0,
     con <- connectivity(distance=dis,clusters=cluss)
 
     #Compile output
-    out <- data.frame("FeatureSelection"=fs,
-		      "Dissimilarity"=dm,
+    out.df <- data.frame("Dissimilarity"=dm,
 		      "Linkage"=lk,
 		      "DeepSplit"=ds,
 		      "Statistic"=c("Average Silhouette Width",
@@ -163,6 +162,9 @@ compClustering <- function(trafM,fs="brennecke",dm="spearman",lk="ward.D2",ds=0,
 		      "Value"=c(asw,rss,con),
 		      "K"=max(cluss),
 		      "m"=length(cluss))
+    out.cls <- cluss
+    out <- list("Statistics"=out.df,
+		"Labels"=out.cls)
 }
 
 subSample <- function(dataList, cell.filter=NULL, cell.number=5000, group=NULL) {
