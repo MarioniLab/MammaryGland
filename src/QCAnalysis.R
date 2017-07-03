@@ -13,12 +13,9 @@ dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList.rds")
 m <- dataList[["counts"]]
 pD <- dataList[["phenoData"]]
 fD <- dataList[["featureData"]]
+rm(dataList)
 
 # ---- QCOverview ----
-
-# Number of Cells
-table(pD$SampleID)
-table(pD$Condition)
 
 # Sequencing Depth and Genes detected
 pD$UmiSums<- colSums(m)
@@ -32,13 +29,6 @@ LibrarySize <- ggplot(pD, aes(x=SampleID,y=UmiSums,fill=Condition)) +
     geom_violin(draw_quantiles=0.5)+
     scale_y_log10() +
     ylab("Total number of molecules") +
-    theme_bw()
-
-# Cell Viability
-mMito <- m[fD$Mitochondrial,]
-pD$prcntMito <- colSums(mMito)/colSums(m)
-cellViability <- ggplot(pD, aes(x=prcntMito, y=GenesDetected, color=Condition, shape=Replicate))+
-    geom_point() +
     theme_bw()
 
 # Genewise QC
@@ -67,83 +57,135 @@ topFreq <- ggplot(plotData[1:ntop,], aes(x=factor(Gene,levels=Gene),y=Frequency)
     xlab("Gene") +
     theme_bw()
 
+# Cell Viability
+mMito <- m[fD$Mitochondrial,]
+idtop <- fD[fD$symbol %in% names(freqOfExp)[1:ntop],"id"]
+mTop <- m[idtop,]!=0
+pD$prcntTop <- colSums(mTop)/ntop
+pD$prcntMito <- colSums(mMito)/colSums(m)
+cellViability <- ggplot(pD, aes(x=prcntMito, y=GenesDetected, color=Condition, shape=Replicate))+
+    geom_point() 
+cellViability
+prcntTop <- ggplot(pD, aes(x=prcntTop, y=GenesDetected, color=Condition, shape=Replicate))+
+    geom_point() 
+prcntTop
+rm(mMito)
+rm(mTop)
 
 plot_grid(genesDetected,LibrarySize,cellViability,
 	  topGenes,topFreq)
 
+# ---- Index-Swapping ----
+
+barcodes <- as.character(pD$barcode)
+spt <- strsplit(barcodes, split = "-", fixed = T)
+pD$sample <- sapply(spt, function(x) x[2])
+pD$bcs <- sapply(spt, function(x) x[1])
+pD.add <- data.frame(bcs=names(table(pD$bcs)),
+		     bc.obs=(table(pD$bcs)))
+pD.add <- pD.add[,-2]
+pD <- dplyr::left_join(pD,pD.add)
+
+# P1
+index.p1 <- ggplot(pD, aes(x=SampleID, fill=as.factor(bc.obs.Freq))) +
+    geom_bar() +
+    #     ggtitle("Samples contain many shared barcodes") +
+    scale_fill_discrete(name="Times barcode observed") +
+    theme(legend.position="bottom",
+	  legend.direction="horizontal")
+
+compare <- function(barcodes, samples) {
+    out <- NULL
+    ids <- levels(samples)
+    combs <- combn(ids,m=2, simplify=FALSE)
+    for (i in seq_along(combs)) {
+	comb <- combs[[i]]
+	s1 <- comb[1]
+	s2 <- comb[2]
+	bc1 <- as.character(barcodes[samples==s1])
+	bc2 <- as.character(barcodes[samples==s2])
+	x <- length(intersect(bc1,bc2))
+	m <- length(bc1)
+	n <- 750000
+	k <- length(bc2)
+	p.val <- phyper(q=x-1,m=m,n=n,k=k,lower.tail=FALSE)
+	tmp <- data.frame(s1=s1,
+			  s2=s2,
+			  n1=m,
+			  n2=k,
+			  shared=x,
+			  p.val=p.val)
+	out <- rbind(out,tmp)
+    }
+    return(out)
+}
+
+# P2
+compDf <- compare(pD$bcs, pD$SampleID)
+index.p2 <- ggplot(compDf, aes(x=shared, y=-log10(p.val))) +
+    geom_point() +
+    xlab("# shared Barcodes") +
+    ylab("-log10(P)") +
+    geom_hline(yintercept=2,lty="dashed",color="red") 
 
 # ---- QCThresholding ----
 
-
-# Left MAD function for thresholding
-leftmad <- function(x) {
-    m <- median(x)
-    d <- abs(x-m)
-    leftmad <- median(d[x<=m])
-    return(leftmad)
-}
-
-# Define hard thresholds
+#Fixed threshold
 MitoCutOff <- 0.05
-genesDetectedCutOff <- 500 # only applies to L sample
-librarySizeCutOff <- 1000 # only applies to L sample
 
-# Compute thresholds per group
+#Thresholding per Condition
 smryByGroup <- group_by(pD,Condition) %>%
-    summarize(threshold_PrcntMito=0.05,
+    summarize(threshold_PrcntMito=MitoCutOff,
 	      mGenesDetected=median(log10(GenesDetected)),
-	      madGenesDetected=leftmad(log10(GenesDetected)),
-	      threshold_GenesDetected=max(mGenesDetected-4*madGenesDetected,log10(genesDetectedCutOff)),
+	      madGenesDetected=mad(log10(GenesDetected)),
+	      threshold_GenesDetected=mGenesDetected-3*madGenesDetected,
 	      mUmiSums=median(log10(UmiSums)),
-	      madUmiSums=leftmad(log10(UmiSums)),
-	      threshold_UmiSums=max(mUmiSums-4*madUmiSums,log10(librarySizeCutOff))) %>%
+	      madUmiSums=mad(log10(UmiSums)),
+	      threshold_UmiSums=mUmiSums-3*madUmiSums) %>%
     select(Condition,starts_with("threshold")) 
-print(smryByGroup)
+kable(smryByGroup)
 
-
-# empty df
 pD <- mutate(pD,
 	     ThresholdViability = 0,
 	     ThresholdGenesDet = 0,
 	     ThresholdLibSize = 0)
 
-# Apply thresholds per group
 grps <- as.character(unique(pD$Condition))
 for (grp in grps) {
     thrs <- filter(smryByGroup, Condition==grp) %>% select(-Condition) %>% t() %>% as.vector()
     names(thrs) <- filter(smryByGroup, Condition==grp) %>% select(-Condition) %>% t() %>% rownames()
     pD <- mutate(pD,
-		 ThresholdViability= ifelse(Condition==grp, thrs["threshold_PrcntMito"], ThresholdViability),
+		 ThresholdViability= ifelse(Condition==grp, MitoCutOff, ThresholdViability),
 		 ThresholdGenesDet= ifelse(Condition==grp, 10^thrs["threshold_GenesDetected"],ThresholdGenesDet),
 		 ThresholdLibSize= ifelse(Condition==grp, 10^thrs["threshold_UmiSums"],ThresholdLibSize))
 }
+
 pD <- mutate(pD,
 	     PassViability=prcntMito < ThresholdViability,
 	     PassGenesDet=GenesDetected > ThresholdGenesDet,
 	     PassLibSize=UmiSums > ThresholdLibSize,
-	     PassAll= PassViability & PassGenesDet & PassLibSize)
+	     PassAll= PassViability & PassGenesDet & PassLibSize & bc.obs.Freq==1)
 
 # Illustrate thresholds
 gdHist <- ggplot(pD, aes(x=GenesDetected,y=..density..)) +
-    geom_histogram(fill="white",color="black") +
+    geom_histogram(fill="white",color="black",bins=100) +
     geom_vline(data=smryByGroup,aes(xintercept=10^threshold_GenesDetected),color="red",lty="longdash") +
     scale_x_log10() +
     xlab("Total number of genes detected") +
-    facet_wrap(~Condition) +
-    theme_bw()
+    facet_wrap(~Condition) 
 
 libSizeHist <- ggplot(pD, aes(x=UmiSums,y=..density..)) +
-    geom_histogram(fill="white",color="black") +
+    geom_histogram(fill="white",color="black",bins=100) +
     geom_vline(data=smryByGroup,aes(xintercept=10^threshold_UmiSums),color="red",lty="longdash") +
     scale_x_log10() +
     facet_wrap(~Condition) +
-    xlab("Total number of unique molecules") +
-    theme_bw()
+    xlab("Total number of unique molecules") 
 
 cellViability <- cellViability %+% pD
-cellViability <- cellViability + aes(color=PassViability) +
+cellViability <- cellViability + 
     annotate("rect",ymin=-Inf, ymax=Inf, xmax=Inf, xmin=MitoCutOff,
 	     fill="grey", alpha=0.3) 
+
 
 # Overview over cells removed
 table(pD$Condition,pD$PassGenesDet)
@@ -153,56 +195,14 @@ table(pD$Condition,pD$PassAll)
 
 plot_grid(gdHist,libSizeHist,cellViability)
 
-# Remove QC-fails
-pD.filtered <- filter(pD, PassAll)
-m.filtered <- m[,as.character(pD.filtered$barcode)]
+# fD
+fD$keep <- rowMeans(m) > 0.01
 
-# remove lowly expressed genes
-isexpThreshold <- 10
-expThreshold <- 50*isexpThreshold
-keep1 <- rowSums(m.filtered!=0) > isexpThreshold
-keep2 <- rowSums(m.filtered) > expThreshold
-fD$keep <- keep1 & keep2
-m.filtered <- m.filtered[fD$keep,]
-fD.filtered <- fD[fD$keep,]
-
-# Final matrix
-dim(m.filtered)
-
-# ---- NormAndHVG ----
-
-# Estimate size factors using scran
-clusters <- quickCluster(m.filtered)
-pD.filtered$sf <- computeSumFactors(m.filtered,clusters=clusters)
-
-plot(log10(colSums(m.filtered))~log10(pD.filtered$sf),main="Library Size versus Size Factors (Log10-Scale)",
-     pch=20,xlab="Size Factors",ylab="Library Size")
-
-# Normalize count matrix
-m.norm <- t(t(m.filtered)/pD.filtered$sf)
-
-
-# Highly variable genes
-brennecke <- BrenneckeHVG(m.norm,fdr=0.1)
-fD.filtered$highVar <- fD.filtered$id %in% brennecke
-
-# Compute tSNE 
-fPCA <- log2(t(m.norm[brennecke,])+1)
-fPCA <- scale(fPCA,scale=TRUE,center=TRUE)
-set.seed(300)
-tsn <- Rtsne(fPCA,perplexity=25)
-pD.filtered$tSNE1 <- tsn$Y[,1]
-pD.filtered$tSNE2 <- tsn$Y[,2]
-
-# ---- SaveData ----
-pD.add <- select(pD.filtered, barcode, sf, tSNE1, tSNE2)
-fD.add <- select(fD.filtered, id, highVar)
-pD <- left_join(pD,pD.add, by="barcode")
-fD <- left_join(fD,fD.add, by="id")
+# Save Data
 stopifnot(identical(as.character(pD$barcode),colnames(m)))
 stopifnot(identical(as.character(fD$id),rownames(m)))
 out <- list()
-out[[1]] <- m
-out[[2]] <- pD
-out[[3]] <- fD
+out[["counts"]] <- m
+out[["phenoData"]] <- pD
+out[["featureData"]] <- fD
 saveRDS(out,file="../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
