@@ -180,3 +180,47 @@ subSample <- function(dataList, cell.filter=NULL, cell.number=5000, group=NULL) 
     return(out)
 }
 
+deAll <- function(x, clusters)
+
+{
+    # Creating a design matrix.
+    clusters <- as.factor(clusters)
+    full.design <- model.matrix(~0 + clusters)
+    colnames(full.design) <- clust.vals <- levels(clusters)
+
+    lfit <- lmFit(x, full.design)
+    output <- vector("list", length(clust.vals))
+    names(output) <- clust.vals  
+
+    for (host in clust.vals) { 
+        not.host <- clust.vals!=host
+        targets <- clust.vals[not.host]
+        all.p <- all.lfc <- vector("list", length(targets))
+        names(all.p) <- names(all.lfc) <- targets
+              
+        con <- matrix(0, ncol(full.design), length(clust.vals))
+        diag(con) <- -1
+        con[which(!not.host),] <- 1
+        con <- con[,not.host,drop=FALSE]
+        colnames(con) <- targets
+
+        fit2 <- contrasts.fit(lfit, con)
+        fit2 <- treat(fit2, lfc=1, trend=TRUE, robust=TRUE)
+        
+        for (target in targets) { 
+            res <- topTable(fit2, number=Inf, sort.by="none", coef=target)
+            pvals <- res$P.Value
+
+            all.p[[target]] <- p.adjust(pvals, method="BH")
+            all.lfc[[target]] <- res$logFC
+        }
+        names(all.lfc) <- paste0("logFC.", names(all.lfc))
+        names(all.p) <- paste0("FDR.", names(all.p))
+        marker.set <- data.frame(Gene=rownames(x), do.call(cbind, all.lfc), 
+				 do.call(cbind, all.p),
+                                 stringsAsFactors=FALSE, check.names=FALSE)
+        output[[host]] <- marker.set
+    }
+
+    return(output)
+}
