@@ -1,5 +1,4 @@
 # Figure S1
-
 library(scran)
 library(plyr)
 library(dplyr)
@@ -12,6 +11,7 @@ source("functions.R")
 
 # Load Data
 dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList.rds")
+sumDat <- read.csv("../data/CellRangerData/secondRun_2500/Summary.csv")
 m <- dataList[["counts"]]
 pD <- dataList[["phenoData"]]
 fD <- dataList[["featureData"]]
@@ -23,10 +23,8 @@ pD$GenesDetected <- colSums(m!=0)
 sumry <- group_by(pD, SampleID) %>%
     summarize("Number of cells"=n(),
 	      "Total molecules"=median(UmiSums),
-	      "Genes Detected"=median(GenesDetected)) %>%
-mutate("Number of reads"=c(257639,124686,574902,372905,106789,111926,264971,914353)) %>%
-mutate("Sequencing Saturation"=c(86.3,75.3,91.4,88.3,97.7,98,90.2,97.2)) %>%
-rename(Sample=SampleID)
+	      "Genes Detected"=median(GenesDetected))
+sumry <- left_join(sumry, sumDat[,c("SampleID","NumberOfReads","Saturation")])
 
 p1 <- tableGrob(sumry,rows=NULL,)
 
