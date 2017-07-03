@@ -6,7 +6,7 @@ source("functions.R")
 
 dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
 # set.seed(300)
-# dataList <- subSample(dataList, cell.number=2000)
+# dataList <- subSample(dataList, cell.number=5000)
 m <- dataList[["counts"]]
 pD <- dataList[["phenoData"]]
 fD <- dataList[["featureData"]]
@@ -30,19 +30,26 @@ m <- t(t(m)/pD$sf)
 
 
 # Highly variable genes 
-varDf <- technicalCV2(t(t(m)/(1/pD$sf)), is.spike=NA, sf.cell=pD$sf, sf.spike=pD$sf)
-plot(varDf$mean, varDf$cv2, log="xy",pch=19)
-points(varDf$mean, varDf$trend, col="red", pch=16, cex=0.5)
-points(varDf[varDf$FDR < 0.1,"mean"], varDf[varDf$FDR < 0.1, "cv2"], col="blue", pch=16, cex=0.5)
+var.des <- trendVar(log2(m+1),trend="semiloess")
+var.out <- decomposeVar(log2(m+1),var.des)
+o <- order(var.out$mean)
+plot(var.out$mean, var.out$total, pch=16, cex=0.6, xlab="Mean log-expression", 
+    ylab="Variance of log-expression")
+lines(var.out$mean[o], var.out$tech[o], col="dodgerblue", lwd=2)
+hvg.out <- var.out[which(var.out$FDR <= 0.05 & var.out$bio >=0.5),]
+points(hvg.out$mean, hvg.out$total, pch=16, col="red")
 
 # Select only correlated genes
-param <- MulticoreParam(workers=detectCores())
-cors <- correlatePairs(m[rownames(varDf[varDf$FDR < 0.1,]),],BPPARAM=param,
-		       per.gene=TRUE)
-highVar.genes <- cors[cors$FDR <= 0.1, "gene"]
+# param <- MulticoreParam(workers=6)
+# cors <- correlatePairs(m[rownames(var.out[var.out$FDR < 0.01,]),],BPPARAM=param,
+#                        per.gene=TRUE)
+# highVar.genes <- cors[cors$FDR <= 0.01, "gene"]
 
-fD$highVar <- fD$id %in% highVar.genes
-
+# add info to fD
+stopifnot(identical(rownames(var.out),fD$id))
+fD$highVar <- fD$id %in% rownames(hvg.out)
+fD$highVarFDR <- var.out$FDR
+fD$highVarBiolComp <- var.out$bio
 
 
 # Compute tSNE 
@@ -55,10 +62,12 @@ pD$tSNE2 <- tsn$Y[,2]
 
 # save
 pD.add <- pD[,c("barcode","sf","tSNE1","tSNE2")]
-fD.add <- fD[,c("id","highVar")]
+fD.add <- fD[,c("id","highVar","highVarFDR","highVarBiolComp")]
 
 dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
 dataList[["phenoData"]] <- left_join(dataList[["phenoData"]],pD.add)
-dataList[["featureData"]] <- left_join(dataList[["featureData"]],fD.add)
+fD.new <- left_join(dataList[["featureData"]],fD.add)
+fD.new$highVar[is.na(fD.new$highVar)] <- FALSE
+dataList[["featureData"]] <- fD.new
 
 saveRDS(dataList,file="../data/Robjects/secondRun_2500/ExpressionList_QC_norm.rds")
