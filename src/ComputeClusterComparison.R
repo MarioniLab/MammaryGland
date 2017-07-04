@@ -4,8 +4,8 @@ library(dynamicTreeCut)
 source("functions.R")
 
 dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm.rds")
-set.seed(300)
-dataList <- subSample(dataList,cell.number=10000)
+# set.seed(300)
+# dataList <- subSample(dataList,cell.number=10000)
 
 m <- dataList[["counts"]]
 pD <- dataList[["phenoData"]]
@@ -26,13 +26,13 @@ m <- t(log2(m[fD$highVar,]+1))
 
 #Run various clustering combinations
 gc()
-dms <- c("pearson","spearman","euclidean")
+dms <- c("pearson","euclidean")
 lks <- c("average")
-dss <- c(0,1,2,3,4)
+dss <- c(0,1,2,3)
 require(doParallel)
 require(fpc)
 require(clValid)
-nCores <- detectCores()
+nCores <- 5
 cl <-makeCluster(nCores, type="FORK")
 registerDoParallel(cl)
 result <- foreach (i=seq_along(dms)) %dopar% {
@@ -40,6 +40,7 @@ result <- foreach (i=seq_along(dms)) %dopar% {
     tmp0 <- list() 
 	for (lk in lks) {
 	    for (ds in dss) {
+		print(paste(dm,lk,ds,sep="_"))
 		res <- compClustering(trafM=m, dm=dm, lk=lk, ds=ds)
 		tmp0[[paste(dm,lk,ds,sep="_")]] <- res
 	    }}
