@@ -1,17 +1,18 @@
 # Diffusion map computed on all cells from NP and G
 
 library(destiny)
+library(scran)
 source("functions.R")
 
 # Load Data
 rnd_seed <- 300
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered4.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 rm(dataList)
 
 # Remove QC-fails,outlier and immune cells
-keepCells <- pD$PassAll # & !pD$isImmuneCell & !pD$isOutlier 
+keepCells <- pD$PassAll & !pD$IsNonEpithelial
 m <- m[,keepCells]
 pD <- pD[keepCells,]
 
@@ -24,30 +25,34 @@ for (cell in cells) {
     if(cell=="luminal") {
 	excludeClustComb <- c(6,7,9)
     } else{
-	excludeClustComb <- NULL
+excludeClustComb <- NULL
     }
 
-    keepCells <- pD$Condition %in% condComb & !(pD$cluster %in% excludeClustComb)
+    keepCells <- pD$Condition %in% condComb & !(pD$SubCluster %in% excludeClustComb)
     m.vp <- m[,keepCells]
     pD.vp <- pD[keepCells,]
+    pD.vp$SubCluster <- factor(pD.vp$SubCluster)
 
     # Remove genes below 0.1 mean
     keep <- rowMeans(m.vp)>0.01
     m.vp <- m.vp[keep,]
 
     # Normalize 
-    m.norm <- t(t(m.vp)/pD.vp$sf)
+    m.vp <- t(t(m.vp)/pD.vp$sf)
 
-    # Compute HVGs
-    brennecke <- BrenneckeHVG(m.norm,suppress.plot=TRUE)
+    # Highly variable genes 
+    var.des <- trendVar(log2(m.vp+1),trend="semiloess")
+    var.out <- decomposeVar(log2(m.vp+1),var.des)
+    o <- order(var.out$mean)
+    hvg.out <- var.out[which(var.out$FDR <= 0.05 & var.out$bio >=0.5),]
 
     # Prepare expression matrix
-    exps <- m.norm[brennecke,]
-    exps <- t(log(exps+1))
+    m.vp <- m.vp[rownames(hvg.out),]
+    m.vp <- t(log(m.vp+1))
 
     # Compute diffusion map
     set.seed(rnd_seed)
-    dm <- DiffusionMap(exps, n_eigs=20, k=50, rotate=TRUE)
+    dm <- DiffusionMap(m.vp, n_eigs=20, k=50, rotate=TRUE)
     dms <- eigenvectors(dm)[,1:3]
     dms <- data.frame(dms,
 		      barcode=pD.vp$barcode)
