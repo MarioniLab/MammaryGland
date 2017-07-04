@@ -23,11 +23,13 @@ library(reshape2)
 library(pheatmap)
 source("functions.R")
 
+rnd_seed <- 300
 clustDat <- readRDS("../data/Robjects/secondRun_2500/ClusterComparison.rds") 
 # bootDat <- readRDS("../data/Robjects/ClusterBootstrap.rds")
 dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm.rds")
-set.seed(300)
-dataList <- subSample(dataList,cell.number=1000)
+# set.seed(rnd_seed)
+# dataList <- subSample(dataList,cell.number=10000)
+
 
 #Commence
 m <- dataList[["counts"]]
@@ -35,10 +37,16 @@ pD <- dataList[["phenoData"]]
 fD <- dataList[["featureData"]]
 rm(dataList)
 
+# fD$keep <- rowMeans(m) > 0.01 & fD$keep
+
 #Gene and Cell filtering
 m <- m[fD$keep,pD$PassAll]
 pD <- pD[pD$PassAll,]
 fD <- fD[fD$keep,]
+
+# only keep highVar
+m <- m[fD$highVar,]
+fD <- fD[fD$highVar,]
 #Normalization
 m <- t(t(m)/pD$sf)
 
@@ -55,6 +63,11 @@ compPlot <- ggplot(clustStats, aes(x=as.character(DeepSplit), y=Value, color=Lin
 
 compPlot
 
+tsnPlot1 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=Condition, shape=Replicate)) +
+    geom_point(size=1) +
+    theme_bw()
+tsnPlot1
+
 inputPanel(
 	   selectInput("dm", label = "Dissimilarity",
 		       choices= c("euclidean","pearson","spearman"), selected="euclidean"),
@@ -69,7 +82,8 @@ inputPanel(
 #Visualize Dendrograms
 clustering <- reactive({
     lbl <- paste(input$dm,input$lk,input$ds,sep="_")
-    cluss <- clustDat[[lbl]][["Labels"]]
+    print(lbl)
+    cluss <- unname(clustDat[[lbl]][["Labels"]])
 })
 
 
@@ -115,46 +129,85 @@ renderPlot({
 # }, width=1000, height=1800)
 
 
-# renderPlot({
-#     clust <- clustering()
-#     pD$cluster <- clust
-#     nclust <- length(unique(clust))
-#     ord <- arrange(pD, cluster) 
-#     simMat <- asSim(clust$dis)
-#     simMat.ord <- as.matrix(simMat)[as.character(ord$barcode),
-#                                     as.character(ord$barcode)]
-#     library(pheatmap)
-#     annoCol <- data.frame("cluster"=as.factor(ord$cluster),
-#                           "Condition"=ord$Condition)
-#     rownames(annoCol) <- as.character(ord$barcode)
-#     ann_colors <- list("cluster"=rainbow(nclust))
-#     names(ann_colors$cluster) <- c(min(ord$cluster):max(ord$cluster))
-#     pheatmap(simMat.ord,
-#              cluster_rows=FALSE,
-#              cluster_cols=FALSE,
-#              show_rownames=FALSE,
-#              show_colnames=FALSE,
-#              annotation_col=annoCol,
-#              annotation_colors=ann_colors)
-# }, width=1200, height=1200)
+renderPlot({
+    pD$cluster <- clustering()
+    set.seed(rnd_seed)
+    subsP <- group_by(pD, cluster) %>%
+	do(sample_n(.,min(200,nrow(.)))) %>%
+	arrange(cluster)
+
+    nclust <- length(unique(pD$clust))
+
+    # Compute smaller dis matrix
+    trafM <- t(log2(m[,as.character(subsP$barcode)]+1))
+    if(input$dm=="euclidean") {
+	dis <- dist(trafM,method=input$dm)
+    } else {
+	dis <- as.dist((1-cor(t(trafM),method=input$dm))/2)
+    }
+
+
+    #traf to simmat
+    simMat <- asSim(as.matrix(dis))
+    simMat <- simMat[as.character(subsP$barcode), as.character(subsP$barcode)]
+
+    #prep heatmap
+    annoCol <- data.frame("cluster"=as.factor(subsP$cluster),
+			  "Condition"=subsP$Condition)
+    rownames(annoCol) <- as.character(subsP$barcode)
+    ann_colors <- list("cluster"=rainbow(nclust))
+    names(ann_colors$cluster) <- c(min(subsP$cluster):max(subsP$cluster))
+    pheatmap(simMat,
+	     cluster_rows=FALSE,
+	     cluster_cols=FALSE,
+	     show_rownames=FALSE,
+	     show_colnames=FALSE,
+	     annotation_col=annoCol,
+	     annotation_colors=ann_colors)
+}, width=1200, height=1200)
+# 
+
+# ---- PCAonAvgExpression ----
+
+renderPlot({
+# Compute mean expression values
+pD$cluster <- clustering()
+nclust <- length(unique(pD$cluster))
+out <- data.frame("C0"=numeric(nrow(m)))
+for (clust in unique(pD$cluster)) {
+    expr <- rowMeans(log2(as.matrix(m[,pD$cluster==clust])+1))
+    colname <- paste0("C",clust)
+    out[,colname] <- expr
+}
+
+# Compute euclidean distances
+meandist <- dist(t(out))
+
+# PCA
+pc <- prcomp(t(out))
+
+# Plot
+palette(rainbow(nclust))
+plot(pc$x[,1],pc$x[,2],col=c(1:10),pch=20,cex=2,xlab="PC1",ylab="PC2")
+legend("topleft", legend = c(1:nclust), col = c(1:nclust), pch = 16)
+})
 
 renderPlot({
     pD$cluster <- clustering()
-    genes <- c("Acta2","Csn3","Epcam","Krt8")
-	 plotGeneDist(m, pD, fD, genes, colorBy="cluster")
+    genes <- c("Des","Sox17","Mcm3","Col3a1")
+	 plotGeneDist(m, pD, fD, genes, colorBy="Condition")
    }, width=1000, height=1000)
 
 
 inputPanel(
 	   selectInput("gene", label = "GeneOfInterest",
-		       choices= mixedsort(fD$symbol), selected=c("Krt18","Acta2","Csn2","Cd74")
+		       choices= mixedsort(fD$symbol), selected=c(fD$symbol[1])
 ,
 		       multiple=TRUE, selectize=FALSE)
 	  )
 
 renderPlot({
     pD$cluster <- clustering()
-
     genes <- input$gene
 	 plotGeneDist(m, pD, fD, genes, colorBy="cluster")
    }, width=800, height=800)
