@@ -72,7 +72,6 @@ dataList[[2]] <- pD
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
-rm(dataList)
 
 # Mark cells
 pD$IsNonEpithelial <- pD$SubCluster %in% c("6-1","6-2","10.1","10.3")
@@ -121,7 +120,6 @@ xchange.fD <- c("keep","highVar","highVarFDR","highVarBiolComp")
 pD.add <- pD[,c("barcode",xchange.pD)]
 fD.add <- fD[,c("id", xchange.fD)]
 
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered2.rds")
 pD.old <- dataList[["phenoData"]]
 pD.old <- pD.old[,!(colnames(pD.old) %in% xchange.pD)]
 pD.new <- left_join(pD.old,pD.add)
