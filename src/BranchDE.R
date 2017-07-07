@@ -6,7 +6,7 @@ library(dplyr)
 source("functions.R")
 library(lmtest)
 
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Clustered.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered2.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]

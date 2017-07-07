@@ -13,7 +13,7 @@ library(viridis)
 library(lmtest)
 library(gridExtra)
 
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Clustered.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered2.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
@@ -25,9 +25,9 @@ pD <- right_join(pD,dms,by="barcode")
 
 b1 <- pD[pD$branch %in% c("Root","Intermediate",
 			  "Hormone-sensing lineage"),]
-pb1 <- ggplot(pD,aes(x=DC1,y=-DC2)) +
+pb1 <- ggplot(pD,aes(x=DC1,y=DC2)) +
     geom_point(size=0.8,color="grey80") +
-    geom_point(data=b1,aes(x=DC1,y=-DC2,color=dpt)) +
+    geom_point(data=b1,aes(x=DC1,y=DC2,color=dpt)) +
     scale_color_viridis(option="magma",begin=1,end=0) +
     xlab("Component 1") +
     ylab("-Component 2") +
@@ -39,9 +39,9 @@ pb1 <- ggplot(pD,aes(x=DC1,y=-DC2)) +
 
 b2 <- pD[pD$branch %in% c("Root","Intermediate",
 			  "Secretory lineage"),]
-pb2 <- ggplot(pD,aes(x=DC1,y=-DC2)) +
+pb2 <- ggplot(pD,aes(x=DC1,y=DC2)) +
     geom_point(size=0.8,color="grey80") +
-    geom_point(data=b2,aes(x=DC1,y=-DC2,color=dpt)) +
+    geom_point(data=b2,aes(x=DC1,y=DC2,color=dpt)) +
     scale_color_viridis(option="magma",begin=1,end=0) +
     xlab("Component 1") +
     ylab("-Component 2") +
@@ -81,7 +81,7 @@ m.heat <- m.both[genes,]
 pD.ord <- pD
 rownames(pD.ord) <- pD.ord$barcode
 pD.ord <- pD.ord[colnames(m.heat),]
-annoCol <- data.frame("Cluster"=pD.ord$cluster,
+annoCol <- data.frame("Cluster"=pD.ord$SubCluster,
 		      "Pseudotime"=rank(pD.ord$dpt,ties.method="first")
 		      )
 
@@ -91,8 +91,8 @@ colnames(m.heat) <- c(paste0("Alv.",colnames(m.heat)[1:ncol(m.alv)]),
 rownames(annoCol) <- colnames(m.heat)
 
 #Set colorscheme for heatmap
-clustCol <- brewer.pal(n=9,name="Paired")[c(1,2,3,5,8)]
-names(clustCol) <- c(1,2,3,5,8)
+clustCol <- levels(pD.ord$Color)
+names(clustCol) <- levels(factor(pD.ord$SubCluster))
 dptcols <- viridis(n=nrow(annoCol),,option="magma",begin=1,end=0)
 names(dptcols) <- c(1:length(dptcols))
 annoColors <- list("Cluster"=clustCol,
@@ -116,7 +116,7 @@ p0 <- pheatmap(m.heat,
 
 
 #Set Genes to plot (TFs that are DE)
-features <- c("Creb5","Hey1","Fosl1",
+features <- c("Creb5","Fosl1",
 	      "Runx1","Tox2","Bhlhe41",
 	      "Elf5","Foxs1","Ehf")
 
@@ -149,8 +149,8 @@ for (feature in features) {
     pnts <- paste0("raw",feature)
     lns <- feature
     p <- ggplot() +
-	geom_point(size=0.8,data=fplot1,aes_string(x="dptNorm",y=pnts, color="cluster")) +
-	geom_point(size=0.8,data=fplot2,aes_string(x="dptNorm",y=pnts, color="cluster")) +
+	geom_point(size=0.8,data=fplot1,aes_string(x="dptNorm",y=pnts, color="SubCluster")) +
+	geom_point(size=0.8,data=fplot2,aes_string(x="dptNorm",y=pnts, color="SubCluster")) +
 	geom_line(data=fplot1,aes_string(x="dptNorm",y=lns),lty="dashed") +
 	geom_line(data=fplot2,aes_string(x="dptNorm",y=lns)) +
 	ggtitle(feature) +

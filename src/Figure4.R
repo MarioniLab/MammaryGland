@@ -10,18 +10,17 @@ library(cowplot)
 library(RColorBrewer)
 source("functions.R")
 
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Clustered.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered2.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
 
 # Cells
-keepCells <- pD$PassAll & !(pD$isImmuneCell | pD$isOutlier)
-m <- m[,keepCells]
-pD <- pD[keepCells,]
+m <- m[,pD$keep]
+pD <- pD[pD$keep,]
 
 # Genes
-keep <- rowMeans(m) > 0.1
+keep <- rowMeans(m) > 0.01
 m <- m[keep,]
 fD <- fD[keep,]
 
@@ -30,22 +29,40 @@ m.norm <- t(t(m)/pD$sf)
 
 # ---- ClusterSimilarity ----
 
-pD$cluster <- factor(pD$cluster) #drop unused levels
-out <- data.frame("C1"=numeric(nrow(m)))
-for (clust in levels(pD$cluster)) {
-    expr <- rowMeans(log2(m.norm[,pD$cluster==clust]+1))
-    colname <- paste0("C",clust)
+pD$SubCluster <- factor(pD$SubCluster) #drop unused levels
+out <- data.frame(numeric(nrow(m)))
+colnames(out) <- levels(pD$SubCluster)[1]
+for (clust in levels(pD$SubCluster)) {
+    expr <- rowMeans(log2(m.norm[,pD$SubCluster==clust]+1))
+    colname <- clust
     out[,colname] <- expr
 }
 
-meanSim <- asSim(as.matrix(dist(t(out))))
+fpca <- scale(t(out[fD$highVar,]))
+pcs <- prcomp(fpca)
+
+plot(pcs$x[,1],pcs$x[,2],col=c(1:ncol(out)),pch=19)
+legend("topright",col=c(1:ncol(out)),legend=levels(pD$SubCluster),pch=19)
+
+dis <- dist(t(out))
+meanSim <- asSim(as.matrix(dis))
 simMat <- pheatmap(meanSim,
 		   color=colorRampPalette((brewer.pal(n=7,
 							 name="Greys")))(100),
+		   clustering_method="average",
 		   treeheight_row=0)
 dev.off()
 
 
+library(dendextend)
+dis <- as.dist((1-cor(out,method="spearman"))/2)
+test <- dis %>% hclust(.,method="ward.D2") %>% as.dendrogram %>%
+    set("labels_col",values=c(3,4),k=2) %>%
+    #     set("leaves_col",c(3,4)) %>%
+    set("leaves_pch",19) %>%
+    set("leaves_cex",2) %>%
+    set("branches_lwd",3)
+plot(test)
 # ---- ProgenitorvsLuminal ----
 
 progenitorDE <- read.csv("../data/Robjects/secondRun_2500/ProgenitorDE.csv")

@@ -12,23 +12,20 @@ library(gridExtra)
 source("functions.R")
 
 # Load Data
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Clustered.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered2.rds")
 dms <- read.csv("../data/Robjects/secondRun_2500/dm_all.csv")
 pD <- dataList[[2]]
 pD <- right_join(pD,dms,by="barcode")
 
-# Set color scale according to F1a
-pal <- brewer.pal(n=9,name="Paired")
-cols <- mapvalues(pD$cluster,levels(pD$cluster)[-c(1,11)],
-		  pal)
-
+cols <- pD$Color
 # Plot for luminal and basal cells
+
 scatterplot3d(x=pD[,"DC1"],
 	      y=-pD[,"DC2"],
-	      z=-pD[,"DC3"],
+	      z=pD[,"DC3"],
 	      color=cols,
 	      pch=20,
-	      angle=40,
+	      angle=70,
               cex.symbols=1.5,
 	      scale.y=0.5,
 	      mar=c(5,3,-0.1,3)+0.1,
@@ -42,23 +39,25 @@ g <- grid.arrange(g)
 dev.off()
 
 # Create the alternative view inlet
-pD$cluster <- factor(pD$cluster,levels=c(1,2,3,4,5,6,7,8,9))
-pal2 <- pal[-4]
-inlet <- ggplot(pD, aes(-DC3,DC1,color=cluster)) +
-    geom_point(size=5) +
+pD$SubCluster <- factor(pD$SubCluster)
+pD <- pD[sample(1:nrow(pD),nrow(pD)),]
+inlet <- ggplot(pD, aes(DC1,DC2,color=SubCluster,shape=Condition)) +
+    geom_point(size=2) +
+    scale_color_manual(values=levels(cols))+
     xlab("Component 1") +
-    ylab("-Component 3") +
-    scale_color_manual(values=pal2) +
-    guides(color=FALSE)
+    ylab("-Component 2") 
+    #     geom_rug(sides="b") 
 
+library(ggExtra)
+ggMarginal(inlet, type="histogram",margins="x",fill="white",bins=30)
 # cairo_pdf("../paper/figures/F2inlet.pdf",width=17.54,height=17.54)
 inlet
 # dev.off()
 
 # Create legend for luminal only and luminal/basal plot
-pal <- brewer.pal(n=9,name="Paired")[c(1,2,3,5,6,7,8,9)]
-forcLeg <- filter(pD, !cluster %in% c(4))
-clustLeg <- ggplot(forcLeg, aes(x=tSNE1,y=tSNE2,color=cluster)) +
+pal <- levels(cols)
+# forcLeg <- filter(pD, !cluster %in% c(4))
+clustLeg <- ggplot(pD, aes(x=tSNE1,y=tSNE2,color=SubCluster)) +
     geom_point() +
     scale_color_manual(values=pal) +
     theme(legend.direction="horizontal",
@@ -73,18 +72,18 @@ dms <- read.csv("../data/Robjects/secondRun_2500/dm_luminal.csv")
 pD <- dataList[[2]]
 pD <- right_join(pD,dms,by="barcode")
 
-clusts <- as.numeric(as.character(sort(unique(pD$cluster))))
-cols <- brewer.pal(n=9,name="Paired")[clusts]
-names(cols) <- clusts
+cols <- levels(pD$Colors)
+pD$SubCluster <- factor(pD$SubCluster)
 
 # Luminal compartment colored by clusters
-p.clust <- ggplot(pD, aes(x=DC1,y=DC2, color=cluster)) +
+p.clust <- ggplot(pD, aes(x=DC1,y=DC2, color=SubCluster)) +
     geom_point(size=2, pch=20) +
     guides(colour = guide_legend(override.aes = list(size=3))) +
     scale_color_manual(values=cols)+
-    guides(colour=FALSE) +
+    #     guides(colour=FALSE) +
     xlab("Component 1") +
-    ylab("Component 2") 
+    ylab("Component 2") +
+    geom_rug(sides="b")
 
     
 
