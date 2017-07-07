@@ -55,14 +55,28 @@ pD$SubCluster <- mapvalues(pD$SubCluster,
 			   c("1.1","2.1","3.1","3.2","4.1","5.1","5.2",
 			     "6.1","6.2","7.1","8.1","9.1","9.2","10.1",
 			     "10.2","10.3","11.1","11.2","12.1","12.2","13.1"),
-			   c("C5","C1-PI","C3-PI","C3-NP","C4","C1-NP","C1-L",
+			   c("C5","C1-PI","C3-PI","C3-NP","C4","C1-NP","C1-G",
 			     "6-1","6-2","C7","C7","C8early","C8late","10.1","C9",
 			     "10.3","C6-G1","C6-G2","C2diff","C2pro","C6"))
 
-pD$SubCluster <- factor(pD$SubCluster, levels=c("C1-NP","C1-PI","C1-L","C2diff","C2pro",
+pD$SubCluster <- factor(pD$SubCluster, levels=c("C1-NP","C1-PI","C1-G","C2pro","C2diff",
 						"C3-NP","C3-PI","C4","C5","C6",
 						"C6-G1","C6-G2","C7","C8early","C8late",
 						"C9","6-1","6-2","10.1","10.3"))
+
+
+pD$Colors <- mapvalues(pD$SubCluster,
+		       c("C1-NP","C1-PI","C1-G","C2pro","C2diff",
+		       "C3-NP","C3-PI","C4","C5","C6",
+		       "C6-G1","C6-G2","C7","C8early","C8late",
+		       "C9","6-1","6-2","10.1","10.3"),
+		       c("#77947D","#7EDF9A","#7FE659","#7FE659",
+			 "#7FAEDA","#D7DD5B","#DE9C56","#DA5D74",
+			 "#D9A7A4","#8478D7","#A844E5",NA,"#A844E5",
+			 "#D6DCDF","#D7DFA7","#DC61C9",NA,NA,NA,NA))
+
+
+
 
 dataList[[2]] <- pD
 
@@ -75,10 +89,12 @@ fD <- dataList[[3]]
 
 # Mark cells
 pD$IsNonEpithelial <- pD$SubCluster %in% c("6-1","6-2","10.1","10.3")
+pD$IsDoublet <- pD$SubCluster %in% c("C6-G2")
+pD$keep <- pD$PassAll & !pD$IsNonEpithelial & !pD$IsDoublet
 
 # Gene and cell filtering
-m <- m[,pD$PassAll & !pD$IsNonEpithelial]
-pD <- pD[pD$PassAll & !pD$IsNonEpithelial,]
+m <- m[,pD$keep]
+pD <- pD[pD$keep,]
 fD$keep <- rowMeans(m)>0.01
 m <- m[fD$keep,]
 fD <- fD[fD$keep,]
@@ -115,7 +131,7 @@ pD$tSNE2 <- tsn$Y[,2]
 
 # save
 library(dplyr)
-xchange.pD <- c("tSNE1","tSNE2")
+xchange.pD <- c("tSNE1","tSNE2","IsNonEpithelial","IsDoublet","keep")
 xchange.fD <- c("keep","highVar","highVarFDR","highVarBiolComp")
 pD.add <- pD[,c("barcode",xchange.pD)]
 fD.add <- fD[,c("id", xchange.fD)]
@@ -124,7 +140,8 @@ pD.old <- dataList[["phenoData"]]
 pD.old <- pD.old[,!(colnames(pD.old) %in% xchange.pD)]
 pD.new <- left_join(pD.old,pD.add)
 pD.new$IsNonEpithelial <- pD.new$SubCluster %in% c("6-1","6-2","10.1","10.3")
-pD.new$IsNonEpithelial[is.na(pD.new$IsNonEpithelial)] <- FALSE
+pD.new$IsDoublet <- pD.new$SubCluster %in% c("C6-G2")
+pD.new$keep[is.na(pD.new$keep)] <- FALSE
 dataList[["phenoData"]] <- pD.new
 
 fD.old <- dataList[["featureData"]]
@@ -134,4 +151,4 @@ fD.new$highVar[is.na(fD.new$highVar)] <- FALSE
 fD.new$keep[is.na(fD.new$keep)] <- FALSE
 dataList[["featureData"]] <- fD.new
 
-saveRDS(dataList,file="../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered3.rds")
+saveRDS(dataList,file="../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered2.rds")
