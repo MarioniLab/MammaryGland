@@ -70,12 +70,10 @@ pD$Colors <- mapvalues(pD$SubCluster,
 		       "C3-NP","C3-PI","C4","C5","C6",
 		       "C6-G1","C6-G2","C7","C8early","C8late",
 		       "C9","6-1","6-2","10.1","10.3"),
-		       c("#77947D","#7EDF9A","#7FE659","#7FE659",
+		       c("#77947D","#7EDF9A","#7FE659","#7FD1DAFF",
 			 "#7FAEDA","#D7DD5B","#DE9C56","#DA5D74",
-			 "#D9A7A4","#8478D7","#A844E5",NA,"#A844E5",
+			 "#D9A7A4","#8478D7","#A844E5",NA,"#D7ACC9",
 			 "#D6DCDF","#D7DFA7","#DC61C9",NA,NA,NA,NA))
-
-
 
 
 dataList[[2]] <- pD

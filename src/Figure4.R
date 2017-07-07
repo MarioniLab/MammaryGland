@@ -51,6 +51,7 @@ simMat <- pheatmap(meanSim,
 							 name="Greys")))(100),
 		   clustering_method="average",
 		   treeheight_row=0)
+
 dev.off()
 
 
