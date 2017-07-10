@@ -64,6 +64,16 @@ pD$SubCluster <- factor(pD$SubCluster, levels=c("C1-NP","C1-PI","C1-G","C2pro","
 						"C6-G1","C6-G2","C7","C8early","C8late",
 						"C9","6-1","6-2","10.1","10.3"))
 
+pD$SuperCluster <- mapvalues(pD$SubCluster, 
+			     c("C1-NP","C1-PI","C1-G","C2pro","C2diff",
+			       "C3-NP","C3-PI","C4","C5","C6",
+			       "C6-G1","C6-G2","C7","C8early","C8late",
+			       "C9","6-1","6-2","10.1","10.3"),
+			     c("C1","C1","C1","C2p","C2d",
+			       "C3","C3","C5","C5","C6",
+			       "C6",NA,"C7","C8p","C8d"))
+
+
 
 pD$Colors <- mapvalues(pD$SubCluster,
 		       c("C1-NP","C1-PI","C1-G","C2pro","C2diff",
