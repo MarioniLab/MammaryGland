@@ -12,7 +12,7 @@ source("functions.R")
 
 # Load Data
 rnd_seed <- 300
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Clustered.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered2.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
@@ -26,9 +26,8 @@ pD$Condition <- mapvalues(pD$Condition, from=c("NP","G","L","PI"),
 			       "6d Lactation", "11d Post Natural Involution"))
 
 # Remove previously identified outlier and immune cells
-keepCells <- pD$PassAll & !pD$isImmuneCell & !pD$isOutlier 
-m <- m[,keepCells]
-pD <- pD[keepCells,]
+m <- m[,pD$keep]
+pD <- pD[pD$keep,]
 
 # put in rnd order for plotting
 set.seed(rnd_seed)
@@ -73,9 +72,9 @@ plot_grid(p1,plotlist=plots,labels=c("a","b","","c","",""))
 # ---- S5 ----
 
 # t-SNE colored by SampleID
-p2 <- ggplot(fp1, aes(x=tSNE1, y=tSNE2, color=cluster)) +
+p2 <- ggplot(fp1, aes(x=tSNE1, y=tSNE2, color=factor(SubCluster))) +
     geom_point(size=1) +
-    scale_color_brewer(palette="Paired")+
+    #     scale_color_manual(values=levels(fp1$Color))+
     #     ggtitle("Cluster") +
     theme_void(base_size=12) +
     guides(colour = guide_legend(override.aes = list(size=3))) +

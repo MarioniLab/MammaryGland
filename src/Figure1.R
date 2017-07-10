@@ -11,7 +11,7 @@ source("functions.R")
 
 # Load Data
 rnd_seed <- 300
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Clustered.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
@@ -25,9 +25,8 @@ pD$Condition <- mapvalues(pD$Condition, from=c("NP","G","L","PI"),
 			       "6d Lactation", "11d Post Natural Involution"))
 
 # Remove outlier and immune cells
-keepCells <- pD$PassAll & !pD$isImmuneCell & !pD$isOutlier 
-m <- m[,keepCells]
-pD <- pD[keepCells,]
+m <- m[,pD$keep]
+pD <- pD[pD$keep,]
 
 # t-SNE colored by Condition
 p0 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=Condition)) +
@@ -39,9 +38,9 @@ p0 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=Condition)) +
 	  legend.title=element_blank()) 
 
 # t-SNE colored by cluster
-p1 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=cluster)) +
+p1 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=SubCluster)) +
     geom_point(size=1.5) +
-    scale_color_brewer(palette="Paired")+
+    scale_color_manual(values=levels(pD$Color))+
     #     ggtitle("Cluster") +
     theme_void(base_size=12) +
     guides(colour = guide_legend(override.aes = list(size=3))) +
@@ -69,15 +68,15 @@ genes <- c(general,c1,c3,c5,c4,c8,c2,c6,c7,c9)
 
 # Subsample cells from large clusters
 set.seed(rnd_seed)
-subsP <- filter(pD, cluster %in% c(1,2,3,4,5,6)) %>%
-    group_by(cluster) %>%
+subsP <- filter(pD, !(SubCluster %in% c("C1-G","C8late"))) %>%
+    group_by(SubCluster) %>%
     do(sample_n(.,100))
 
 # Combine with remaining clusters and relevel factor according to order in plot
-ord <- filter(pD, cluster %in% c(7,8,9)) %>%
+ord <- filter(pD, SubCluster %in% c("C1-G","C8late")) %>%
     bind_rows(.,subsP) %>%
-    mutate(cluster=factor(cluster,levels=c(1,3,5,4,8,2,6,7,9))) %>%
-    arrange(cluster,Condition)
+    #     mutate(cluster=factor(cluster,levels=c(1,3,5,4,8,2,6,7,9))) %>%
+    arrange(SubCluster,Condition)
 
 #Normalize data with sizefactors and replace ENSEMBL IDs by gene symbols
 m.norm <- t(t(m)/pD$sf)
@@ -89,7 +88,7 @@ mheat <- log2(mheat +1)
 mheat <- mheat/apply(mheat,1,max) # Scale to 0-1 for visualization
 
 # Prepare Annotation data.frame for heatmap
-annoCol <- data.frame("Cluster"=as.factor(ord$cluster),
+annoCol <- data.frame("Cluster"=as.factor(ord$SubCluster),
 		      "Stage"=ord$Condition)
 rownames(annoCol) <- as.character(ord$barcode)
 
@@ -101,8 +100,8 @@ names(condColors) <- c("Nulliparous", "14.5d Gestation",
 # Cluster color scheme as in F1c
 forcol <- ggplot_build(p1)
 clustColors <- unique(arrange(forcol$data[[1]],group) %>% .[["colour"]])
-clustColors <- clustColors[c(1,3,5,4,8,2,6,7,9)]
-names(clustColors) <- c(1,3,5,4,8,2,6,7,9)
+# clustColors <- clustColors[c(1,3,5,4,8,2,6,7,9)]
+names(clustColors) <- levels(factor(ord$SubCluster))
 
 # Set Color schemes for annotation data frame 
 annoColors <- list("Stage"=condColors,
@@ -116,7 +115,7 @@ p <-  pheatmap(mheat,
          show_colnames=FALSE,
          annotation_legend=FALSE,
 	 annotation_col=annoCol,
-	 gaps_col=c(100,200,300,400,426,526,626,661),
+	 #          gaps_col=c(100,200,300,400,426,526,626,661),
          gaps_row=9,
 	 annotation_colors=annoColors,
 	 fontsize=8)

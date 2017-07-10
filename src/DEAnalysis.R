@@ -3,24 +3,23 @@
 library(scran)
 
 # Load Data
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Clustered.rds")
-m <- dataList[[1]]
-pD <- dataList[[2]]
-fD <- dataList[[3]]
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
+m <- dataList[["counts"]]
+pD <- dataList[["phenoData"]]
+fD <- dataList[["featureData"]]
 
 # Cells
-keepCells <- pD$PassAll & !(pD$isImmuneCell | pD$isOutlier)
-m <- m[,keepCells]
-pD <- pD[keepCells,]
+m <- m[,pD$keep]
+pD <- pD[pD$keep,]
 
 # norm
 m <- t(t(m)/pD$sf)
 
 # Genes
-grps <- unique(pD$cluster)
+grps <- unique(pD$SubCluster)
 keep <- NULL
 for (grp in grps) {
-    sbst <- as.character(pD[pD$cluster==grp,"barcode"])
+    sbst <- as.character(pD[pD$SubCluster==grp,"barcode"])
     n <- m[,sbst]
     tmp <- rownames(n[rowMedians(n)>=1,])
     keep <- c(tmp,keep)
@@ -33,7 +32,7 @@ fD <- fD[keep,]
 m <- log2(m+1)
 
 # markers
-cls <- as.character(pD$cluster)
+cls <- as.character(pD$SubCluster)
 markers <- findMarkers(m,cls)
 
 saveRDS(markers,"../data/Robjects/secondRun_2500/DEList.rds")

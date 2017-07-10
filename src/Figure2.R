@@ -12,7 +12,7 @@ library(gridExtra)
 source("functions.R")
 
 # Load Data
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered2.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
 dms <- read.csv("../data/Robjects/secondRun_2500/dm_all.csv")
 pD <- dataList[[2]]
 pD <- right_join(pD,dms,by="barcode")
@@ -47,6 +47,9 @@ inlet <- ggplot(pD, aes(DC1,DC2,color=SubCluster,shape=Condition)) +
     xlab("Component 1") +
     ylab("-Component 2") 
     #     geom_rug(sides="b") 
+
+inlet <- ggplot(pD, aes(DC1,fill=SubCluster)) +
+    geom_histogram(bins=100)
 
 library(ggExtra)
 ggMarginal(inlet, type="histogram",margins="x",fill="white",bins=30)
