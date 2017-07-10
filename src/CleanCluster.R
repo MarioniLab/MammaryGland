@@ -6,7 +6,7 @@ library(limma)
 source("functions.R")
 
 # Load Data
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered2.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
@@ -46,7 +46,7 @@ print(out)
 
 #Renaming clusters and merging 7.1 and 8.1
 
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered2.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered.rds")
 pD <- dataList[[2]]
 
 library(plyr)
@@ -149,4 +149,4 @@ fD.new$highVar[is.na(fD.new$highVar)] <- FALSE
 fD.new$keep[is.na(fD.new$keep)] <- FALSE
 dataList[["featureData"]] <- fD.new
 
-saveRDS(dataList,file="../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered2.rds")
+saveRDS(dataList,file="../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
