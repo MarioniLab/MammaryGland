@@ -12,7 +12,7 @@ source("functions.R")
 
 # Load Data
 rnd_seed <- 300
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered2.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
@@ -65,16 +65,16 @@ for(i in seq_along(genes)) {
 	theme(plot.title=element_text(size=rel(1.05))) 
     plots[[gene]] <- p
 }
-# cairo_pdf("../paper/figures/S2.pdf",width=11.69,height=8.27)
+cairo_pdf("../paper/figures/S2.pdf",width=11.69,height=8.27)
 plot_grid(p1,plotlist=plots,labels=c("a","b","","c","",""))
-# dev.off()
+dev.off()
 
 # ---- S5 ----
 
 # t-SNE colored by SampleID
-p2 <- ggplot(fp1, aes(x=tSNE1, y=tSNE2, color=factor(SubCluster))) +
+p2 <- ggplot(fp1, aes(x=tSNE1, y=tSNE2, color=factor(SuperCluster))) +
     geom_point(size=1) +
-    #     scale_color_manual(values=levels(fp1$Color))+
+    scale_color_manual(values=levels(fp1$SuperColor))+
     #     ggtitle("Cluster") +
     theme_void(base_size=12) +
     guides(colour = guide_legend(override.aes = list(size=3))) +
@@ -100,9 +100,9 @@ for(i in seq_along(genes)) {
 	theme(plot.title=element_text(size=rel(1.05))) 
     plots[[gene]] <- p
 }
-# cairo_pdf("../paper/figures/S5.pdf",width=7.79,height=8.27)
+cairo_pdf("../paper/figures/S5.pdf",width=7.79,height=8.27)
 plot_grid(p2,plotlist=plots)
-# dev.off()
+dev.off()
 
 # ---- S7 ----
 titles <- genes <- c("Csn3","Csn1s2a","Csn1s1","Csn2")
@@ -124,6 +124,6 @@ for(i in seq_along(genes)) {
 	theme(plot.title=element_text(size=rel(1.05))) 
     plots[[gene]] <- p
 }
-# cairo_pdf("../paper/figures/S7.pdf",width=11.69,height=8.27)
+cairo_pdf("../paper/figures/S7.pdf",width=11.69,height=8.27)
 plot_grid(p2,plotlist=plots)
-# dev.off()
+dev.off()

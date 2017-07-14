@@ -1,5 +1,4 @@
 # Figure S5
-
 library(plyr)
 library(destiny)
 library(dplyr)
@@ -12,7 +11,7 @@ source("functions.R")
 
 # Load Data
 rnd_seed <- 300
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Clustered.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
@@ -21,34 +20,37 @@ fD <- dataList[[3]]
 # ---- ScreePlots ----
 
 condComb <- c("NP","G")
-sets <- list(NULL,c(6,7,9)) #order important for Robustness section
+sets <- list(NULL,c("C6-G1","C6","C7","C9")) #order important for Robustness section
 out <- list()
 for (i in seq_along(sets)) {
     set <- sets[[i]]
-    keepCells <- pD$PassAll & !pD$isImmuneCell & !pD$isOutlier & !(pD$cluster %in% set) &
-	pD$Condition %in% condComb
+    keepCells <- pD$keep & !(pD$SuperCluster %in% set) & pD$Condition %in% condComb
 
     # Cell filtering
     m.vp <- m[,keepCells]
     pD.vp <- pD[keepCells,]
 
     # Gene filtering
-    keep <- rowMeans(m.vp)>0.1
+    keep <- rowMeans(m.vp)>0.01
     m.vp <- m.vp[keep,]
     fD.vp <- fD[keep,]
 
     # Normalize
     m.norm <- t(t(m.vp)/pD.vp$sf)
 
-    # HVG
-    brennecke <- BrenneckeHVG(m.norm,suppress.plot=TRUE)
-    fD.vp$highVar <- fD.vp$id %in% brennecke
+    # Highly variable genes 
+    var.des <- trendVar(log2(m.norm+1),trend="semiloess")
+    var.out <- decomposeVar(log2(m.norm+1),var.des)
+    o <- order(var.out$mean)
+    hvg.out <- var.out[which(var.out$FDR <= 0.05 & var.out$bio >=0.5),]
 
-    # Scree plot
-    exps <- m.norm[fD.vp$highVar,]
-    exps <- t(log(exps+1))
+    # Prepare expression matrix
+    m.norm <- m.norm[rownames(hvg.out),]
+    exps <- t(log(m.norm+1))
+
+    # Compute diffusion map
     set.seed(rnd_seed)
-    dm <- DiffusionMap(exps,n_eigs=20,k=50)
+    dm <- DiffusionMap(exps, n_eigs=20, rotate=TRUE)
     plot(eigenvalues(dm),pch=20,xlab="Component",ylab="Eigenvalue")
     lines(eigenvalues(dm),pch=20,xlab="Component",ylab="Eigenvalue")
     g <- grab_grob()
@@ -70,9 +72,15 @@ for (feats in features) {
     pD.cur <- pD.vp
     
     if (feats=="HVG") {
-    brennecke <- BrenneckeHVG(m.norm,suppress.plot=TRUE)
-    exps <- m.norm[brennecke,]
-    exps <- t(log(exps+1))
+    # Highly variable genes 
+    var.des <- trendVar(log2(m.norm+1),trend="semiloess")
+    var.out <- decomposeVar(log2(m.norm+1),var.des)
+    o <- order(var.out$mean)
+    hvg.out <- var.out[which(var.out$FDR <= 0.05 & var.out$bio >=0.5),]
+
+    # Prepare expression matrix
+    m.norm <- m.norm[rownames(hvg.out),]
+    exps <- t(log(m.norm+1))
     }
 
     if (feats=="selectedGenes") {
@@ -101,7 +109,7 @@ for (feats in features) {
 
     # Compute Diffusion map
     set.seed(rnd_seed)
-    dm <- DiffusionMap(exps,n_eigs=20,k=50)
+    dm <- DiffusionMap(exps,n_eigs=20,rotate=TRUE)
     pD.cur$DC1 <- eigenvectors(dm)[,1]
     pD.cur$DC2 <- eigenvectors(dm)[,2]
     pD.cur$features <- feats
@@ -142,6 +150,6 @@ monoc.plt <- monoc[["plot"]] %+% guides(color=FALSE)
 
 # Combine plots
 subp0 <- plot_grid(g1,g2,monoc.plt,nrow=1,labels="auto")
-# cairo_pdf("../paper/figures/S3.pdf",width=11.69,height=8.27)
+cairo_pdf("../paper/figures/S3.pdf",width=11.69,height=8.27)
 plot_grid(subp0,p,ncol=1,labels=c("","d"),rel_heights=c(1,1.5))
-# dev.off()
+dev.off()
