@@ -12,12 +12,13 @@ library(gridExtra)
 source("functions.R")
 
 # Load Data
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered2.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
 dms <- read.csv("../data/Robjects/secondRun_2500/dm_all.csv")
 pD <- dataList[[2]]
 pD <- right_join(pD,dms,by="barcode")
 
-cols <- pD$Color
+cols <- pD$SuperColor
+
 # Plot for luminal and basal cells
 
 scatterplot3d(x=pD[,"DC1"],
@@ -25,7 +26,7 @@ scatterplot3d(x=pD[,"DC1"],
 	      z=pD[,"DC3"],
 	      color=cols,
 	      pch=20,
-	      angle=70,
+	      angle=-110,
               cex.symbols=1.5,
 	      scale.y=0.5,
 	      mar=c(5,3,-0.1,3)+0.1,
@@ -39,14 +40,12 @@ g <- grid.arrange(g)
 dev.off()
 
 # Create the alternative view inlet
-pD$SubCluster <- factor(pD$SubCluster)
 pD <- pD[sample(1:nrow(pD),nrow(pD)),]
-inlet <- ggplot(pD, aes(DC1,DC2,color=SubCluster,shape=Condition)) +
-    geom_point(size=2) +
+inlet <- ggplot(pD, aes(DC1,DC2,color=SuperCluster)) +
+    geom_point(size=2,pch=20) +
     scale_color_manual(values=levels(cols))+
     xlab("Component 1") +
     ylab("-Component 2") 
-    #     geom_rug(sides="b") 
 
 library(ggExtra)
 ggMarginal(inlet, type="histogram",margins="x",fill="white",bins=30)
@@ -57,7 +56,7 @@ inlet
 # Create legend for luminal only and luminal/basal plot
 pal <- levels(cols)
 # forcLeg <- filter(pD, !cluster %in% c(4))
-clustLeg <- ggplot(pD, aes(x=tSNE1,y=tSNE2,color=SubCluster)) +
+clustLeg <- ggplot(pD, aes(x=tSNE1,y=tSNE2,color=SuperCluster)) +
     geom_point() +
     scale_color_manual(values=pal) +
     theme(legend.direction="horizontal",
@@ -72,11 +71,10 @@ dms <- read.csv("../data/Robjects/secondRun_2500/dm_luminal.csv")
 pD <- dataList[[2]]
 pD <- right_join(pD,dms,by="barcode")
 
-cols <- levels(pD$Colors)
-pD$SubCluster <- factor(pD$SubCluster)
+cols <- levels(pD$SuperColors)
 
 # Luminal compartment colored by clusters
-p.clust <- ggplot(pD, aes(x=DC1,y=DC2, color=SubCluster)) +
+p.clust <- ggplot(pD, aes(x=DC1,y=DC2, color=SuperCluster)) +
     geom_point(size=2, pch=20) +
     guides(colour = guide_legend(override.aes = list(size=3))) +
     scale_color_manual(values=cols)+
@@ -139,6 +137,6 @@ subPb1 <- plot_grid(plotlist=pls,nrow=3)
 subPb1b <- plot_grid(subPb1,leg,nrow=2,rel_heights=c(1,0.05))
 subPb2 <- plot_grid(p.clust,subPb1b,labels=c("b"))
 
-# cairo_pdf("../paper/figures/Figure2.pdf",width=8.27,height=11.69)
+cairo_pdf("../paper/figures/Figure2.pdf",width=8.27,height=11.69)
 plot_grid(subPa,subPb2,nrow=2)
-# dev.off()
+dev.off()
