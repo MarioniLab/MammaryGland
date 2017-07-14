@@ -224,3 +224,23 @@ deAll <- function(x, clusters)
 
     return(output)
 }
+
+# ggName -> changes a string so it is enclosed in back-ticks.
+#   This can be used to make column names that have spaces (blanks)
+#   or non-letter characters acceptable to ggplot2.
+#   This version of the function is vectorized with sapply.
+ggname <- function(x) {
+    if (class(x) != "character") {
+        return(x)
+    }
+    y <- sapply(x, function(s) {
+        if (!grepl("^`", s)) {
+            s <- paste("`", s, sep="", collapse="")
+        }
+        if (!grepl("`$", s)) {
+            s <- paste(s, "`", sep="", collapse="")
+        }
+    }
+    )
+    y 
+}

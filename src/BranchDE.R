@@ -6,7 +6,7 @@ library(dplyr)
 source("functions.R")
 library(lmtest)
 
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered2.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
@@ -18,7 +18,7 @@ pD <- right_join(pD,dms,by="barcode")
 m <- m[,as.character(pD$barcode)]
 
 # Genes 
-keep <- rowMeans(m)>0.1
+keep <- rowMeans(m)>0.01
 m <- m[keep,]
 fD <- fD[keep,]
 
@@ -63,7 +63,7 @@ for (lin in lineages) {
 
 	# Define null and alternative model
 	mod0 <- lm(y ~ 1)
-	mod1 <- lm(y ~ ns(x,df=3))
+	mod1 <- lm(y ~ ns(x,df=5))
 
 	# Extract coefficients
 	cfs <- mod1$coefficients

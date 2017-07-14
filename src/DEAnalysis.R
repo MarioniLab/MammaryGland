@@ -16,10 +16,10 @@ pD <- pD[pD$keep,]
 m <- t(t(m)/pD$sf)
 
 # Genes
-grps <- unique(pD$SubCluster)
+grps <- unique(pD$SuperCluster)
 keep <- NULL
 for (grp in grps) {
-    sbst <- as.character(pD[pD$SubCluster==grp,"barcode"])
+    sbst <- as.character(pD[pD$SuperCluster==grp,"barcode"])
     n <- m[,sbst]
     tmp <- rownames(n[rowMedians(n)>=1,])
     keep <- c(tmp,keep)
@@ -32,7 +32,17 @@ fD <- fD[keep,]
 m <- log2(m+1)
 
 # markers
-cls <- as.character(pD$SubCluster)
+cls <- as.character(pD$SuperCluster)
 markers <- findMarkers(m,cls)
+
+library(dplyr)
+geneIDs <- fD[,c("id","symbol")]
+colnames(geneIDs) <- c("Gene","Symbol")
+out <- lapply(markers, function(d) {
+		    out <- left_join(d,geneIDs)
+		    rownames(out) <- out$Gene
+		    return(out)
+})
+
 
 saveRDS(markers,"../data/Robjects/secondRun_2500/DEList.rds")
