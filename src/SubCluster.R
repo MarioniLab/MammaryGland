@@ -46,7 +46,7 @@ for (cl in c(1:13)) {
     hvg.out <- var.out[which(var.out$FDR <= 0.05 & var.out$bio >=0.5),]
 
     x <- log2(m.sub[rownames(hvg.out),]+1)
-    gpas <- clusGap(t(x), func, K.max=3, B=10)
+    gpas <- clusGap(t(x), func, K.max=3, B=100)
     k.opt <- maxSE(gpas$Tab[,"gap"],gpas$Tab[,"SE.sim"])
     subclust <- func(t(x), k.opt)
     pD.sub$SubCluster <- as.factor(paste(cl,subclust$cluster,sep="."))
