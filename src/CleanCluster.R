@@ -7,41 +7,12 @@ source("functions.R")
 
 # Load Data
 dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered.rds")
-m <- dataList[[1]]
 pD <- dataList[[2]]
-fD <- dataList[[3]]
 rm(dataList)
 
 # Cells
 keepCells <- pD$PassAll 
-m <- m[,keepCells]
 pD <- pD[keepCells,]
-
-# Genes
-m <- m[fD$keep,]
-fD <- fD[fD$keep,]
-
-
-# Norm
-m <- t(t(m)/pD$sf)
-
-# Log
-m <- log2(m+1)
-
-# Markers
-cls <- as.character(pD$SubCluster)
-markers <- deAll(m,cls)
-
-out <- NULL
-for (mn in names(markers)) {
-    deList <- markers[[mn]]
-    tmp0 <- apply(deList[,grepl("FDR",colnames(deList))],2, function(x) sum(x<0.01))
-    tmp1 <- gsub("FDR.","",names(which(tmp0 <= 10)))
-    if (length(tmp1>0)){ names(tmp1) <- mn}
-    out <- c(out,tmp1)
-}
-
-print(out)
 
 
 #Renaming clusters and merging 7.1 and 8.1
@@ -55,18 +26,18 @@ pD$SubCluster <- mapvalues(pD$SubCluster,
 			   c("1.1","2.1","3.1","3.2","4.1","5.1","5.2",
 			     "6.1","6.2","7.1","8.1","9.1","9.2","10.1",
 			     "10.2","10.3","11.1","11.2","12.1","12.2","13.1"),
-			   c("C5","C1-PI","C3-PI","C3-NP","C4","C1-NP","C1-G",
+			   c("C5-NP","C1-PI","C3-PI","C3-NP","C5-PI","C1-NP","C1-G",
 			     "6-1","6-2","C7","C7","C8p","C8d","10.1","C9",
 			     "10.3","C6-G1","C6-G2","C2d","C2p","C6"))
 
 pD$SubCluster <- factor(pD$SubCluster, levels=c("C1-NP","C1-PI","C1-G","C2p","C2d",
-						"C3-NP","C3-PI","C4","C5","C6",
+						"C3-NP","C3-PI","C5-PI","C5-NP","C6",
 						"C6-G1","C6-G2","C7","C8p","C8d",
 						"C9","6-1","6-2","10.1","10.3"))
 
 pD$SuperCluster <- mapvalues(pD$SubCluster, 
 			     c("C1-NP","C1-PI","C1-G","C2p","C2d",
-			       "C3-NP","C3-PI","C4","C5","C6",
+			       "C3-NP","C3-PI","C5-PI","C5-NP","C6",
 			       "C6-G1","C6-G2","C7","C8p","C8d",
 			       "C9","6-1","6-2","10.1","10.3"),
 			     c("C1","C1","C1","C2p","C2d",
@@ -76,7 +47,7 @@ pD$SuperCluster <- mapvalues(pD$SubCluster,
 
 pD$Colors <- mapvalues(pD$SubCluster,
 		       c("C1-NP","C1-PI","C1-G","C2p","C2d",
-		       "C3-NP","C3-PI","C4","C5","C6",
+		       "C3-NP","C3-PI","C5-PI","C5-NP","C6",
 		       "C6-G1","C6-G2","C7","C8p","C8d",
 		       "C9","6-1","6-2","10.1","10.3"),
 		       c("#77947D","#7EDF9A","#7FE659","#7FD1DAFF",
