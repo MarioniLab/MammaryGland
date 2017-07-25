@@ -7,6 +7,7 @@ library(cowplot)
 library(RColorBrewer)
 library(gridGraphics)
 library(gridExtra)
+library(scran)
 source("functions.R")
 
 # Load Data
@@ -79,8 +80,8 @@ for (feats in features) {
     hvg.out <- var.out[which(var.out$FDR <= 0.05 & var.out$bio >=0.5),]
 
     # Prepare expression matrix
-    m.norm <- m.norm[rownames(hvg.out),]
-    exps <- t(log(m.norm+1))
+    exps <- m.norm[rownames(hvg.out),]
+    exps <- t(log(exps+1))
     }
 
     if (feats=="selectedGenes") {
@@ -104,7 +105,7 @@ for (feats in features) {
     smplsz <- round(subsampl*nrow(exps))
     set.seed(rnd_seed)
     smpl <- sample(rownames(exps),size=smplsz)
-    pD.cur <- filter(pD.cur, as.character(barcode) %in% smpl)
+    pD.cur <- dplyr::filter(pD.cur, as.character(barcode) %in% smpl)
     exps <- exps[as.character(pD.cur$barcode),]
 
     # Compute Diffusion map
@@ -125,9 +126,9 @@ names(cols) <- clusts
 
 # Plot
 out$SubSample <- factor(out$SubSample, levels=c("100%","50%","25%"))
-p <- ggplot(out, aes(DC1,DC2, color=cluster)) +
+p <- ggplot(out, aes(DC1,DC2, color=SuperCluster)) +
     geom_point(size=0.8) +
-    scale_color_manual(values=cols) +
+    #     scale_color_manual(values=cols) +
     facet_grid(features~SubSample) +
     theme(axis.text=element_blank(),
 	  axis.ticks=element_blank(),

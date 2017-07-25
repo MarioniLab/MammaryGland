@@ -9,7 +9,7 @@ library(scran)
 source("functions.R")
 
 # Load Data
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered2.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
@@ -17,12 +17,12 @@ fD <- dataList[[3]]
 # ---- Prepocessing ----
 
 # Cells
-keepCells <- pD$keep & pD$Condition %in% c("NP","G") & !(pD$SubCluster %in% c("C6","C6-G1","C7","C9"))
+keepCells <- pD$keep & pD$Condition %in% c("NP","G") & !(pD$SuperCluster %in% c("C6","C6-G1","C7","C9"))
 m <- m[,keepCells]
 pD <- pD[keepCells,]
 
 # Genes
-keep <- rowMeans(m)>0.1
+keep <- rowMeans(m)>0.01
 m <- m[keep,]
 fD <- fD[keep,]
 
@@ -63,9 +63,7 @@ cds <- reduceDimension(cds, max_components=2,norm_method="log")
 cds <- orderCells(cds,reverse=TRUE)
 
 # Plot trajectory colored by clusters
-# pal <- brewer.pal(n=9,name="Paired")[c(1,2,3,5,8,9)]
-p0 <- plot_cell_trajectory(cds,x=1,y=2, color_by="SubCluster", cell_size=1,show_branch_points=FALSE) 
-    #     scale_color_manual(values=pal)
+p0 <- plot_cell_trajectory(cds,x=1,y=2, color_by="SuperCluster", cell_size=1,show_branch_points=FALSE) 
 
 # Save
 pD.monoc <- pData(cds)
