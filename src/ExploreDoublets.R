@@ -79,15 +79,15 @@ for (smpl in c("G1","G2")) {
 	tmp[,colname] <- expr
     }
     x1 <- data.frame("DoubletCluster"=tmp[,"C6-G2"],
-		     "Singleton"=tmp[,"C2diff"],
-		     "Cluster"="C2diff")
+		     "Singleton"=tmp[,"C2d"],
+		     "Cluster"="C2d")
     x2 <- data.frame("DoubletCluster"=tmp[,"C6-G2"],
 		     "Singleton"=tmp[,"C6-G1"],
 		     "Cluster"="C6-G1")
     x2 <- rbind(x1,x2)
     x3 <- data.frame("DoubletCluster"=tmp[,"C6-G2"],
-		     "Singleton"=rowMeans(tmp[,c("C6-G1","C2diff")]),
-		     "Cluster"="Mean(C2diff,C6-G1)")
+		     "Singleton"=rowMeans(tmp[,c("C6-G1","C2d")]),
+		     "Cluster"="Mean(C2d,C6-G1)")
     x4 <- rbind(x2,x3)
     x4$Sample <- smpl
     xout <- rbind(xout,x4)
