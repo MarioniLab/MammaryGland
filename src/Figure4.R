@@ -13,27 +13,6 @@ m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
 
-# ---- ImpactStrongestOnProgenitor ----
-
-out <- data.frame()
-for (clust in c("C1","C3","C5")) {
-    filen <- sprintf("../data/Robjects/secondRun_2500/%s_NPvsPI.csv",clust)
-    tmp <- read.csv(file=filen)
-    tmp$Cluster <- clust
-    out <- rbind(out,tmp)
-}
-out <- group_by(out, Cluster) %>%
-    summarize(Up=sum(FDR < 0.01 & logFC > 0),
-	      Down=sum(FDR < 0.01 & logFC < 0)) %>%
-    melt()
-
-out$Cluster <- factor(out$Cluster,levels=c("C5","C3","C1"))
-p1 <- ggplot(out, aes(x=Cluster,y=value,fill=variable)) +
-    geom_bar(stat="identity",position="dodge") +
-    coord_flip() +
-    ylab("Number of Genes DE") +
-    labs(fill="")
-
 # ---- C5DE ----
 
 topTab <- read.csv(file="../data/Robjects/secondRun_2500/C5_NPvsPI.csv")
