@@ -65,6 +65,8 @@ for (cell in cells) {
     # branching and dpt for luminal cells
     if(cell=="luminal") {
 
+    # save for predicting PI later
+    saveRDS(list(genes=colnames(m.vp),dm=dm),file="../data/Robjects/secondRun_2500/DiffusionMap_Luminal.rds")
     #Define tips as the cells at the corners of the triangluar shape
     t1 <- which.max(dms[,2])
     t2 <- which.min(dms[,1])
