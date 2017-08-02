@@ -80,12 +80,13 @@ for (i in c(1,2)) {
     forPl <- melt(forPl,id=c("barcode","SuperCluster","SubCluster","Condition"))
 
     #Plot
-    forPl$SubCluster <- factor(forPl$SubCluster,levels=c("C5-NP","C3-NP","C1-NP","C5-PI","C3-PI","C1-PI"))
-    out[[i]] <- ggplot(forPl, aes(y=value,x=SubCluster,color=SuperCluster)) +
+    forPl$SubCluster <- factor(forPl$SubCluster,levels=c("C5-PI","C5-NP","C3-PI","C3-NP","C1-PI","C1-NP"))
+    out[[i]] <- ggplot(forPl, aes(y=value,x=SubCluster,color=SubCluster)) +
 	geom_jitter(size=0.9) +
 	stat_summary(fun.y = mean, fun.ymin = mean, fun.ymax = mean,
 		     geom = "crossbar", width = 1,color="black") +
 	facet_grid(~variable) +
+	scale_color_brewer(type="qual",palette="Paired") +
 	ylab("Expression") +
 	xlab("") +
 	theme(strip.background=element_blank(),
@@ -130,8 +131,8 @@ p2 <- ggplot(progenitorDE, aes(x=NullParFC,y=ParousFC)) +
     geom_point(color="grey50",size=2) +
     geom_point(data=interest, aes(x=NullParFC, y=ParousFC), color="black") +
     geom_label_repel(data=interest, aes(x=NullParFC,y=ParousFC,label=Gene)) +
-    xlab("LFC of C5 vs. luminal cells") +
-    ylab("LFC of C4 vs. luminal cells") +
+    xlab("LFC of C5-NP vs. luminal cells") +
+    ylab("LFC of C5-PI vs. luminal cells") +
     geom_hline(yintercept=0, lty="dashed") +
     geom_vline(xintercept=0, lty="dashed") +
     coord_equal(xlim=c(-5,5),ylim=c(-5,5))
