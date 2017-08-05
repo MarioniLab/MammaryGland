@@ -13,7 +13,7 @@ library(viridis)
 library(lmtest)
 library(gridExtra)
 
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered2.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
@@ -58,73 +58,75 @@ branches <- plot_grid(pb2,NULL,pb1,NULL,nrow=1,
 out <- readRDS("../data/Robjects/secondRun_2500/BranchDEList.rds")
 
 # ---- Heatmap -----
+res <- list()
+for (i in c(1,2)) {
+    # Scale expression values
+    m.heat <- t(scale(t(out[[i]][["mSmooth"]])))
+    m.heat[m.heat>3] <- 3 # cut at 3 for visualization
+    m.heat[m.heat<-3] <- -3 # cut at -3 for visualization
 
+
+    # Matrix for heatmap
+    x <- out[[i]][["Results"]]
+    genes <- intersect(as.character(x[x$PAdjust < 0.01,"Gene"]),as.character(out[["genes.diffGrad"]]))
+    m.heat <- m.heat[genes,]
+
+    # Annotation Data
+    pD.ord <- pD
+    rownames(pD.ord) <- pD.ord$barcode
+    pD.ord <- pD.ord[colnames(m.heat),]
+    annoCol <- data.frame("Cluster"=factor(pD.ord$SuperCluster),
+			  "Pseudotime"=rank(pD.ord$dpt,ties.method="first")
+			  )
+    rownames(annoCol) <- rownames(pD.ord)
+
+    #Set colorscheme for heatmap
+    clustCol <- levels(factor(pD.ord$SuperColor))
+    names(clustCol) <- levels(factor(pD.ord$SuperCluster))
+    dptcols <- viridis(n=nrow(annoCol),,option="magma",begin=1,end=0)
+    names(dptcols) <- c(1:length(dptcols))
+    annoColors <- list("Cluster"=clustCol,
+		       "Pseudotime"=dptcols)
+    if(i==1) {
+	k <- 3
+    } else {
+	k <- 4
+    }
+    
+    #Plot heatmap
+    p0 <- pheatmap(m.heat,
+	     cluster_cols=FALSE,
+	     cluster_rows=TRUE,
+	     clustering_distance_rows="euclidean",
+	     clustering_method="ward.D2",
+	     annotation=annoCol,
+	     show_colnames=FALSE,
+	     cutree_rows=k,
+	     annotation_colors=annoColors,
+	     annotation_legend=FALSE,
+	     show_rownames=FALSE,
+	     fontsize=6)
+
+    gene.clusters <- cutree(p0$tree_row,k=k)
+    res[[i]] <- list(p0,gene.clusters)
+}
+# ---- PlotTFExamples ----
+
+#Set Genes to plot (TFs that are DE)
+features <- c("Tead1","Fosl1","Hmga1",
+	      "Runx1","Tox2","Bhlhe41",
+	      "Elf5","Foxs1","Ehf")
+# both matrices
 m.hrm <- out[[1]][["mSmooth"]]
 m.alv <- out[[2]][["mSmooth"]]
 
-# Combine smoothed expression values for heatmap
-m.both <- cbind(m.alv[,c(ncol(m.alv):1)],m.hrm) # reverse order of alveolar cells for heatmap
-
-# Scale expression values
-m.both <- t(scale(t(m.both)))
-m.both[m.both>3] <- 3 # cut at 3 for visualization
-m.both[m.both<-3] <- -3 # cut at -3 for visualization
-
-
-# Matrix for heatmap
-genes <- c(out[["genes.sameGrad"]][1:50],
-	   out[["genes.diffGrad"]][1:50])
-
-m.heat <- m.both[genes,]
-
-# Annotation Data
-pD.ord <- pD
-rownames(pD.ord) <- pD.ord$barcode
-pD.ord <- pD.ord[colnames(m.heat),]
-annoCol <- data.frame("Cluster"=pD.ord$SubCluster,
-		      "Pseudotime"=rank(pD.ord$dpt,ties.method="first")
-		      )
-
-# Rename the alveolar cells, so that there are no duplicate names for rows
-colnames(m.heat) <- c(paste0("Alv.",colnames(m.heat)[1:ncol(m.alv)]),
-		       colnames(m.heat)[(ncol(m.alv)+1):ncol(m.heat)])
-rownames(annoCol) <- colnames(m.heat)
-
-#Set colorscheme for heatmap
-clustCol <- levels(pD.ord$Color)
-names(clustCol) <- levels(factor(pD.ord$SubCluster))
-dptcols <- viridis(n=nrow(annoCol),,option="magma",begin=1,end=0)
-names(dptcols) <- c(1:length(dptcols))
-annoColors <- list("Cluster"=clustCol,
-		   "Pseudotime"=dptcols)
-
-#Plot heatmap
-p0 <- pheatmap(m.heat,
-	 cluster_cols=FALSE,
-	 cluster_rows=FALSE,
-	 annotation=annoCol,
-	 show_colnames=FALSE,
-	 annotation_colors=annoColors,
-	 annotation_legend=FALSE,
-	 gaps_col=ncol(m.alv),
-	 gaps_row=c(50),
-	 show_rownames=TRUE,
-	 fontsize=6)
-
-
-# ---- PlotTFExamples ----
-
-
-#Set Genes to plot (TFs that are DE)
-features <- c("Creb5","Fosl1",
-	      "Runx1","Tox2","Bhlhe41",
-	      "Elf5","Foxs1","Ehf")
-
 #extract expression for first branch
 p1 <- out[[1]][["pD"]] %>% arrange(DPTRank)
-yhet1 <- data.frame(t(m.hrm)[,features])
+yhet1 <- data.frame(t(m.hrm)[,features],
+		    check.names=FALSE)
 yhet1$barcode <- as.character(p1$barcode)
-raw1 <- data.frame(t(out[[1]][["m"]][features,yhet1$barcode]))
+raw1 <- data.frame(t(out[[1]][["m"]][features,yhet1$barcode]),
+		   check.names=FALSE)
 colnames(raw1) <- paste0("raw",colnames(raw1))
 raw1$barcode <- yhet1$barcode
 fplot1 <- join(p1,yhet1,by="barcode") 
@@ -133,9 +135,11 @@ fplot1 <- join(fplot1,raw1,by="barcode") %>%
 
 #extract expression for second branch
 p2 <- out[[2]][["pD"]] %>% arrange(DPTRank)
-yhet2 <- data.frame(t(m.alv)[,features])
+yhet2 <- data.frame(t(m.alv)[,features],
+		    check.names=FALSE)
 yhet2$barcode <- as.character(p2$barcode)
-raw2 <- data.frame(t(out[[2]][["m"]][features,yhet2$barcode]))
+raw2 <- data.frame(t(out[[2]][["m"]][features,yhet2$barcode]),
+		   check.names=FALSE)
 colnames(raw2) <- paste0("raw",colnames(raw2))
 raw2$barcode <- yhet2$barcode
 fplot2 <- join(p2,yhet2,by="barcode") 
@@ -143,14 +147,17 @@ fplot2 <- join(fplot2,raw2,by="barcode") %>%
     mutate(dptNorm=dpt/max(dpt))
 
 
+#set colorscale
+clustCol <- levels(factor(pD$SuperColor))
+
 #Plot dpt-dependent expression for features
 pList <- list()
 for (feature in features) {
-    pnts <- paste0("raw",feature)
-    lns <- feature
+    pnts <- ggname(paste0("raw",feature))
+    lns <- ggname(feature)
     p <- ggplot() +
-	geom_point(size=0.8,data=fplot1,aes_string(x="dptNorm",y=pnts, color="SubCluster")) +
-	geom_point(size=0.8,data=fplot2,aes_string(x="dptNorm",y=pnts, color="SubCluster")) +
+	geom_point(size=0.8,data=fplot1,aes_string(x="dptNorm",y=pnts, color="SuperCluster")) +
+	geom_point(size=0.8,data=fplot2,aes_string(x="dptNorm",y=pnts, color="SuperCluster")) +
 	geom_line(data=fplot1,aes_string(x="dptNorm",y=lns),lty="dashed") +
 	geom_line(data=fplot2,aes_string(x="dptNorm",y=lns)) +
 	ggtitle(feature) +
@@ -189,26 +196,23 @@ pls[["Foxs1"]] <- pls[["Foxs1"]] %+% xlab("Normalized Pseudotime")
 pls[["Runx1"]] <- pls[["Runx1"]] %+% ylab("Log-Expression")
 
 #Combine all plots in a single figure
-expPlot <- plot_grid(plotlist=pls,ncol=3,labels=c("c","","",
-						  "d","","",
-						  "e","",""))
-
+expPlot <- plot_grid(plotlist=pls,ncol=3,labels=c("b","","",
+						  "c","","",
+						  "d","",""))
 expPlot <- plot_grid(expPlot,legs,rel_heights=c(1,0.05),ncol=1)
-expPlot <- plot_grid(NULL,expPlot,ncol=1,rel_heights=c(0.3,1))
-htmp <- plot_grid(NULL,p0[[4]],ncol=1,rel_heights=c(.275,1),labels=c("a","b"),
-		  vjust=c(1.5,0.5))
+branches <- plot_grid(NULL,pb1,pb2,NULL,rel_widths=c(0.3,1,1,0.3),nrow=1,labels=c("a"))
+expPlot <- plot_grid(branches,expPlot,ncol=1,rel_heights=c(0.3,1))
 
-#Draw branches above heatmap
-pb1 <- grid.arrange(pb1)
-pb2 <- grid.arrange(pb2)
-htmp <- htmp + draw_grob(pb2,-0.02,0.78,.35,.2)
-htmp <- htmp + draw_grob(pb1,0.4,0.78,.35,.2)
+htmps <- plot_grid(res[[1]][[1]][[4]],
+		   res[[2]][[1]][[4]],
+		   nrow=2,
+		   labels=c("e","f"))
+fullP <- plot_grid(expPlot,htmps,ncol=2)
 
-fullP <- plot_grid(htmp,expPlot,ncol=2,rel_widths=c(1,1))
 
 #close graphics device before plotting
 # dev.off()
-# cairo_pdf("../paper/figures/Figure3.pdf",width=16.55,height=13.0575)
+cairo_pdf("../paper/figures/Figure3.pdf",width=16.55,height=13.0575)
 fullP
-# dev.off()
+dev.off()
 # 
