@@ -92,24 +92,50 @@ for (i in c(1,2)) {
     } else {
 	k <- 4
     }
+
+    # clustering
+    dis <- dist(m.heat)
+    library(dynamicTreeCut)
+    clus <- dynamicCluster(dis, lk="ward.D2", output="cluster")
+    #     m.heat <- m.heat[clus$tree$order,]
+    clusOrder <- unique(unname(clus$cluster[clus$tree$order]))
+    rowGaps <- cumsum(unname(table(clus$cluster)[clusOrder]))
+
     
+    m.heat <- m.heat[clus$tree$order,]
     #Plot heatmap
     p0 <- pheatmap(m.heat,
 	     cluster_cols=FALSE,
-	     cluster_rows=TRUE,
-	     clustering_distance_rows="euclidean",
-	     clustering_method="ward.D2",
+	     cluster_rows=FALSE,
+	     #              clustering_distance_rows="euclidean",
+	     #              clustering_method="ward.D2",
 	     annotation=annoCol,
 	     show_colnames=FALSE,
-	     cutree_rows=k,
+	     #              cutree_rows=k,
+	     gaps_row=rowGaps,
 	     annotation_colors=annoColors,
 	     annotation_legend=FALSE,
 	     show_rownames=FALSE,
 	     fontsize=6)
 
-    gene.clusters <- cutree(p0$tree_row,k=k)
+    gene.clusters <- clus$cluster
+    names(gene.clusters) <- clus$tree$labels
     res[[i]] <- list(p0,gene.clusters)
 }
+
+# ---- Save list for GO-Analysis ----
+hrm.genes <- data.frame("Branch"="Hrm",
+		  "Cluster"=res[[1]][[2]],
+		  "Gene"=names(res[[1]][[2]]))
+
+alv.genes <- data.frame("Branch"="Alv",
+		  "Cluster"=res[[2]][[2]],
+		  "Gene"=names(res[[2]][[2]]))
+
+write.csv(rbind(hrm.genes,alv.genes),file="../data/Robjects/secondRun_2500/BranchDECluster.R",
+	  row.names=FALSE)
+
+
 # ---- PlotTFExamples ----
 
 #Set Genes to plot (TFs that are DE)
@@ -148,7 +174,7 @@ fplot2 <- join(fplot2,raw2,by="barcode") %>%
 
 
 #set colorscale
-clustCol <- levels(factor(pD$SuperColor))
+clustCol <- levels(factor(pD$SuperColor))[1,3,2,4,5]
 
 #Plot dpt-dependent expression for features
 pList <- list()

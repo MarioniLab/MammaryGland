@@ -17,16 +17,18 @@ dms <- read.csv("../data/Robjects/secondRun_2500/dm_all.csv")
 pD <- dataList[[2]]
 pD <- right_join(pD,dms,by="barcode")
 
-cols <- pD$SuperColor
 
 # Plot for luminal and basal cells
+set.seed(300)
+pD <- pD[sample(1:nrow(pD),nrow(pD)),]
+cols <- pD$SuperColor
 
 scatterplot3d(x=pD[,"DC1"],
 	      y=-pD[,"DC2"],
 	      z=pD[,"DC3"],
 	      color=cols,
 	      pch=20,
-	      angle=-110,
+	      angle=60,
               cex.symbols=1.5,
 	      scale.y=0.5,
 	      mar=c(5,3,-0.1,3)+0.1,
@@ -40,7 +42,6 @@ g <- grid.arrange(g)
 dev.off()
 
 # Create the alternative view inlet
-pD <- pD[sample(1:nrow(pD),nrow(pD)),]
 inlet <- ggplot(pD, aes(DC1,DC2,color=SuperCluster)) +
     geom_point(size=2,pch=20) +
     scale_color_manual(values=levels(cols))+
@@ -78,11 +79,11 @@ p.clust <- ggplot(pD, aes(x=DC1,y=DC2, color=SuperCluster)) +
     geom_point(size=2, pch=20) +
     guides(colour = guide_legend(override.aes = list(size=3))) +
     scale_color_manual(values=cols)+
-    #     guides(colour=FALSE) +
+    guides(colour=FALSE) +
     xlab("Component 1") +
-    ylab("Component 2") +
-    geom_rug(sides="b")
+    ylab("Component 2") 
 
+p.clust <- plot_grid(NULL,p.clust,NULL,ncol=1,rel_heights=c(0.3,1,0.30))
     
 
 # ---- GeneExpressionTrends ----
