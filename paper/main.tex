@@ -141,17 +141,20 @@ Amongst the branch-specific transcription factors we found for example \textit{R
 Interestingly, \textit{Runx1} is a known repressor of \textit{Elf5} and its deletion has been shown to be deleterious for ductal morphogenesis\autocite{VanBragt2014}.
 The expression of the known progenitor master regulator \textit{Elf5} is maintained and further increased during secretory differentiation suggesting that its transcriptional level is fine-tuned in luminal progenitors (\autoref{F3}e).
 
-\textbf{Cluster 4 represents a post involution specific progenitor cell}
-
-From the initial clustering analysis we noticed that C4 appeared only after the animals had undergone a full pregnancy and was predominantly made up of cells from PI (0 cells from NP, 0 cells from G, 83 cells from L and 339 cells from PI) (\autoref{F1}b).
-Moreover, multiple progenitor marker genes from C5 were also to be present in C4 (\autoref{F1}c, Supplementary Fig 5).
-The similarity between the two clusters also held true on transcriptome-wide level (\autoref{F4}a, Supplementary Fig 10c).
-We thus hypothesised that C4 represents the luminal progenitor population in the post-parous gland, which is supported by the observation that C5 virtually disappears after parity (Table 1).
-To further support this hypothesis, we identified genes that distinguish C5 from the rest of the luminal compartment to see if they are also characteristic for the proposed post-parity progenitor population C4.
-Indeed, we find genes that are differentially expressed between C5 and the rest of the luminal compartment to show the same trend between C4 and the luminal compartment (\autoref{F4}b).
-In a similar manner we can distinguish C4 from the rest of the PI gland in a principal component analysis (PCA) using the identified progenitor genes (Supplementary Fig 6a and b).
-Given this high degree of similarity we were not surprised that only 120 genes were differentially expressed between C4 and C5 (Supplementary Table 4).
-Interestingly, genes that were up-regulated in C4 were significantly enriched for pathways that are involved in the immune response and lactation (\autoref{F4}c, Supplementary Fig 6c).
+\textbf{Parity biases luminal progenitors towards the alveolar fate}
+Our data illustrates how the cellular composition of the gland changes during the pregnancy cycle.
+The luminal compartment shifts from giving rise to mainly hormone sensing cells to producing alveolar, milk-producing cells during pregnancy and lactation. 
+The basal compartment on the other hand differentiates to produce oxytocin-sensing, myoepithelial cells that enable duct contraction and milk secretion during lactation.
+At the end of lactation the gland then reverts back to a stage that resembles the pre-pregnancy situation.
+However, we found that in particular the luminal compartment differs from its nulliparous counterpart (\autoref{F1}b and \autoref{F1}d).
+Interestingly, the effect of parity is most pronounced for the less differentiated and more progenitor-like celltypes (C5-PI, \autoref{F1}c, Supplementary Fig 6a).
+To ensure that C5-PI still represents the progenitor population in the post-parous gland, we identified genes that distinguish C5-NP from the rest of the luminal compartment to see if they are also characteristic for the proposed post-parity progenitor population C5-PI.
+Indeed, we find genes that are differentially expressed between C5-NP and the rest of the luminal compartment to show the same trend between C5-PI and the luminal compartment (\autoref{F4}a).
+In a similar manner we can distinguish C5-PI from the rest of the PI gland in a principal component analysis (PCA) using the identified progenitor genes (Supplementary Fig 6c and d).
+From this we conclude, that C5-PI indeed represents the post-parity luminal progenitor population.
+So what's the difference?
+Interestingly, genes that were up-regulated in C5-PI compared to C5-NP were significantly enriched for pathways that are involved in the immune response and lactation (\autoref{F4}b, Supplementary Fig 6c).
+These included genes that play roles in various processes during lactation, e.g. milk-proteins (Csn2, Lalba), lipases (Lipa), proteins involved in milk secretion (Xdh, Cd36) and transcriptional regulators of lactation (Cidea).
 Furthermore, the expression of milk genes was surprisingly maintained at high levels in C4 even after lactation (\autoref{F4}d).
 Of note, the genes of the casein locus (\textit{Csn2}, \textit{Csn1s1}, \textit{Csn1s2a}, \textit{Csn3}) have previously been reported to be up-regulated in the parous gland, most likely due to changes in chromatin accessibility\autocite{Dos2015,Rijnkels2013}.
 However, it has not been shown before that this effect is confined to the progenitor population of the luminal compartment (Supplementary Fig 7).
@@ -375,24 +378,28 @@ The output from different lanes were then aggregated using ``cellranger aggr'' w
 
 \textbf{Quality control and preprocessing}
 
-In total the Cell Ranger software identified 5,598 barcodes that contained enough unique molecules to be considered as cells (1,707 in NP, 623 in G, 2,648 in L and 620 in PI).
-Libraries prepared from the NP, G and P time points all showed high quality that was reproducible between the two biological replicates (Supplementary 1a).
+In total the Cell Ranger software identified 25,806 barcodes that contained enough unique molecules to be considered as cells (4,376 in NP, 6,021 in G, 9,603 in L and 5,806 in PI).
+Libraries prepared from all time points showed high quality that was reproducible between the two biological replicates (Supplementary 1a).
 We used the following metrics to flag poor quality cells: number of genes detected, total number of unique molecules (UMIs) and percentage of molecules mapped to mitochondrial genes.
-For these samples we then identified poor quality cells by setting a threshold on the number of genes and number of UMIs that was defined as four median absolute deviations (MAD) below the median for each sample (Supplementary 1b and c).
-The samples from the lactation sample, however, showed on average nearly one order of magnitude fewer genes detected and total number of UMIs.
-As this was specific to both lactation samples, we inferred that this was driven by the biological phenotype of the sample rather than technical artefacts.
-Nonetheless, we flagged a substantial amount of the lactation sample as poor quality cells by setting a fixed threshold of 500 detected genes and 1000 total molecules detected (Supplementary Fig 1b and c).
-This was necessary in order to allow for normalisation of all samples; otherwise, keeping more cells of lower quality would inflate the range of normalisation factors amplifying technical noise due to cell-specific biases and adversely impact downstream analyses.
-We ensured that we still sampled cells from all major structures present in the lactation sample (Supplementary Fig 8).
-Finally, all cells with 5\% or more of UMIs mapping to mitochondrial genes were defined as non-viable or apoptotic and removed form the analysis (Supplementary Fig 1d).
-This left us with a total number of 3,499 cells (1,681 in NP, 609 in G, 604 in L and 605 in P).
-The cells were then normalised by size factors as previously described\autocite{Lun2016}.
+Poor quality cells were then identified by setting a threshold on the number of genes and number of UMIs that was defined as three median absolute deviations (MAD) below the median for each sample, while requiring a minimum value of 1,000 total molecules and 500 genes detected.  
+This resulted in the following thresholds for total number of genes detected: 1,042 for NP, 836 for G, 500 for L and 759 for PI; and the following for total number of molecules : 2,012 in NP, 1,479 in G, 1,000 in L and 1,379 in G.
+In addition, all cells with 5\% or more of UMIs mapping to mitochondrial genes were defined as non-viable or apoptotic and removed form the analysis (Supplementary Fig 1d).
+We finally also ensured that none of the reads in our dataset are derived from index swapping.
+For this we excluded cells from the analysis with barcodes that appeared in more than one sample (non-unique barcodes).
+The reasoning being that any index swapped read between samples will also share the same cellular barcode, exclusion of these cells hence offers protection against index swapping.
+This left us with a total number of 25,010 cells (4,223 in NP, 5,826 in G, 9,319 in L and 5,642 in P).
+Gene expression values were then normalised by size factors as previously described\autocite{Lun2016}.
 The log-transformed (log2(counts+1)) counts of highly variable genes (HVGs) were used as features for dimensionality reduction and clustering.
-HVGs were defined using the method from Brennecke et al.\autocite{Brennecke2013}.
-Genes with a Benjamini-Hochberg adjusted P value smaller than 0.1 were considered to be significant.
-The t-SNE embedding in \autoref{F1} was computed using the ``Rtsne'' package with default settings and perplexity set to 25 (\href{https://github.com/jkrijthe/Rtsne}{\textit{https://github.com/jkrijthe/Rtsne}}).
+HVGs were identified by first fitting a mean-dependent trend to the gene-specific variances to all genes assuming that this trend is dominated by technical variance.
+This trend was then used to estimate the technical component of the variance and all genes with a biological component (the residual variance) of at least 0.5 and an Benjamini-Hochberg adjusted P value smaller than or equal to 0.05.
+The t-SNE embedding in \autoref{F1} was computed using the ``Rtsne'' package with default settings and perplexity set to 50 (\href{https://github.com/jkrijthe/Rtsne}{\textit{https://github.com/jkrijthe/Rtsne}}).
 
 \textbf{Clustering}
+Due to the large number of cells we used a two-step approach to identify clusters of cells.
+In a first step we clustered cells using a shared-nearest-neighbor graph (SNN-graph) based approach.
+The advantage of this approach is that it does not require the computation of a distance matrix which is computationally inhibitive for large number of cells.
+The SNN-graph was constructed using the 'buildSNNGraph' function from scran with the number of nearest-neighbours set to 20.
+Community-based clustering was then performed on the SNN-graph by multi-level modularity optimization using the 'cluster_louvain' function in igraph (CITATION).
 
 As we expected the epithelial compartment to show a hierarchical organisation, we used agglomerative hierarchical clustering to identify cell types.
 We first computed the pairwise Euclidean distances between cells based on the log-transformed counts of HVGs.
