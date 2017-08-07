@@ -138,10 +138,10 @@ smryByGroup <- group_by(pD,Condition) %>%
     summarize(threshold_PrcntMito=MitoCutOff,
 	      mGenesDetected=median(log10(GenesDetected)),
 	      madGenesDetected=mad(log10(GenesDetected)),
-	      threshold_GenesDetected=mGenesDetected-3*madGenesDetected,
+	      threshold_GenesDetected=max(mGenesDetected-3*madGenesDetected,log10(500)),
 	      mUmiSums=median(log10(UmiSums)),
 	      madUmiSums=mad(log10(UmiSums)),
-	      threshold_UmiSums=mUmiSums-3*madUmiSums) %>%
+	      threshold_UmiSums=max(mUmiSums-3*madUmiSums,log10(1000))) %>%
     select(Condition,starts_with("threshold")) 
 kable(smryByGroup)
 
