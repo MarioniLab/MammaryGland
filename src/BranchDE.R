@@ -5,6 +5,7 @@ library(splines)
 library(dplyr)
 source("functions.R")
 library(lmtest)
+library(MASS)
 
 dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
 m <- dataList[[1]]
@@ -17,14 +18,13 @@ pD <- right_join(pD,dms,by="barcode")
 #sbst m
 m <- m[,as.character(pD$barcode)]
 
-# Genes 
-keep <- rowMeans(m)>0.01
+#Genes
+keep <- rowMeans(m) > 0.1
 m <- m[keep,]
 fD <- fD[keep,]
 
 # Normalize
 m.norm <- t(t(m)/pD$sf)
-
 # ---- BranchDE ----
 
 lineages <- c("Hormone-sensing lineage",
@@ -35,7 +35,9 @@ for (lin in lineages) {
     pD.sub <- pD[pD$branch %in% c("Root","Intermediate", 
 			      lin),]
     pD.sub$DPTRank <- rank(pD.sub$dpt, ties.method="first")
-    m.sub <- log2(m.norm[,as.character(pD.sub$barcode)]+1)
+    m.sub <- m.norm[,as.character(pD.sub$barcode)]
+    keep <- rowMeans(m.sub)>0.1 # smoothed values are computed for all, genes are removed afterwards
+    m.sub <- log2(m.sub+1)
     fD.sub <- fD
 
     ids <- colnames(pD.sub)
@@ -63,7 +65,7 @@ for (lin in lineages) {
 
 	# Define null and alternative model
 	mod0 <- lm(y ~ 1)
-	mod1 <- lm(y ~ ns(x,df=5))
+	mod1 <- lm(y ~ ns(x,df=3))
 
 	# Extract coefficients
 	cfs <- mod1$coefficients
@@ -93,6 +95,8 @@ for (lin in lineages) {
     m.smooth <- t(m.smooth)
 
     # Adjust for multiple testing
+    keep <- keep & ((apply(m.smooth,1,max)-apply(m.smooth,1,min))>=0.5)
+    res <- res[keep,]
     res$PAdjust<- p.adjust(res$PValue)
 
     # Store all results in one list per branch
@@ -110,7 +114,13 @@ colnames(hrm) <- c("Gene",paste0("hrm.",colnames(hrm)[-1]))
 
 alv <- out[[2]][["Results"]]
 colnames(alv) <- c("Gene",paste0("alv.",colnames(alv)[-1]))
-res <- inner_join(hrm,alv,id="Gene")
+res <- full_join(hrm,alv,id="Gene")
+
+## Set gradients to 0 if NA
+res[,c("alv.gradient","hrm.gradient")][is.na(res[,c("alv.gradient","hrm.gradient")])] <- 0
+
+## Set Pvalues to 1 if NA
+res[,c("alv.PAdjust","hrm.PAdjust")][is.na(res[,c("alv.PAdjust","hrm.PAdjust")])] <- 1
 
 # ---- BranchSpecificDefinition ----
 
