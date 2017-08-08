@@ -78,16 +78,16 @@ for (smpl in c("G1","G2")) {
 	colname <- clust
 	tmp[,colname] <- expr
     }
-    x1 <- data.frame("DoubletCluster"=tmp[,"C6-G2"],
-		     "Singleton"=tmp[,"C2d"],
-		     "Cluster"="C2d")
-    x2 <- data.frame("DoubletCluster"=tmp[,"C6-G2"],
-		     "Singleton"=tmp[,"C6-G1"],
-		     "Cluster"="C6-G1")
+    x1 <- data.frame("DoubletCluster"=tmp[,"Bsl-G2"],
+		     "Singleton"=tmp[,"Avd"],
+		     "Cluster"="Avd")
+    x2 <- data.frame("DoubletCluster"=tmp[,"Bsl-G2"],
+		     "Singleton"=tmp[,"Bsl-G1"],
+		     "Cluster"="Bsl-G1")
     x2 <- rbind(x1,x2)
-    x3 <- data.frame("DoubletCluster"=tmp[,"C6-G2"],
-		     "Singleton"=rowMeans(tmp[,c("C6-G1","C2d")]),
-		     "Cluster"="Mean(C2d,C6-G1)")
+    x3 <- data.frame("DoubletCluster"=tmp[,"Bsl-G2"],
+		     "Singleton"=rowMeans(tmp[,c("Bsl-G1","Avd")]),
+		     "Cluster"="Mean(Avd,Bsl-G1)")
     x4 <- rbind(x2,x3)
     x4$Sample <- smpl
     xout <- rbind(xout,x4)
@@ -100,6 +100,11 @@ p2 <- ggplot(xout, aes(Singleton, DoubletCluster)) +
     xlab("Log-Expression") +
     ylab("Log-Expression") +
     theme_bw()
+
+pD <- group_by(pD, SampleID) %>%
+    dplyr::mutate(GenesDetected=GenesDetected/median(GenesDetected)) %>%
+    dplyr::mutate(UmiSums=UmiSums/median(UmiSums)) %>%
+    ungroup()
 
 ordr <- group_by(pD, SubCluster) %>%
     summarize(tot=median(GenesDetected))  %>%
@@ -132,4 +137,7 @@ p4 <- ggplot(fp4, aes(y=UmiSums, x=SubCluster)) +
 
 library(cowplot)
 
-plot_grid(p1,p2,p3,p4)
+
+cairo_pdf("../paper/figures/SXX.pdf",height=12.41,width=17.54)
+plot_grid(p1,p2,p3,p4, labels="auto")
+dev.off()

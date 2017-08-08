@@ -108,7 +108,7 @@ p3 <- p3 %+% facet_grid(variable~.) %+% xlab("Cluster") %+% ylab("Log-Expression
 # ---- PCAonAvgExpression ----
 
 # Compute mean expression values
-out <- data.frame("C1"=numeric(nrow(m)))
+out <- data.frame("Hsd"=numeric(nrow(m)))
 for (clust in levels(pD$cluster)[-1]) {
     expr <- rowMeans(log2(m[,pD$cluster==clust]+1))
     colname <- paste0("C",clust)

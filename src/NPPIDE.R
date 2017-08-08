@@ -10,12 +10,12 @@ pD <- dataList[[2]]
 fD <- dataList[[3]]
 
 # Loop over all luminal clusters
-comps <- list(C1=c("C1-PI","C1-NP"),
-	      C3=c("C3-PI","C3-NP"),
-	      C5=c("C5-PI","C5-NP"),
-	      C6=c("C6-G1","C6"))
+comps <- list(Hsd=c("Hsd-PI","Hsd-NP"),
+	      Hsp=c("Hsp-PI","Hsp-NP"),
+	      Lp=c("Lp-PI","Lp-NP"),
+	      Bsl=c("Bsl-G1","Bsl"))
 
-for (cname in c("C1","C3","C5","C6")) {
+for (cname in c("Hsd","Hsp","Lp","Bsl")) {
     comp <- comps[[cname]]
     pD.sub <- pD[pD$SubCluster %in% comp,]
     m.sub <- m[,as.character(pD.sub$barcode)]
@@ -45,6 +45,6 @@ for (cname in c("C1","C3","C5","C6")) {
     # Write DE table for supps
     topTab <- select(topTab, id, symbol, logFC, unshrunk.logFC, logCPM, PValue, FDR)
     fname <- sprintf("../data/Robjects/secondRun_2500/%s_NPvsPI.csv",cname)
-    if (cname=="C6") {fname <- sprintf("../data/Robjects/secondRun_2500/%s_NPvsG.csv",cname)}
+    if (cname=="Bsl") {fname <- sprintf("../data/Robjects/secondRun_2500/%s_NPvsG.csv",cname)}
     write.csv(topTab,file=fname, row.names=FALSE)
 }

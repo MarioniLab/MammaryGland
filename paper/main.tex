@@ -383,39 +383,43 @@ Libraries prepared from all time points showed high quality that was reproducibl
 We used the following metrics to flag poor quality cells: number of genes detected, total number of unique molecules (UMIs) and percentage of molecules mapped to mitochondrial genes.
 Poor quality cells were then identified by setting a threshold on the number of genes and number of UMIs that was defined as three median absolute deviations (MAD) below the median for each sample, while requiring a minimum value of 1,000 total molecules and 500 genes detected.  
 This resulted in the following thresholds for total number of genes detected: 1,042 for NP, 836 for G, 500 for L and 759 for PI; and the following for total number of molecules : 2,012 in NP, 1,479 in G, 1,000 in L and 1,379 in G.
-In addition, all cells with 5\% or more of UMIs mapping to mitochondrial genes were defined as non-viable or apoptotic and removed form the analysis (Supplementary Fig 1d).
-We finally also ensured that none of the reads in our dataset are derived from index swapping.
+In addition, all cells with 5\% or more of UMIs mapping to mitochondrial genes were defined as non-viable or apoptotic and removed from the analysis (Supplementary Fig 1d).
+We finally also ensured that none of the reads in our dataset derived from index swapping (CITATION).
 For this we excluded cells from the analysis with barcodes that appeared in more than one sample (non-unique barcodes).
-The reasoning being that any index swapped read between samples will also share the same cellular barcode, exclusion of these cells hence offers protection against index swapping.
+The reasoning being that any index swapped read between samples will also share the same cellular barcode.
+Exclusion of these cells hence offers protection against index swapping.
 This left us with a total number of 25,010 cells (4,223 in NP, 5,826 in G, 9,319 in L and 5,642 in P).
-Gene expression values were then normalised by size factors as previously described\autocite{Lun2016}.
+Gene expression values were then normalised by size factors, that were estimated as previously described\autocite{Lun2016}.
 The log-transformed (log2(counts+1)) counts of highly variable genes (HVGs) were used as features for dimensionality reduction and clustering.
 HVGs were identified by first fitting a mean-dependent trend to the gene-specific variances to all genes assuming that this trend is dominated by technical variance.
-This trend was then used to estimate the technical component of the variance and all genes with a biological component (the residual variance) of at least 0.5 and an Benjamini-Hochberg adjusted P value smaller than or equal to 0.05.
-The t-SNE embedding in \autoref{F1} was computed using the ``Rtsne'' package with default settings and perplexity set to 50 (\href{https://github.com/jkrijthe/Rtsne}{\textit{https://github.com/jkrijthe/Rtsne}}).
+This trend was then used to estimate the technical component of the variance and all genes with a biological component (the residual variance) of at least 0.5 and a Benjamini-Hochberg adjusted P value smaller than or equal to 0.05 were defined as HVG.
+The t-SNE embeddings were computed using the ``Rtsne'' package with default settings and perplexity set to 50 (\href{https://github.com/jkrijthe/Rtsne}{\textit{https://github.com/jkrijthe/Rtsne}}).
 
 \textbf{Clustering}
 Due to the large number of cells we used a two-step approach to identify clusters of cells.
 In a first step we clustered cells using a shared-nearest-neighbor graph (SNN-graph) based approach.
-The advantage of this approach is that it does not require the computation of a distance matrix which is computationally inhibitive for large number of cells.
-The SNN-graph was constructed using the 'buildSNNGraph' function from scran with the number of nearest-neighbours set to 20.
-Community-based clustering was then performed on the SNN-graph by multi-level modularity optimization using the 'cluster_louvain' function in igraph (CITATION).
-
-As we expected the epithelial compartment to show a hierarchical organisation, we used agglomerative hierarchical clustering to identify cell types.
-We first computed the pairwise Euclidean distances between cells based on the log-transformed counts of HVGs.
-The dissimilarity matrix was used to perform hierarchical clustering (Supplementary Fig 9a) with the 'hclust' function in R using average linkage, as this resulted in the highest cophenetic correlation coefficient between the tree and the dissimilarity matrix (average:0.91 single: 0.73, complete: 0.83, ward.D2: 0.73).
-Clusters were then defined with the 'cutreeDynamic' function from the 'dynamicTreeCut' package (minClusterSize= 15, deepSplit=1, method=''hybrid'')\autocite{Langfelder2008}.
-The deepSplit parameter was set to 1 based on evaluating the robustness of the clustering.
-At a deepSplit of 0, all clusters were highly robust as determined by bootstrapping\autocite{Henning2015}.
-Increasing the parameter to 1, led to splitting C1 from C3 as well as C9 from C6.
-C1, C3 and C6 were highly robust in the bootstrap (see Supplementary Fig 9b).
-C9 showed a below average robustness.
-However, due to the expression of marker genes for a previously reported cell type\autocite{Wang2015} we decided to keep it as a separate cluster.
-Interestingly, the putative cell type of C9 is known to have an expression profile that is in between luminal and basal cells (see main text), which might explain its assignment to other clusters during the bootstrap.
-Further increasing the deepSplit parameter led to unstable clusters (Supplementary Fig 9b).
-With this method, we identified ten clusters. In addition, the dynamic tree cut method allows for a ``noise component'' for cells that do not match to any cluster.
-1 cell from the lactation sample was flagged as noise by the algorithm and removed from further analysis.
-C10 (27 cells) expressed lymphocyte related genes was also removed from all downstream analyses (as previously reported\autocite{Scheele2017}, Supplementary Fig 10).
+This has the advantage of not requiring the computation of a distance matrix which is computationally inhibitive for a large number of cells.
+The SNN-graph was constructed using the \texttt{buildSNNGraph} function from scran with the number of nearest-neighbours set to 20.
+Community-based clustering was then performed on the SNN-graph by multi-level modularity optimization using the \texttt{cluster\_louvain} function in igraph (CITATION).
+This identified a total of 13 clusters.
+Yet, the majority of clusters still contained substructe that was evident from inspecting the t-SNE (SubXa).
+In order to resolve theses structures further we then applied agglomerative hierarchical clustering on each of the 13 clusters (SupXb).
+For this, we first computed the pairwise distances between cells based on the spearman correlation of log-transformed HVG counts.
+The dissimilarity matrix was then used to perform hierarchical clustering with the 'hclust' function in R using average linkage.
+Clusters were defined using the \texttt{cutree} function and the optimal $k$ was determined by maximizing the gap statistic using the \texttt{clusGap} function from the cluster package (CITATION).
+With this we identified a total number of 21 clusters.
+Next, we flagged clusters that expressed clear markers of non-epithelial cells as contaminating cells and removed them from the downstream analysis.
+Cluster 6.1 and 6.2 were tagged as immune cells based on the expression of \textit{Cd74}, \textit{Cd72} and \textit{Cd54}\autocite{Scheele2017} and cluster 10.3 as endothelial cells based on the expression of \textit{Eng}, \textit{S1pr1} and \textit{Emcn} (CITATION,SupXc and SupXd).
+We retained cluster 10.2 as it expressed markers of a previously described celltype in the gland (CITATION), yet it was also positive for 2 out of 4 (\textit{Des} and \textit{Cspg4}) pericyte markers (CITATION) (SupXd). 
+The high number of cells that was loaded on to the 10x per sample increased the chance of doublet formation in the droplet encapsulation (CITATION).
+Especially doublets of two cell types can confound downstream analysis.
+We thus identified clusters that appeared at low frequencies in the samples were it was detected (less than the maximum doublet rate of 7\%, SupXa) and was highly similar to at least two other clusters present in the same sample ($p > 0.9$ of mean $log2(counts+1)$).
+The only cluster that fulfilled this criterion was cluster 11.1, which was strongly correlated with XX and XX (SupXb).
+In addition, the cluster was almost perfectly correlated with the average expression values of XX and XX, supporting the hypothesis that it is indeed a mixture of XX and XX (SupXb).
+This was further supported by the fact that XX and XX are the most prevalent clusters in these samples.
+Finally, 11.1 also belonged to the clusters with a high number of genes detected and a high number of unique molecules, which is also indicative for doublet clusters (SupXc).
+We hence excluded 11.1 from any downstream analysis.
+As the last step we grouped clusters of cells together in super structures based on the expression of marker genes for known celltypes.
 
 \textbf{Differential expression analysis }
 

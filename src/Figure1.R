@@ -44,7 +44,7 @@ p0 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=Condition)) +
 # t-SNE colored by cluster
 p1 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=SuperCluster)) +
     geom_point(size=1.5) +
-    scale_color_manual(values=levels(pD$SuperColor))+
+    scale_color_manual(values=levels(pD$SuperColors))+
     #     ggtitle("Cluster") +
     theme_void(base_size=12) +
     guides(colour = guide_legend(override.aes = list(size=3))) +
@@ -72,8 +72,8 @@ dendr <- dis %>% hclust(.,method="ward.D2") %>% as.dendrogram %>%
     set("leaves_pch",19) %>%
     set("leaves_cex",2) %>%
     set("branches_lwd",3)
-
-plot(dendr,yaxt="n",horiz=TRUE)
+par(cex=.9)
+plot(dendr,horiz=TRUE,yaxt="n")
 p.dendr <- grab_grob()
 p.dendr <- grid.arrange(p.dendr)
 dev.off()
@@ -89,24 +89,20 @@ c3 <- c("Foxa1","Ly6a","Aldh1a3","Kit","Cd14")
 c5 <- c("Lypd3")
 c6 <- c("1500015O10Rik","Col7a1","Moxd1","Mia","Emid1","Pdpn","Col9a2","Fbln2","Igfbp3","Fst","Il17b")
 c7 <- c("Oxtr","Krt15","Igfbp6","Igfbp2","Tns1")
-c8 <- c("Pip","Apod")
+# c8 <- c("Pip","Apod")
 c9 <- c("Gng11","Procr","Igfbp7","Nrip2","Notch3","Zeb2")
 
 # Combine in order for heatmap
-genes <- c(general,c1,c3,c5,c2,c8,c6,c7,c9)
+genes <- c(general,c1,c3,c5,c2,c6,c7,c9)
 
 # Subsample cells from large clusters
 set.seed(rnd_seed)
-subsP <- filter(pD, !(SuperCluster %in% c("C8d"))) %>%
-    group_by(SuperCluster) %>%
-    do(sample_n(.,100))
+ord <- group_by(pD, SuperCluster) %>%
+    do(sample_n(.,200)) %>%
+    ungroup() %>%
+    mutate(SuperCluster=factor(SuperCluster,levels=c("Hsd","Hsp","Lp","Avp","Avd","Bsl","Myo","Prc"))) %>%
+    arrange(SuperCluster,Condition) 
 
-# Combine with remaining clusters and relevel factor according to order in plot
-ord <- filter(pD, SuperCluster %in% c("C8d")) %>%
-    bind_rows(.,subsP) %>%
-    mutate(SuperCluster=factor(SuperCluster,levels=c("C1","C3","C5","C2p","C2d","C8p","C8d","C6",
-						     "C7","C9"))) %>%
-    arrange(SuperCluster,Condition)
 
 #Normalize data with sizefactors and replace ENSEMBL IDs by gene symbols
 rownames(m) <- fD$symbol
@@ -130,8 +126,8 @@ names(condColors) <- c("Nulliparous", "14.5d Gestation",
 # Cluster color scheme as in F1c
 forcol <- ggplot_build(p1)
 clustColors <- unique(arrange(forcol$data[[1]],group) %>% .[["colour"]])
-clustColors <- clustColors[as.character(levels(ord$SuperColor))]
-clustColors <- as.character(unique(ord$SuperColor))
+clustColors <- clustColors[as.character(levels(ord$SuperColors))]
+clustColors <- as.character(unique(ord$SuperColors))
 names(clustColors) <- levels(ord$SuperCluster)
 
 # Set Color schemes for annotation data frame 
@@ -146,7 +142,7 @@ p <-  pheatmap(mheat,
          show_colnames=FALSE,
          annotation_legend=FALSE,
 	 annotation_col=annoCol,
-	 gaps_col=c(100,200,300,400,500,600,689,789,889),
+	 gaps_col=c(200,400,600,800,1000,1200,1400),
          gaps_row=9,
 	 annotation_colors=annoColors,
 	 fontsize=8)

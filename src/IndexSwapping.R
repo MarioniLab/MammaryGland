@@ -284,7 +284,7 @@ This leads to cellular barcodes in the lactation sample containing reads from so
 For the CellRanger pipeline it is then essentially impossible to distinguish these barcodes from genuine cells, especially as this sample did (almost) not contain any. 
 The other samples instead contained enough genuine cells to allow the distinction from barcodes that only contained background + index swapping reads.
 Hence, if the lactation samples are removed the number of non-unique barcodes per sample drops almost to zero.
-Nonetheless, some cells are most likely still an artifact, especially cells in C7 and C8.
+Nonetheless, some cells are most likely still an artifact, especially cells in Myo and C8.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 pD <- pD[pD$PassAll & !pD$isImmuneCell & !pD$isOutlier & pD$Condition!="L",-c(25,26)]

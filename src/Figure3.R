@@ -81,7 +81,7 @@ for (i in c(1,2)) {
     rownames(annoCol) <- rownames(pD.ord)
 
     #Set colorscheme for heatmap
-    clustCol <- levels(factor(pD.ord$SuperColor))
+    clustCol <- levels(factor(pD.ord$SuperColors))
     names(clustCol) <- levels(factor(pD.ord$SuperCluster))
     dptcols <- viridis(n=nrow(annoCol),,option="magma",begin=1,end=0)
     names(dptcols) <- c(1:length(dptcols))
@@ -174,7 +174,7 @@ fplot2 <- join(fplot2,raw2,by="barcode") %>%
 
 
 #set colorscale
-clustCol <- levels(factor(pD$SuperColor))[1,3,2,4,5]
+clustCol <- levels(factor(pD$SuperColors))
 
 #Plot dpt-dependent expression for features
 pList <- list()
@@ -232,6 +232,7 @@ expPlot <- plot_grid(branches,expPlot,ncol=1,rel_heights=c(0.3,1))
 htmps <- plot_grid(res[[1]][[1]][[4]],
 		   res[[2]][[1]][[4]],
 		   nrow=2,
+		   scale=0.8,
 		   labels=c("e","f"))
 fullP <- plot_grid(expPlot,htmps,ncol=2)
 

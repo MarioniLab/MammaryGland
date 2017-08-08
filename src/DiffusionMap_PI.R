@@ -13,7 +13,7 @@ pD <- dataList[[2]]
 rm(dataList)
 
 # Remove QC-fails,outlier and immune cells
-excludeClustComb <- c("C6-G1","C6","C7","C9")
+excludeClustComb <- c("Bsl-G1","Bsl","Myo","Prc")
 keep <- pD$keep & pD$Condition=="PI" & !(pD$SubCluster %in% excludeClustComb)
 m.vp <- m[,keep]
 pD.vp <- pD[keep,]

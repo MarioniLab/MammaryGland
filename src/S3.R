@@ -21,7 +21,7 @@ fD <- dataList[[3]]
 # ---- ScreePlots ----
 
 condComb <- c("NP","G")
-sets <- list(NULL,c("C6-G1","C6","C7","C9")) #order important for Robustness section
+sets <- list(NULL,c("Bsl-G1","Bsl","Myo","Prc")) #order important for Robustness section
 out <- list()
 for (i in seq_along(sets)) {
     set <- sets[[i]]
@@ -120,15 +120,13 @@ for (feats in features) {
 }
 
 # Set color scheme
-clusts <- as.numeric(as.character(sort(unique(pD.vp$cluster))))
-cols <- brewer.pal(n=9,name="Paired")[clusts]
-names(cols) <- clusts
+cols <- levels(factor(pD.vp$SuperColor))
 
 # Plot
 out$SubSample <- factor(out$SubSample, levels=c("100%","50%","25%"))
 p <- ggplot(out, aes(DC1,DC2, color=SuperCluster)) +
     geom_point(size=0.8) +
-    #     scale_color_manual(values=cols) +
+    scale_color_manual(values=cols) +
     facet_grid(features~SubSample) +
     theme(axis.text=element_blank(),
 	  axis.ticks=element_blank(),
@@ -138,16 +136,13 @@ p <- ggplot(out, aes(DC1,DC2, color=SuperCluster)) +
 	  legend.direction="horizontal",
 	  ) 
 
-# Read in Monocle plot
-pal <- brewer.pal(n=9,name="Paired")[c(1,2,3,5,8,9)]
-
 # Run script if not done yet
 if (!file.exists("../data/Robjects/secondRun_2500/ExpressionList_Monocle.rds")){
     source("Monocle.R")
 }
 
 monoc <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Monocle.rds")
-monoc.plt <- monoc[["plot"]] %+% guides(color=FALSE)
+monoc.plt <- monoc[["plot"]] %+% guides(color=FALSE) %+% scale_color_manual(values=cols)
 
 # Combine plots
 subp0 <- plot_grid(g1,g2,monoc.plt,nrow=1,labels="auto")

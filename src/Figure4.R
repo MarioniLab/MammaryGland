@@ -13,9 +13,9 @@ m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
 
-# ---- C5DE ----
+# ---- LpDE ----
 
-topTab <- read.csv(file="../data/Robjects/secondRun_2500/C5_NPvsPI.csv")
+topTab <- read.csv(file="../data/Robjects/secondRun_2500/Lp_NPvsPI.csv")
 
 # Highlight genes with lactation/immune annotation
 lac <- read.csv("../data/Robjects/secondRun_2500/LactationGenes.csv", stringsAsFactors=FALSE)$x
@@ -75,12 +75,12 @@ for (i in c(1,2)) {
     add <- select(pD, barcode, SubCluster, SuperCluster, Condition) %>%
 	mutate(barcode=as.character(barcode))
     forPl <- left_join(forPl,add,by="barcode") %>%
-	filter(SubCluster %in% c("C1-NP","C1-PI","C3-NP","C3-PI","C5-NP","C5-PI"))
+	filter(SubCluster %in% c("Hsd-NP","Hsd-PI","Hsp-NP","Hsp-PI","Lp-NP","Lp-PI"))
 
     forPl <- melt(forPl,id=c("barcode","SuperCluster","SubCluster","Condition"))
 
     #Plot
-    forPl$SubCluster <- factor(forPl$SubCluster,levels=c("C5-PI","C5-NP","C3-PI","C3-NP","C1-PI","C1-NP"))
+    forPl$SubCluster <- factor(forPl$SubCluster,levels=c("Lp-PI","Lp-NP","Hsp-PI","Hsp-NP","Hsd-PI","Hsd-NP"))
     out[[i]] <- ggplot(forPl, aes(y=value,x=SubCluster,color=SubCluster)) +
 	geom_jitter(size=0.9) +
 	stat_summary(fun.y = mean, fun.ymin = mean, fun.ymax = mean,
@@ -131,13 +131,13 @@ p2 <- ggplot(progenitorDE, aes(x=NullParFC,y=ParousFC)) +
     geom_point(color="grey50",size=2) +
     geom_point(data=interest, aes(x=NullParFC, y=ParousFC), color="black") +
     geom_label_repel(data=interest, aes(x=NullParFC,y=ParousFC,label=Gene)) +
-    xlab("LFC of C5-NP vs. luminal cells") +
-    ylab("LFC of C5-PI vs. luminal cells") +
+    xlab("LFC of Lp-NP vs. luminal cells") +
+    ylab("LFC of Lp-PI vs. luminal cells") +
     geom_hline(yintercept=0, lty="dashed") +
     geom_vline(xintercept=0, lty="dashed") +
     coord_equal(xlim=c(-5,5),ylim=c(-5,5))
 
-# ---- C5 post-involution is biased towards the alveolar fate ----
+# ---- Lp post-involution is biased towards the alveolar fate ----
 dms1 <- read.csv("../data/Robjects/secondRun_2500/dm_luminal.csv")
 dms2 <- read.csv("../data/Robjects/secondRun_2500/dm_luminal_PI.csv")
 dms <- rbind(dms1[,-c(6,7)],dms2)

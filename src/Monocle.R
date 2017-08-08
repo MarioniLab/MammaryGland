@@ -17,7 +17,7 @@ fD <- dataList[[3]]
 # ---- Prepocessing ----
 
 # Cells
-keepCells <- pD$keep & pD$Condition %in% c("NP","G") & !(pD$SuperCluster %in% c("C6","C6-G1","C7","C9"))
+keepCells <- pD$keep & pD$Condition %in% c("NP","G") & !(pD$SuperCluster %in% c("Bsl","Bsl-G1","Myo","Prc"))
 m <- m[,keepCells]
 pD <- pD[keepCells,]
 

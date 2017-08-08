@@ -13,14 +13,14 @@ fD <- dataList[[3]]
 m <- m[,pD$keep]
 pD <- pD[pD$keep,]
 
-comps <- c("C5-NP","C5-PI")
+comps <- c("Lp-NP","Lp-PI")
 out <- list()
 
 # DE for each progenitor cluster versus all other luminal cells
 for (choice in comps) {
     # subset data
-    rmClust <- setdiff(c("C5-NP","C5-PI"),choice)
-    pD.sub <- filter(pD, !(SubCluster %in% c("C6-G1","C6","C7","C9",rmClust)))
+    rmClust <- setdiff(c("Lp-NP","Lp-PI"),choice)
+    pD.sub <- filter(pD, !(SubCluster %in% c("Bsl-G1","Bsl","Myo","Prc",rmClust)))
     m.sub <- m[,as.character(pD.sub$barcode)]
     keep <- rowMeans(m.sub) > 0.01
     m.sub <- m.sub[keep,]
@@ -46,8 +46,8 @@ for (choice in comps) {
     topTab <- resTab$table
     out[[choice]] <- topTab
 }
-tabNulPar <- out[["C5-NP"]]
-tabPar <- filter(out[["C5-PI"]],symbol %in% tabNulPar$symbol)
+tabNulPar <- out[["Lp-NP"]]
+tabPar <- filter(out[["Lp-PI"]],symbol %in% tabNulPar$symbol)
 rownames(tabNulPar) <- tabNulPar$symbol
 tabNulPar <- tabNulPar[tabPar$symbol,]
 
@@ -58,7 +58,7 @@ progenitorDE <- data.frame("NullParFC"=tabNulPar$logFC,
 write.csv(progenitorDE,file="../data/Robjects/secondRun_2500/ProgenitorDE.csv",
 	  row.names=FALSE)
 
-# ---- DEC4vsC5 ----
+# ---- DEC4vsLp ----
 
 # reload data
 m <- dataList[[1]]
@@ -68,7 +68,7 @@ fD <- dataList[[3]]
 m <- m[,keepCells]
 pD <- pD[keepCells,]
 
-# DE C4 vs C5
+# DE C4 vs Lp
 
 # subset data
 pD.sub <- filter(pD, (cluster %in% c(4,5)))
@@ -99,4 +99,4 @@ topTab <- resTab$table
 
 # Write DE table for supps
 topTab <- select(topTab, id, symbol, logFC, unshrunk.logFC, logCPM, PValue, FDR)
-write.csv(topTab,file="../data/Robjects/secondRun_2500/C4vsC5DE.csv", row.names=FALSE)
+write.csv(topTab,file="../data/Robjects/secondRun_2500/C4vsLpDE.csv", row.names=FALSE)

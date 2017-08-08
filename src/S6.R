@@ -11,7 +11,7 @@ source("functions.R")
 # ---- ImpactStrongestOnProgenitor ----
 
 out <- data.frame()
-for (clust in c("C1","C3","C5")) {
+for (clust in c("Hsd","Hsp","Lp")) {
     filen <- sprintf("../data/Robjects/secondRun_2500/%s_NPvsPI.csv",clust)
     tmp <- read.csv(file=filen)
     tmp$Cluster <- clust
@@ -22,7 +22,7 @@ out <- group_by(out, Cluster) %>%
 	      Down=sum(FDR < 0.01 & logFC < 0)) %>%
     melt()
 
-out$Cluster <- factor(out$Cluster,levels=c("C5","C3","C1"))
+out$Cluster <- factor(out$Cluster,levels=c("Lp","Hsp","Hsd"))
 p1 <- ggplot(out, aes(x=Cluster,y=value,fill=variable)) +
     geom_bar(stat="identity",position="dodge") +
     coord_flip() +
@@ -32,7 +32,7 @@ p1 <- ggplot(out, aes(x=Cluster,y=value,fill=variable)) +
 
 # ---- DEAnalysis4vs5 ----
 output <- data.frame()
-for (clust in c("C1","C3","C5")) { # C5 has to be last for rest of script
+for (clust in c("Hsd","Hsp","Lp")) { # Lp has to be last for rest of script
     filen <- sprintf("../data/Robjects/secondRun_2500/%s_NPvsPI.csv",clust)
     topTab <- read.csv(file=filen)
 
@@ -68,7 +68,7 @@ output$Term <- factor(output$Term,levels=unique(ordr))
 
 ## Extract gene lists for volcano plot
 # better hardcode go-terms at one point to define gene lists
-sub.output <- output[output$Cluster=="C5",]
+sub.output <- output[output$Cluster=="Lp",]
 imterm <- sub.output[as.character(c(5,11,12,21,23,29,37,41,42,44,49,50)),1]
 lterm <- sub.output[as.character(c(35,25,6,20)),1]
 im.genes <- intersect(unlist(genesInTerm(GO.data,imterm)),deGenes)
@@ -96,7 +96,7 @@ m <- m[,pD$keep]
 pD <- pD[pD$keep,]
 
 # DE Test on NP cells progenitor versus rest
-pD.sub <- filter(pD,Condition %in% "NP", !(SubCluster %in% c("C6","C6-G1","C7","C9")))
+pD.sub <- filter(pD,Condition %in% "NP", !(SubCluster %in% c("Bsl","Bsl-G1","Myo","Prc")))
 m.sub <- m[,as.character(pD.sub$barcode)]
 keep <- rowMeans(m.sub) > 0.01
 m.sub <- m.sub[keep,]
@@ -110,7 +110,7 @@ y <- DGEList(counts=m.sub,
 	     genes=fD.sub,
 	     norm.factors=pD.sub$nf)
 
-choice <- "C5-NP"
+choice <- "Lp-NP"
 cluster <- factor(as.numeric(pD.sub$SubCluster==choice))
 de.design <- model.matrix(~cluster)
 y <- estimateDisp(y, de.design, prior.df=0,trend="none")
@@ -120,7 +120,7 @@ resTab <- topTags(res,n=Inf,sort.by="PValue")
 tabNulPar <- resTab$table[1:500,]
 
 # ---- PCA ----
-pD.sub <- filter(pD,Condition %in% "PI", !(SubCluster %in% c("C6","C6-G1","C7","C9")))
+pD.sub <- filter(pD,Condition %in% "PI", !(SubCluster %in% c("Bsl","Bsl-G1","Myo","Prc")))
 m.sub <- m[,as.character(pD.sub$barcode)]
 
 genes <- tabNulPar$id %in% rownames(m.sub)
