@@ -12,6 +12,7 @@
 \usepackage{fixltx2e} % provides \textsubscript
 \usepackage{hyperref}
 \usepackage{color}
+\usepackage{setspace}
 \PassOptionsToPackage{usenames,dvipsnames}{color} % color is loaded by hyperref
 \hypersetup{unicode=true,
             pdfborder={0 0 0},
@@ -66,7 +67,7 @@ Marioni (\href{mailto:marioni@ebi.ac.uk}{\emph{marioni@ebi.ac.uk}})
 \normalsize
 \textbf{Keywords: Single cell RNAseq, Development, Mammary gland }
 \end{titlepage}
-
+\onehalfspacing
 \textbf{Abstract:}
 \textbf{The mammary gland is a unique organ as it undergoes most of its development during puberty and adulthood.
 Characterising the hierarchy of the various mammary epithelial cells and how they are regulated in response to gestation, lactation and involution is important for understanding how breast cancer develops.
@@ -74,12 +75,13 @@ Recent studies have used various markers to enrich, isolate and characterise the
 However, in all of these studies only a handful of markers were used to isolate, define and trace cell populations.
 Therefore, there is a need for an unbiased and comprehensive description of mammary epithelial cells within the gland at different developmental stages.
 To this end we herein use single cell RNA sequencing (scRNAseq) to determine the gene expression profile of individual mammary epithelial cells across four adult developmental stages; nulliparous, mid gestation, lactation and post weaning (full natural involution).
-Our data from 3,471 individual cells identifies 9 distinct mammary epithelial cell populations and allows their hierarchical structure across development to be charted.
+Our data from 25,010 individual cells identifies 8 distinct mammary epithelial cell populations and allows their hierarchical structure across development to be charted.
 Interestingly, the effect of gestation and lactation appeared to be more pronounced for some cell types.
 For example, our analysis revealed a cluster of luminal progenitor cells in post involution glands, which is distinct from progenitors found in nulliparous glands.
 The data also showed that only few clusters could be fully characterized by a single marker gene.
 We argue instead that the epithelial cells -- especially in the luminal compartment -- should rather be conceptualized as being part of a continuous spectrum of differentiation.
 This view highlights the plasticity of the tissue and might help to explain some of the conflicting results from lineage tracing studies.}
+\newpage
 
 \section{Introduction}
 The purpose of the mammary gland is to provide nourishment and passive immunity to the young until they are capable of feeding themselves.
@@ -102,25 +104,29 @@ However, in all of these studies only a handful of markers and genes were used t
 Therefore, to properly understand its changing role throughout life, there is a need for an unbiased and comprehensive characterisation of mammary epithelial cell compartments at different developmental stages.
 
 To this end we herein use single cell RNA sequencing (scRNAseq) to map the cellular dynamics of mammary epithelial cells across four adult developmental stages; nulliparous, mid gestation, lactation and post weaning (full natural involution).
-Our data from 3,471 individual cells, identifies 9 distinct cell populations within the gland and allows their hierarchical structure across developmental time points to be charted.
+Our data from 25,010 individual cells, identifies 8 distinct cell populations within the gland and allows their hierarchical structure across developmental time points to be charted.
 
 \section{Results}
 
-\textbf{Single cell RNA sequencing identifies 9 clusters of mammary epithelial cells}
+\textbf{Single cell RNA sequencing identifies 8 clusters of mammary epithelial cells}
 
 First, we isolated mammary epithelial cells from four developmental time points; nulliparous (NP), day 14.5 gestation (G), day 6 lactation (L) and two weeks post natural involution (PI).
 For each time point we sorted mammary epithelial cells based on the Epcam cell surface marker from two independent mice (\autoref{F1}a).
 All samples were then prepared for single-cell RNA-sequencing using the 10x Chromium platform\autocite{Zheng2017}.
-Following quality control (materials and methods), this yielded an average of 11,175 unique transcripts and 3,113 genes detected from 3,471 cells (1,681 from NP, 609 from G, 604 from L and 605 from PI) (Supplementary \autoref{F1}a).
-
+Following quality control (materials and methods), this yielded an average of 6,175 unique transcripts and 2,118 genes detected from 25,010 cells (4,223 in NP, 5,826 in G, 9,319 in L and 5,642 in P) (Supplementary \autoref{F1}a).
 Visual inspection of the data using t-distributed stochastic neighbour embedding (t-SNE) suggested that although there is some grouping of cells by time-point, there are also other factors that underlie structure within the dataset (\autoref{F1}b and Supplementary Fig 2a).
-We used unsupervised hierarchical clustering based on the expression of 594 highly variable genes to identify 9 clusters of epithelial cells (Hsd-Prc).
-Importantly, these clusters were consistent with the groups observed in the t-SNE (\autoref{F1}c).
-Based on the expression of \textit{Krt18,} \textit{Krt8, Krt5, Krt14 and Acta2} we grouped the clusters into 6 luminal (Hsd, Avd, Hsp, Lp-PI, Lp \& Avp) and 3 basal clusters (Bsl, Myo \& Prc) (\autoref{F1}D, Supplementary Fig 2b and 2c).
+First, we dissected the global structure in the dataset by unsupervised clustering using a shared-nearest-neighbour community clustering approach.
+This identified 13 groups, which still contained evident substructure as visualized by t-SNE (SupX).
+Hence, we used hierarchical clustering on each of the identify groups to further resolve the cellular heterogeneity.
+This identified a total of 15 clusters of epithelial cells (\autoref{F1}c, SupX).
 Differential gene expression analysis allowed us to further characterise the clusters and infer putative identities (\autoref{F1}d, \autoref{T1} and Supplementary Table 1).
-For example, Avd expresses high levels of beta-casein, \textit{Csn2,} and is composed exclusively from cells from the gestation and lactation time-points, suggesting that these cells are secretory alveolar cells (\autoref{F1}d).
-Hsd and Hsp on the other hand represent the clusters with the highest expression of hormone receptors.
-Lp expresses high levels of the luminal progenitor marker \textit{Aldh1a3} suggesting progenitor function, while Myo shows characteristics of myoepithelial cells such as high levels of \textit{Acta2}, \textit{Oxtr} and \textit{Krt15} (\autoref{F1}d).
+Notably, some clusters represent the same putative cell type at different developmental time points (indicated by the NP, G, L or PI suffix) and were thus grouped together (\autoref{F1}c, \autoref{F1}d).
+Based on the expression of \textit{Krt18,} \textit{Krt8, Krt5, Krt14} and \textit{Acta2} we noted that 5 clusters show a luminal profile (Lp, Hsp, Hsd, Avp \& Avd) and 3 a basal profile (Bsl, Myo \& Prc) (\autoref{F1}D, Supplementary Fig 2b and 2c).
+Avd and Avp express high levels of beta-casein, \textit{Csn2,} and are exclusively composed of cells from the gestation and lactation time-points, suggesting that these cells are secretory alveolar cells (\autoref{F1}d).
+Hsd and Hsp on the other hand represent the clusters with the highest expression of hormone receptors, suggesting hormone sensing function.
+Lp expresses high levels of the luminal progenitor marker \textit{Aldh1a3} suggesting progenitor function, while Hsp and Avp also show expression of progenitor markers but to a lesser extent.
+Myo shows characteristics of myoepithelial cells such as high levels of \textit{Acta2}, \textit{Oxtr} and \textit{Krt15} (\autoref{F1}d).
+\comment{Describe Bsl and Prc as well?}
 
 \textbf{Reconstruction of the luminal differentiation hierarchy}
 
