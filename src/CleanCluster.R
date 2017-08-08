@@ -21,49 +21,47 @@ dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clus
 pD <- dataList[[2]]
 
 library(plyr)
-pD$SubCluster <- as.character(pD$SubCluster)
+pD$SubClusterOrig <- pD$SubCluster <- as.character(pD$SubCluster)
 pD$SubCluster <- mapvalues(pD$SubCluster, 
 			   c("1.1","2.1","3.1","3.2","4.1","5.1","5.2",
 			     "6.1","6.2","7.1","8.1","9.1","9.2","10.1",
 			     "10.2","10.3","11.1","11.2","12.1","12.2","13.1"),
-			   c("C5-NP","C1-PI","C3-PI","C3-NP","C5-PI","C1-NP","C1-G",
-			     "6-1","6-2","C7","C7","C8p","C8d","10.1","C9",
-			     "10.3","C6-G1","C6-G2","C2d","C2p","C6"))
+			   c("Lp-NP","Hsd-PI","Hsp-PI","Hsp-NP","Lp-PI","Hsd-NP","Hsd-G",
+			     "6-1","6-2","Myo","Myo","Avp-L","Avd-L","10.1","Prc",
+			     "10.3","Bsl-G1","Bsl-G2","Avd-G","Avp-G","Bsl"))
 
-pD$SubCluster <- factor(pD$SubCluster, levels=c("C1-NP","C1-PI","C1-G","C2p","C2d",
-						"C3-NP","C3-PI","C5-PI","C5-NP","C6",
-						"C6-G1","C6-G2","C7","C8p","C8d",
-						"C9","6-1","6-2","10.1","10.3"))
+pD$SubCluster <- factor(pD$SubCluster, levels=c("Hsd-NP","Hsd-PI","Hsd-G","Avp-G","Avd-G",
+						"Hsp-NP","Hsp-PI","Lp-PI","Lp-NP","Bsl",
+						"Bsl-G1","Bsl-G2","Myo","Avp-L","Avd-L",
+						"Prc","6-1","6-2","10.1","10.3"))
 
 pD$SuperCluster <- mapvalues(pD$SubCluster, 
-			     c("C1-NP","C1-PI","C1-G","C2p","C2d",
-			       "C3-NP","C3-PI","C5-PI","C5-NP","C6",
-			       "C6-G1","C6-G2","C7","C8p","C8d",
-			       "C9","6-1","6-2","10.1","10.3"),
-			     c("C1","C1","C1","C2p","C2d",
-			       "C3","C3","C5","C5","C6",
-			       "C6",NA,"C7","C8p","C8d",
-			       "C9",NA,NA,NA,NA))
+			     c("Hsd-NP","Hsd-PI","Hsd-G","Avp-G","Avd-G",
+			       "Hsp-NP","Hsp-PI","Lp-PI","Lp-NP","Bsl",
+			       "Bsl-G1","Bsl-G2","Myo","Avp-L","Avd-L",
+			       "Prc","6-1","6-2","10.1","10.3"),
+			     c("Hsd","Hsd","Hsd","Avp","Avd",
+			       "Hsp","Hsp","Lp","Lp","Bsl",
+			       "Bsl",NA,"Myo","Avp","Avd",
+			       "Prc",NA,NA,NA,NA))
 
 pD$Colors <- mapvalues(pD$SubCluster,
-		       c("C1-NP","C1-PI","C1-G","C2p","C2d",
-		       "C3-NP","C3-PI","C5-PI","C5-NP","C6",
-		       "C6-G1","C6-G2","C7","C8p","C8d",
-		       "C9","6-1","6-2","10.1","10.3"),
+		       c("Hsd-NP","Hsd-PI","Hsd-G","Avp-G","Avd-G",
+		       "Hsp-NP","Hsp-PI","Lp-PI","Lp-NP","Bsl",
+		       "Bsl-G1","Bsl-G2","Myo","Avp-L","Avd-L",
+		       "Prc","6-1","6-2","10.1","10.3"),
 		       c("#77947D","#7EDF9A","#7FE659","#7FD1DAFF",
 			 "#7FAEDA","#D7DD5B","#DE9C56","#DA5D74",
 			 "#D9A7A4","#8478D7","#A844E5",NA,"#D7ACC9",
 			 "#D6DCDF","#D7DFA7","#DC61C9",NA,NA,NA,NA))
 
 pD$SuperColors <- mapvalues(pD$SuperCluster,
-		        c("C1","C2p","C2d",
-			  "C3","C5","C6",
-			  "C7","C8p","C8d",
-			  "C9"),
+		        c("Hsd","Avp","Avd",
+			  "Hsp","Lp","Bsl",
+			  "Myo","Prc"),
 			c("#33a02c","#a6cee3","#1f78b4",
-			  "#b2df8a","#ffff99","#cab2d6",
-			  "#6a3d9a","#fb9a99","#e31a1c",
-			  "#b15928"))
+			  "#b2df8a","#ffff00","#cab2d6",
+			  "#6a3d9a","#b15928"))
 
 
 dataList[[2]] <- pD
@@ -77,7 +75,7 @@ fD <- dataList[[3]]
 
 # Mark cells
 pD$IsNonEpithelial <- pD$SubCluster %in% c("6-1","6-2","10.1","10.3")
-pD$IsDoublet <- pD$SubCluster %in% c("C6-G2")
+pD$IsDoublet <- pD$SubCluster %in% c("Bsl-G2")
 pD$keep <- pD$PassAll & !pD$IsNonEpithelial & !pD$IsDoublet
 
 # Gene and cell filtering
@@ -128,7 +126,7 @@ pD.old <- dataList[["phenoData"]]
 pD.old <- pD.old[,!(colnames(pD.old) %in% xchange.pD)]
 pD.new <- left_join(pD.old,pD.add)
 pD.new$IsNonEpithelial <- pD.new$SubCluster %in% c("6-1","6-2","10.1","10.3")
-pD.new$IsDoublet <- pD.new$SubCluster %in% c("C6-G2")
+pD.new$IsDoublet <- pD.new$SubCluster %in% c("Bsl-G2")
 pD.new$keep[is.na(pD.new$keep)] <- FALSE
 dataList[["phenoData"]] <- pD.new
 
