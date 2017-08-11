@@ -44,9 +44,25 @@ volcano <- ggplot(topTab,aes(x=logFC,y=-log10(FDR))) +
     geom_point(data=interest, aes(x=logFC, y=-log10(FDR)), size=3, color="black", pch=20) +
     geom_point(data=lacinterest, aes(x=logFC, y=-log10(FDR)), size=3, color="dodgerblue", pch=20) +
     geom_point(data=imminterest, aes(x=logFC, y=-log10(FDR)), size=3, color="coral", pch=20) +
-    geom_label_repel(data=interest, aes(x=logFC, y=-log10(FDR), label=symbol)) +
+    geom_text_repel(data=interest, aes(x=logFC, y=-log10(FDR), label=symbol)) +
     xlab("Log2 Fold Change") +
     ylab("-Log10(P value)") 
+
+# ---- ProgenitorvsLuminal ----
+progenitorDE <- read.csv("../data/Robjects/secondRun_2500/ProgenitorDE.csv")
+# genes to highlight
+interest <- filter(progenitorDE, Gene %in% c("Aldh1a3", "Lypd3", "Prlr", "Esr1", "Pgr"))
+
+# FC plot
+p2 <- ggplot(progenitorDE, aes(x=NullParFC,y=ParousFC)) +
+    geom_point(color="grey50",size=2) +
+    geom_point(data=interest, aes(x=NullParFC, y=ParousFC), color="black") +
+    geom_text_repel(data=interest, aes(x=NullParFC,y=ParousFC,label=Gene)) +
+    xlab("LFC of Lp-NP vs. luminal cells") +
+    ylab("LFC of Lp-PI vs. luminal cells") +
+    geom_hline(yintercept=0, lty="dashed") +
+    geom_vline(xintercept=0, lty="dashed") +
+    coord_equal(xlim=c(-5,5),ylim=c(-5,5))
 
 # ---- DEstrongerInProgenitor ----
 
@@ -85,19 +101,20 @@ for (i in c(1,2)) {
 	geom_jitter(size=0.9) +
 	stat_summary(fun.y = mean, fun.ymin = mean, fun.ymax = mean,
 		     geom = "crossbar", width = 1,color="black") +
-	facet_grid(~variable) +
+	facet_wrap(~variable,scales="free_y",nrow=1) +
 	scale_color_brewer(type="qual",palette="Paired") +
-	ylab("Expression") +
+	ylab("") +
 	xlab("") +
 	theme(strip.background=element_blank(),
 	      strip.text=element_text(face="bold"),
 	      legend.position="bottom",
 	      legend.direction="horizontal",
-	      axis.text.x = element_blank(),
-      	      axis.text.y = element_blank(),
-	      axis.ticks = element_blank()) +
+	      legend.title=element_blank(),
+	      axis.text.y = element_text(size=4),
+      	      axis.text.x = element_blank(), 
+	      axis.ticks.x = element_blank())+
 	guides(colour = guide_legend(override.aes = list(size=3))) +
-	scale_y_log10(breaks=c(2,5,10,25,50,100,200,300,500,1000))
+	scale_y_log10()
 }
 
 
@@ -113,29 +130,9 @@ dumleg <- ggplot(dum, aes(x,y,color=grp)) +
 dumleg <- get_legend(dumleg)
 
 # Combine plots
-leg <- plot_grid(dumleg,get_legend(out[[1]]),nrow=1)
-out[[1]] <- out[[1]] %+% guides(color=FALSE)
-out[[2]] <- out[[2]] %+% guides(color=FALSE)
-ExpPlot  <- plot_grid(plotlist=out,nrow=2)
-subp <- plot_grid(volcano,ExpPlot,nrow=1,labels=c("a","b"))
+leg <- plot_grid(NULL,dumleg,nrow=1)
+subp <- plot_grid(p2,volcano,nrow=1,labels=c("a","b"),align="h")
 subp <- plot_grid(subp,leg,rel_heights=c(1,0.1),nrow=2)
-
-# ---- ProgenitorvsLuminal ----
-progenitorDE <- read.csv("../data/Robjects/secondRun_2500/ProgenitorDE.csv")
-# genes to highlight
-interest <- filter(progenitorDE, Gene %in% c("Aldh1a3","Lypd3",
-					"Prlr","Esr1","Pgr"))
-
-# FC plot
-p2 <- ggplot(progenitorDE, aes(x=NullParFC,y=ParousFC)) +
-    geom_point(color="grey50",size=2) +
-    geom_point(data=interest, aes(x=NullParFC, y=ParousFC), color="black") +
-    geom_label_repel(data=interest, aes(x=NullParFC,y=ParousFC,label=Gene)) +
-    xlab("LFC of Lp-NP vs. luminal cells") +
-    ylab("LFC of Lp-PI vs. luminal cells") +
-    geom_hline(yintercept=0, lty="dashed") +
-    geom_vline(xintercept=0, lty="dashed") +
-    coord_equal(xlim=c(-5,5),ylim=c(-5,5))
 
 # ---- Lp post-involution is biased towards the alveolar fate ----
 dms1 <- read.csv("../data/Robjects/secondRun_2500/dm_luminal.csv")
@@ -143,18 +140,27 @@ dms2 <- read.csv("../data/Robjects/secondRun_2500/dm_luminal_PI.csv")
 dms <- rbind(dms1[,-c(6,7)],dms2)
 
 pD <- right_join(pD,dms,by="barcode")
-pD$SuperCluster[pD$Condition %in% c("NP","G")] <- NA
-
+levels(pD$SuperCluster) <- c(levels(pD$SuperCluster),"NP and G")
+pD$SuperCluster[pD$Condition %in% c("NP","G")] <- "NP and G"
+pD$SuperCluster <- factor(as.character(pD$SuperCluster), levels=unique(as.character(pD$SuperCluster)))
 
 p3 <- ggplot(pD, aes(DC1,DC2,color=SuperCluster)) +
     geom_point(size=2) +
     xlab("Component 1") +
     ylab("Component 2") +
+    scale_color_manual(values=c("#D3D3D3",as.character(unique(pD$SuperColors)))[c(1,5,6,3,4,2)]) +
     theme(legend.position="bottom",
-	  legend.direction="horizontal")
+	  legend.direction="horizontal",
+	  legend.title=element_blank())
     #     facet_wrap(~Condition)
 
-subp1 <- plot_grid(p2,p3,nrow=1,labels=c("c","d"))
+legs <- plot_grid(get_legend(out[[1]]),get_legend(p3),nrow=1)
+p3 <- p3 %+% guides(color=FALSE)
+out[[1]] <- out[[1]] %+% guides(color=FALSE)
+out[[2]] <- out[[2]] %+% guides(color=FALSE)
+ExpPlot  <- plot_grid(plotlist=out,nrow=2)
+subp1 <- plot_grid(ExpPlot,p3,nrow=1,labels=c("c","d"))
+subp1 <- plot_grid(subp1,legs,rel_heights=c(1,0.1),nrow=2)
 fullP <- plot_grid(subp,subp1,nrow=2)
 
 cairo_pdf("../paper/figures/Figure4.pdf",width=10.75,height=15.19)

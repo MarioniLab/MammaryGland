@@ -230,10 +230,13 @@ branches <- plot_grid(NULL,pb1,pb2,NULL,rel_widths=c(0.3,1,1,0.3),nrow=1,labels=
 expPlot <- plot_grid(branches,expPlot,ncol=1,rel_heights=c(0.3,1))
 
 htmps <- plot_grid(res[[1]][[1]][[4]],
+		   NULL,
 		   res[[2]][[1]][[4]],
+		   NULL,
 		   nrow=2,
 		   scale=0.8,
-		   labels=c("e","f"))
+		   labels=c("e","","f",""),
+		   rel_widths=c(1,0.75,1,0.75))
 fullP <- plot_grid(expPlot,htmps,ncol=2)
 
 
