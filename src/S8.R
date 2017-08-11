@@ -149,6 +149,6 @@ subp0 <- plot_grid(p1,p2,labels="auto")
 subp1 <- plot_grid(pcplot, pLoad, rel_widths=c(1,.8),labels=c("c","d")) 
 
 fullP <- plot_grid(subp0,subp1,nrow=2)
-cairo_pdf("../paper/figures/S6.pdf",width=8.27,height=11.69)
+cairo_pdf("../paper/figures/S8.pdf",width=8.27,height=11.69)
 fullP
 dev.off()

@@ -1,82 +1,72 @@
-# S4
-library(pheatmap)
-library(dplyr)
-library(viridis)
+# GO-Analysis
+library(ggplot2)
 library(cowplot)
-library(RColorBrewer)
+library("topGO")
+library(org.Mm.eg.db)
 
-out <- readRDS("../data/Robjects/secondRun_2500/BranchDEList.rds")
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Clustered.rds")
-dms <- read.csv("../data/Robjects/secondRun_2500/dm_luminal.csv")
+# ---- DEAnalysis4vs5 ----
+output <- data.frame()
+input <- read.csv("../data/Robjects/secondRun_2500/BranchDECluster.R",
+		  stringsAsFactor=FALSE)
+input$BranchCluster <- paste(input$Branch,input$Cluster,sep="-")
 
-pD <- dataList[[2]]
-pD <- right_join(pD,dms,by="barcode")
+for (clust in unique(input$BranchCluster)) { 
 
+    # DeGenes
+    deGenes <- input[input$BranchCluster==clust,"Gene"]
 
-m.hrm <- out[[1]][["mSmooth"]]
-m.alv <- out[[2]][["mSmooth"]]
+    # Gene universe
+    if (substr(clust,1,3)=="Hrm") i <- 1 else i <- 2
+    m.smooth <- readRDS("../data/Robjects/secondRun_2500/BranchDEList.rds")[[i]][["mSmooth"]]
+    univrs <- rownames(m.smooth[rowMeans(m.smooth)>0.1,])
 
-# Combine smoothed expression values for heatmap
-m.both <- cbind(m.alv[,c(ncol(m.alv):1)],m.hrm) # reverse order of alveolar cells for heatmap
+    # ---- Data ----
+    alG <- factor(as.numeric(univrs %in% deGenes))
+    names(alG) <- univrs
 
-# Scale expression values
-m.both <- t(scale(t(m.both)))
-m.both[m.both>3] <- 3 # cut at 3 for visualization
-m.both[m.both<-3] <- -3 # cut at -3 for visualization
+    # ---- GOanalysis ----
 
-# Annotation Data
-pD.ord <- pD
-rownames(pD.ord) <- pD.ord$barcode
-pD.ord <- pD.ord[colnames(m.both),]
-annoCol <- data.frame("Cluster"=pD.ord$cluster,
-		      "Pseudotime"=rank(pD.ord$dpt,ties.method="first")
-		      )
-#Rename the alveolar cells, so that there are no duplicate names for rows
-colnames(m.both) <- c(paste0("Alv.",colnames(m.both)[1:ncol(m.alv)]),
-		       colnames(m.both)[(ncol(m.alv)+1):ncol(m.both)])
-rownames(annoCol) <- colnames(m.both)
+    # prepare Data for topGO
+    GO.data <- new("topGOdata", description="Lib GO",ontology="BP", allGenes=alG, 
+		   annot=annFUN.org, mapping="org.Mm.eg.db",
+		   nodeSize=20, ID="symbol")
+    result.classic <- runTest(GO.data, statistic="fisher")
+    tmp <- GenTable(GO.data, Fisher.classic=result.classic, orderBy="topgoFisher", topNodes=50, numChar=300)
 
-#Set colorscheme for heatmap
-clustCol <- brewer.pal(n=9,name="Paired")[c(1,2,3,5,8)]
-names(clustCol) <- c(1,2,3,5,8)
-dptcols <- viridis(n=nrow(annoCol),,option="magma",begin=1,end=0)
-names(dptcols) <- c(1:length(dptcols))
-annoColors <- list("Cluster"=clustCol,
-		   "Pseudotime"=dptcols)
+    tmp$Term <- factor(tmp$Term, levels=unique(rev(tmp$Term)))
+    tmp$Cluster <- clust
+    output <- rbind(tmp,output)
+}
 
+output <- output[output$Fisher.classic < 0.01,]
 
-m.heat1 <- m.both[out[["genes.sameGrad"]],]
-m.heat2 <- m.both[out[["genes.diffGrad"]],]
+library(dplyr)
+# ordr <- group_by(output, Cluster) %>%
+#     arrange(-log10(as.numeric(Fisher.classic))) %>%
+#     .$Term
 
-##Plot
-p0 <- pheatmap(m.heat1,
-	 cluster_cols=FALSE,
-	 cluster_rows=TRUE,
-	 clustering_distance_rows="euclidean",
-	 annotation=annoCol,
-	 clustering_method="ward.D2",
-	 show_colnames=FALSE,
-	 annotation_colors=annoColors,
-	 treeheight_row=0,
-	 legend=FALSE,
-	 annotation_legend=FALSE,
-	 gaps_col=ncol(m.alv),
-	 show_rownames=FALSE)
+# output$Term <- factor(output$Term,levels=unique(ordr))
+output1 <- output[grepl("Alv",output$Cluster),]
+output2 <- output[grepl("Hrm",output$Cluster),]
 
-p1 <- pheatmap(m.heat2,
-	 cluster_cols=FALSE,
-	 cluster_rows=TRUE,
-	 clustering_distance_rows="euclidean",
-	 annotation=annoCol,
-	 clustering_method="ward.D2",
-	 show_colnames=FALSE,
-	 annotation_colors=annoColors,
-	 treeheight_row=0,
-	 annotation_legend=TRUE,
-	 gaps_col=ncol(m.alv),
-	 show_rownames=FALSE)
+p1 <- ggplot(output1, aes(x=Term, y=-log10(as.numeric(Fisher.classic)))) +
+    geom_bar(stat="identity",color="black",fill="white") +
+    coord_flip() +
+    ylab("-log10(P)") +
+    geom_hline(yintercept=2,lty="dashed") +
+    xlab("GO-Term [BP]") +
+    theme(axis.text.y=element_text(size=8)) +
+    facet_grid(Cluster~.,scales="free")
 
-# png("../paper/figures/S4.png",height=1248,width=1248)
-comb <- plot_grid(p0[[4]],NULL,p1[[4]],nrow=1,vjust=0.5,rel_widths=c(1,.1,1))
-comb
-# dev.off()
+p2 <- ggplot(output2, aes(x=Term, y=-log10(as.numeric(Fisher.classic)))) +
+    geom_bar(stat="identity",color="black",fill="white") +
+    coord_flip() +
+    ylab("-log10(P)") +
+    geom_hline(yintercept=2,lty="dashed") +
+    xlab("GO-Term [BP]") +
+    theme(axis.text.y=element_text(size=8)) +
+    facet_grid(Cluster~.,scales="free")
+
+cairo_pdf("../paper/figures/S4.pdf",width=18,height=10)
+plot_grid(p1,p2)
+dev.off()

@@ -138,6 +138,6 @@ p4 <- ggplot(fp4, aes(y=UmiSums, x=SubCluster)) +
 library(cowplot)
 
 
-cairo_pdf("../paper/figures/SXX.pdf",height=12.41,width=17.54)
+cairo_pdf("../paper/figures/S10.pdf",height=12.41,width=17.54)
 plot_grid(p1,p2,p3,p4, labels="auto")
 dev.off()
