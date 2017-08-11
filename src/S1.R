@@ -44,6 +44,6 @@ cellViability <- ggplot(pD, aes(x=prcntMito, y=GenesDetected, color=Condition, s
     xlab("Percentage of Mitochondrial RNA molecules") +
     ylab("Total number of genes detected")
 
-cairo_pdf("../paper/figures/S1.pdf",height=12.41,width=17.54)
+cairo_pdf("../paper/figures/S3.pdf",height=12.41,width=17.54)
 plot_grid(p1,gdHist,libSizeHist,cellViability, labels="auto")
 dev.off()
