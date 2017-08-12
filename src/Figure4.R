@@ -144,7 +144,7 @@ pD <- right_join(pD,dms,by="barcode")
 levels(pD$SubCluster) <- c(levels(pD$SubCluster),"NP and G")
 pD$SubCluster[pD$Condition %in% c("NP","G")] <- "NP and G"
 pD$SubCluster <- factor(as.character(pD$SubCluster), levels=unique(as.character(pD$SubCluster)))
-cols <- unique(as.character(pD$Colors))[c(5,7,3,1,6,8,9,4,2)]
+cols <- unique(as.character(pD$Colors))[c(5,7,3,1,6,8,4,9,2)]
 cols[9] <- "#D3D3D3"
 
 p3 <- ggplot(filter(pD, Condition %in% c("L","PI")), aes(DC1,DC2,color=SubCluster)) +

@@ -131,10 +131,10 @@ pc <- prcomp(m.sub)
 pD.sub$PC1 <- pc$x[,1]
 pD.sub$PC2 <- pc$x[,2]
 
-cols <- levels(pD$Colors)
+cols <- levels(pD.sub$Colors)[levels(pD.sub$SubCluster) %in% unique(pD.sub$SubCluster)]
 pcplot <- ggplot(pD.sub, aes(PC1,PC2,color=SubCluster)) +
-    geom_point() 
-    #     scale_color_manual(values=cols)
+    geom_point() +
+    scale_color_manual(values=cols)
 
 loadngs <- pc$rotation[,1]
 loddf <- data.frame("id"=names(loadngs),

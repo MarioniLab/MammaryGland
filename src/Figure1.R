@@ -70,7 +70,7 @@ dendr <- dis %>% hclust(.,method="ward.D2") %>% as.dendrogram %>%
     set("leaves_pch",19) %>%
     set("leaves_cex",2) %>%
     set("branches_lwd",3)
-par(cex=.7)
+par(cex=.6)
 plot(dendr,horiz=TRUE,yaxt="n")
 p.dendr <- grab_grob()
 p.dendr <- grid.arrange(p.dendr)
@@ -83,7 +83,6 @@ general <- c("Acta2","Mylk","Krt5","Krt14","Cnn1","Trp63","Epcam","Krt18","Krt8"
 c1 <- c("Cited1","Prlr","Esr1","Areg")
 c2 <- c("Rspo1","Atp6v1c2","Fabp3","Thrsp","Wap","Glycam1","Olah")
 c3 <- c("Foxa1","Ly6a","Aldh1a3","Kit","Cd14")
-# c4 <- c("Ltf","Hp","Pdk4","C4b","Chil1","Vegfa","Slpi")
 c5 <- c("Lypd3")
 c6 <- c("1500015O10Rik","Col7a1","Moxd1","Mia","Emid1","Pdpn","Col9a2","Fbln2","Igfbp3","Fst","Il17b")
 c7 <- c("Oxtr","Krt15","Igfbp6","Igfbp2","Tns1")
@@ -144,7 +143,7 @@ p <-  pheatmap(mheat,
          show_colnames=FALSE,
          annotation_legend=FALSE,
 	 annotation_col=annoCol,
-	 gaps_col=c(100,200,263,363,463,563,663,763,863,963,1052,1152,1252,1352),
+	 gaps_col=c(263,463,663,863,1052,1252,1352),
          gaps_row=9,
 	 annotation_colors=annoColors,
 	 fontsize=8)

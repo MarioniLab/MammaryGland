@@ -89,7 +89,7 @@ for (smpl in c("G1","G2")) {
 		     "Singleton"=rowMeans(tmp[,c("Bsl-G","Avd-G")]),
 		     "Cluster"="Mean(Avd-G,Bsl-G)")
     x4 <- rbind(x2,x3)
-    x4$Sample <- smpl
+    x4$Sample <- paste0("Sample-",smpl)
     xout <- rbind(xout,x4)
 }
 
@@ -100,7 +100,7 @@ p2 <- ggplot(xout, aes(Singleton, DoubletCluster)) +
     xlab("Log-Expression") +
     ylab("Log-Expression") +
     theme_bw() +
-    ylab("Total number of molecules detected")
+    ylab("Log-Expression of Bsl-G2")
 
 pD <- group_by(pD, SampleID) %>%
     dplyr::mutate(GenesDetected=GenesDetected/median(GenesDetected)) %>%
@@ -135,7 +135,8 @@ fp4$SubCluster <- factor(fp4$SubCluster, levels=ordr)
 p4 <- ggplot(fp4, aes(y=UmiSums, x=SubCluster)) +
     geom_boxplot() +
     scale_y_log10() +
-    theme_bw()
+    theme_bw() +
+    ylab("Total number of molecules detected")
 
 library(cowplot)
 

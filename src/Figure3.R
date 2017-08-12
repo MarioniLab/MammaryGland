@@ -234,7 +234,7 @@ htmps <- plot_grid(res[[1]][[1]][[4]],
 		   res[[2]][[1]][[4]],
 		   NULL,
 		   nrow=2,
-		   scale=0.8,
+		   scale=0.9,
 		   labels=c("e","","f",""),
 		   rel_widths=c(1,0.75,1,0.75))
 fullP <- plot_grid(expPlot,htmps,ncol=2)

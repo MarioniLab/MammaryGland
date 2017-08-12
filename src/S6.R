@@ -19,7 +19,7 @@ fD <- dataList[[3]]
 
 # ---- Robustness -----
 condComb <- c("NP","G")
-set <- c("Bsl-G1","Bsl","Myo","Prc")
+set <- c("Bsl-G","Bsl","Myo","Prc")
 keepCells <- pD$keep & !(pD$SuperCluster %in% set) & pD$Condition %in% condComb
 
 # Cell filtering
@@ -90,7 +90,7 @@ for (feats in features) {
 }
 
 # Set color scheme
-cols <- levels(factor(pD.vp$Colors))
+cols <- levels(pD.vp$Colors)[levels(pD.vp$SubCluster) %in% unique(pD.vp$SubCluster)]
 
 # Plot
 out$SubSample <- factor(out$SubSample, levels=c("100%","50%","25%"))
