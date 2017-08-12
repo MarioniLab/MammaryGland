@@ -13,7 +13,7 @@ source("functions.R")
 out <- data.frame()
 for (clust in c("Hsd","Hsp","Lp")) {
     filen <- sprintf("../data/Robjects/secondRun_2500/%s_NPvsPI.csv",clust)
-    tmp <- read.csv(file=filen)
+    tmp <- read.csv(file=filen,stringsAsFactors=FALSE)
     tmp$Cluster <- clust
     out <- rbind(out,tmp)
 }
@@ -34,7 +34,7 @@ p1 <- ggplot(out, aes(x=Cluster,y=value,fill=variable)) +
 output <- data.frame()
 for (clust in c("Hsd","Hsp","Lp")) { # Lp has to be last for rest of script
     filen <- sprintf("../data/Robjects/secondRun_2500/%s_NPvsPI.csv",clust)
-    topTab <- read.csv(file=filen)
+    topTab <- read.csv(file=filen,stringsAsFactors=FALSE)
 
     deGenes <- topTab[topTab$FDR < 0.01 & topTab$logFC > 0,"symbol"] 
     allGenes <- topTab$symbol
@@ -51,7 +51,7 @@ for (clust in c("Hsd","Hsp","Lp")) { # Lp has to be last for rest of script
 		   annot=annFUN.org, mapping="org.Mm.eg.db",
 		   nodeSize=20, ID="symbol")
     result.classic <- runTest(GO.data, statistic="fisher")
-    tmp <- GenTable(GO.data, Fisher.classic=result.classic, orderBy="topgoFisher", topNodes=50, numChar=30)
+    tmp <- GenTable(GO.data, Fisher.classic=result.classic, orderBy="topgoFisher", topNodes=50, numChar=10000)
 
     tmp$Term <- factor(tmp$Term, levels=unique(rev(tmp$Term)))
     tmp$Cluster <- clust
@@ -69,8 +69,8 @@ output$Term <- factor(output$Term,levels=unique(ordr))
 ## Extract gene lists for volcano plot
 # better hardcode go-terms at one point to define gene lists
 sub.output <- output[output$Cluster=="Lp",]
-imterm <- sub.output[as.character(c(5,11,12,21,23,29,37,41,42,44,49,50)),1]
-lterm <- sub.output[as.character(c(35,25,6,20)),1]
+imterm <- sub.output[as.character(c(14,15,21,38,42,47,48)),1]
+lterm <- sub.output[as.character(c(11,12,20,40)),1]
 im.genes <- intersect(unlist(genesInTerm(GO.data,imterm)),deGenes)
 la.genes <- intersect(unlist(genesInTerm(GO.data,lterm)),deGenes)
 write.csv(im.genes, "../data/Robjects/secondRun_2500/ImmuneGenes.csv", row.names=FALSE, quote=FALSE)
@@ -82,7 +82,7 @@ p2 <- ggplot(output, aes(x=Term, y=-log10(as.numeric(Fisher.classic)))) +
     ylab("-log10(P)") +
     geom_hline(yintercept=2,lty="dashed") +
     xlab("GO-Term [BP]") +
-    theme(axis.text.y=element_text(size=4)) +
+    theme(axis.text.y=element_text(size=7)) +
     facet_grid(Cluster~.,scales="free")
 
 # ---- PCAPlot ----
@@ -131,9 +131,10 @@ pc <- prcomp(m.sub)
 pD.sub$PC1 <- pc$x[,1]
 pD.sub$PC2 <- pc$x[,2]
 
-pcplot <- ggplot(pD.sub, aes(PC1,PC2,color=SuperCluster)) +
+cols <- levels(pD$Colors)
+pcplot <- ggplot(pD.sub, aes(PC1,PC2,color=SubCluster)) +
     geom_point() 
-    #     scale_color_manual(values=pal)
+    #     scale_color_manual(values=cols)
 
 loadngs <- pc$rotation[,1]
 loddf <- data.frame("id"=names(loadngs),
@@ -142,13 +143,16 @@ ld <- plyr::join(tabNulPar,loddf) %>%
     mutate("Genes"=ifelse(logFC >0,"High in Progenitor","High in Differentiated"))
 pLoad <- ggplot(ld, aes(x=Genes,y=Loadings)) +
     geom_boxplot() +
-    ylab("PC1 Loadings")
+    ylab("PC1 Loadings") +
+    xlab("") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1,size=5))
 
 ################
-subp0 <- plot_grid(p1,p2,labels="auto")
-subp1 <- plot_grid(pcplot, pLoad, rel_widths=c(1,.8),labels=c("c","d")) 
 
-fullP <- plot_grid(subp0,subp1,nrow=2)
-cairo_pdf("../paper/figures/S8.pdf",width=8.27,height=11.69)
+subp0 <- plot_grid(p2,labels="d")
+subp1 <- plot_grid(p1,pcplot, pLoad, rel_heights=c(1,1,.8),labels=c("a","b","c"),nrow=3) 
+
+fullP <- plot_grid(subp1,subp0,nrow=1)
+cairo_pdf("../paper/figures/S8.pdf",height=17.53,width=12.405)
 fullP
 dev.off()

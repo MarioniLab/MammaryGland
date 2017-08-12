@@ -13,7 +13,7 @@ fD <- dataList[[3]]
 comps <- list(Hsd=c("Hsd-PI","Hsd-NP"),
 	      Hsp=c("Hsp-PI","Hsp-NP"),
 	      Lp=c("Lp-PI","Lp-NP"),
-	      Bsl=c("Bsl-G1","Bsl"))
+	      Bsl=c("Bsl-G","Bsl"))
 
 for (cname in c("Hsd","Hsp","Lp","Bsl")) {
     comp <- comps[[cname]]

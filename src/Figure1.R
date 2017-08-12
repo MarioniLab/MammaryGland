@@ -70,7 +70,7 @@ dendr <- dis %>% hclust(.,method="ward.D2") %>% as.dendrogram %>%
     set("leaves_pch",19) %>%
     set("leaves_cex",2) %>%
     set("branches_lwd",3)
-par(cex=.8)
+par(cex=.7)
 plot(dendr,horiz=TRUE,yaxt="n")
 p.dendr <- grab_grob()
 p.dendr <- grid.arrange(p.dendr)

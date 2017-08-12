@@ -1,65 +1,145 @@
-# S9
-
-library(plyr)
+# Estimate size factors using scran
 library(dplyr)
-library(ggplot2)
-library(cowplot)
-library(viridis)
-library(RColorBrewer)
-library(pheatmap)
+library(scran)
+library(Rtsne)
+library(knitr)
 library(gridExtra)
-library(gridGraphics)
 source("functions.R")
 
-# Load Data
-rnd_seed <- 300
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered.rds")
-m <- dataList[[1]]
-pD <- dataList[[2]]
-fD <- dataList[[3]]
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
+# set.seed(300)
+# dataList <- subSample(dataList, cell.number=2000)
+m <- dataList[["counts"]]
+pD <- dataList[["phenoData"]]
+fD <- dataList[["featureData"]]
+rm(dataList)
 
-# Remove outlier and immune cells
-m <- m[,pD$PassAll]
+m <- m[fD$keep,pD$PassAll]
 pD <- pD[pD$PassAll,]
-
 m <- t(t(m)/pD$sf)
 
+# Doublet definition: below 7% in all samples where it was present
+tab <- ftable(pD$SubCluster, pD$SampleID)
+tab <- as.matrix(t(t(tab)/colSums(tab)))
+pot.dob <- rownames(tab)[which(rowMax(tab)<0.07)]
 
-# First step
-p1 <- ggplot(pD,aes(tSNE1,tSNE2,color=Cluster)) +
-    geom_point()
+freqDf <- data.frame(as.table(tab))
+ordr <- group_by(freqDf, Var1) %>%
+    summarize(tot=sum(Freq)) %>%
+    dplyr::arrange(desc(tot)) %>%
+    .$Var1 %>%
+    as.character()
 
-# Second round
-fp2 <- pD
-fp2$SubCluster <- as.character(fp2$SubCluster)
-fp2$SubCluster <- substr(fp2$SubCluster,nchar(fp2$SubCluster),nchar(fp2$SubCluster))
-p2 <- ggplot(fp2,aes(tSNE1,tSNE2,color=SubCluster)) +
-    geom_point(size=.8) +
-    facet_wrap(~Cluster)
+freqDf$Var1 <- factor(freqDf$Var1,levels=ordr)
+colnames(freqDf) <- c("Cluster","Sample","Frequency")
 
-subP1 <- plot_grid(p1,p2, labels=c("a","b"))
+p1 <- ggplot(freqDf, aes(x=Cluster,y=Frequency, fill=Sample)) +
+    geom_bar(stat="identity",position="dodge") +
+    geom_hline(yintercept=0.07,color="red",lty="dashed") +
+    theme(axis.text.x=element_text(angle=45, vjust=0.5, size=16))
 
-# ---- PlotImmuneCellMarkers ----
+# for Table
 
-genes <- c("Cd52","Cd74","Cd72")
-p3 <- plotGeneDist(m, pD, fD, genes, colorBy="SubCluster")
-p3 <- p3 %+% facet_grid(variable~.) %+% xlab("SubCluster") %+% ylab("Log-Expression")
+out <- data.frame()
+smpls <- levels(pD$SampleID)
+for (smpl in smpls) {
+    pD.sub <- pD[pD$SampleID==smpl,]
+    keepC <- names(table(pD.sub$SubCluster)[which(table(pD.sub$SubCluster)>1)])
+    pD.sub <- pD.sub[pD.sub$SubCluster %in% keepC,]
+    m.sub <- m[,pD.sub$barcode]
+    cluster <- factor(pD.sub$SubCluster)
+    tmp <- data.frame(numeric(nrow(m)),check.names=FALSE)
+    colnames(tmp) <- cluster[1]
+    for (clust in levels(cluster)) { 
+	expr <- rowMeans(as.matrix(log2(m.sub[,pD.sub$SubCluster==clust]+1)))
+	colname <- clust
+	tmp[,colname] <- expr
+    }
+    tmp <- cor(tmp) # compute correlation
+    tmp <- apply(tmp,1, function(x) sum(x>0.9)) #how many are more than 0.9
+    tmp <- names(tmp[which(tmp>=3)])
+    tmp1 <- data.frame("potDoublet"=pot.dob,
+		       "Sample"=smpl)
+    tmp1$presentInSample <- tmp1$potDoublet %in% keepC
+    tmp1$CorWithAtLeastTwo <- tmp1$potDoublet %in% tmp
+    out <- rbind(out,tmp1)
+}
+out <- out[out$presentInSample,]
 
-# ---- PlotEnodthelialCellMarkers ----
+xout <- data.frame()
+for (smpl in c("G1","G2")) {
+    pD.sub <- pD[pD$SampleID==smpl,]
+    m.sub <- m[,pD.sub$barcode]
+    cluster <- factor(pD.sub$SubCluster)
+    tmp <- data.frame(numeric(nrow(m)),check.names=FALSE)
+    colnames(tmp) <- cluster[1]
+    for (clust in levels(cluster)) { 
+	expr <- rowMeans(as.matrix(log2(m.sub[,pD.sub$SubCluster==clust]+1)))
+	colname <- clust
+	tmp[,colname] <- expr
+    }
+    x1 <- data.frame("DoubletCluster"=tmp[,"Bsl-G2"],
+		     "Singleton"=tmp[,"Avd-G"],
+		     "Cluster"="Avd-G")
+    x2 <- data.frame("DoubletCluster"=tmp[,"Bsl-G2"],
+		     "Singleton"=tmp[,"Bsl-G"],
+		     "Cluster"="Bsl-G")
+    x2 <- rbind(x1,x2)
+    x3 <- data.frame("DoubletCluster"=tmp[,"Bsl-G2"],
+		     "Singleton"=rowMeans(tmp[,c("Bsl-G","Avd-G")]),
+		     "Cluster"="Mean(Avd-G,Bsl-G)")
+    x4 <- rbind(x2,x3)
+    x4$Sample <- smpl
+    xout <- rbind(xout,x4)
+}
 
-genes <- c("Eng","S1pr1","Emcn")
-p4 <- plotGeneDist(m, pD, fD, genes, colorBy="SubCluster")
-p4 <- p4 %+% facet_grid(variable~.) %+% xlab("Cluster") %+% ylab("Log-Expression")
+p2 <- ggplot(xout, aes(Singleton, DoubletCluster)) +
+    geom_point() +
+    geom_abline(slope=1, intercept=0, color="red", lty="dashed") +
+    facet_grid(Sample~Cluster) +
+    xlab("Log-Expression") +
+    ylab("Log-Expression") +
+    theme_bw() +
+    ylab("Total number of molecules detected")
 
-# ---- PlotPericyteMarkers ----
+pD <- group_by(pD, SampleID) %>%
+    dplyr::mutate(GenesDetected=GenesDetected/median(GenesDetected)) %>%
+    dplyr::mutate(UmiSums=UmiSums/median(UmiSums)) %>%
+    ungroup()
 
-genes <- c("Pdgfrb","Cspg4","Anpep","Des")
-p5 <- plotGeneDist(m, pD, fD, genes, colorBy="SubCluster")
-p5 <- p5 %+% facet_grid(variable~.) %+% xlab("Cluster") %+% ylab("Log-Expression")
+ordr <- group_by(pD, SubCluster) %>%
+    summarize(tot=median(GenesDetected))  %>%
+    dplyr::arrange(desc(tot)) %>%
+    .$SubCluster %>%
+    as.character()
 
-subP2 <- plot_grid(p3,p4,p5, nrow=1, labels=c("c","d","e"))
+fp3 <- pD
+fp3$SubCluster <- factor(fp3$SubCluster, levels=ordr)
 
-fullP <- plot_grid(subP1,subP2,nrow=2)
+p3 <- ggplot(fp3, aes(y=GenesDetected, x=SubCluster)) +
+    geom_boxplot() +
+    scale_y_log10() +
+    theme_bw() +
+    ylab("Total number of genes detected")
+
+fp4 <- pD
+
+ordr <- group_by(pD, SubCluster) %>%
+    summarize(tot=median(UmiSums))  %>%
+    dplyr::arrange(desc(tot)) %>%
+    .$SubCluster %>%
+    as.character()
+
+fp4$SubCluster <- factor(fp4$SubCluster, levels=ordr)
+
+p4 <- ggplot(fp4, aes(y=UmiSums, x=SubCluster)) +
+    geom_boxplot() +
+    scale_y_log10() +
+    theme_bw()
+
+library(cowplot)
+
+
 cairo_pdf("../paper/figures/S9.pdf",height=12.41,width=17.54)
-fullP
+plot_grid(p1,p2,p3,p4, labels="auto")
 dev.off()

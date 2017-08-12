@@ -17,52 +17,22 @@ m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
 
-
-# ---- ScreePlots ----
-
-condComb <- c("NP","G")
-sets <- list(NULL,c("Bsl-G1","Bsl","Myo","Prc")) #order important for Robustness section
-out <- list()
-for (i in seq_along(sets)) {
-    set <- sets[[i]]
-    keepCells <- pD$keep & !(pD$SuperCluster %in% set) & pD$Condition %in% condComb
-
-    # Cell filtering
-    m.vp <- m[,keepCells]
-    pD.vp <- pD[keepCells,]
-
-    # Gene filtering
-    keep <- rowMeans(m.vp)>0.01
-    m.vp <- m.vp[keep,]
-    fD.vp <- fD[keep,]
-
-    # Normalize
-    m.norm <- t(t(m.vp)/pD.vp$sf)
-
-    # Highly variable genes 
-    var.des <- trendVar(log2(m.norm+1),trend="semiloess")
-    var.out <- decomposeVar(log2(m.norm+1),var.des)
-    o <- order(var.out$mean)
-    hvg.out <- var.out[which(var.out$FDR <= 0.05 & var.out$bio >=0.5),]
-
-    # Prepare expression matrix
-    m.norm <- m.norm[rownames(hvg.out),]
-    exps <- t(log(m.norm+1))
-
-    # Compute diffusion map
-    set.seed(rnd_seed)
-    dm <- DiffusionMap(exps, n_eigs=20, rotate=TRUE)
-    plot(eigenvalues(dm),pch=20,xlab="Component",ylab="Eigenvalue")
-    lines(eigenvalues(dm),pch=20,xlab="Component",ylab="Eigenvalue")
-    g <- grab_grob()
-    dev.off()
-    out[[paste0("g",i)]] <- grid.arrange(g)
-}
-
-g1 <- out[["g1"]]
-g2 <- out[["g2"]]
-
 # ---- Robustness -----
+condComb <- c("NP","G")
+set <- c("Bsl-G1","Bsl","Myo","Prc")
+keepCells <- pD$keep & !(pD$SuperCluster %in% set) & pD$Condition %in% condComb
+
+# Cell filtering
+m.vp <- m[,keepCells]
+pD.vp <- pD[keepCells,]
+
+# Gene filtering
+keep <- rowMeans(m.vp)>0.01
+m.vp <- m.vp[keep,]
+fD.vp <- fD[keep,]
+
+# Normalize
+m.norm <- t(t(m.vp)/pD.vp$sf)
 
 out <- NULL
 features <- c("HVG","selected","PCA","all") 
@@ -120,11 +90,11 @@ for (feats in features) {
 }
 
 # Set color scheme
-cols <- levels(factor(pD.vp$SuperColor))
+cols <- levels(factor(pD.vp$Colors))
 
 # Plot
 out$SubSample <- factor(out$SubSample, levels=c("100%","50%","25%"))
-p <- ggplot(out, aes(DC1,DC2, color=SuperCluster)) +
+p <- ggplot(out, aes(DC1,DC2, color=SubCluster)) +
     geom_point(size=0.8) +
     scale_color_manual(values=cols) +
     facet_grid(features~SubSample) +
@@ -142,10 +112,11 @@ if (!file.exists("../data/Robjects/secondRun_2500/ExpressionList_Monocle.rds")){
 }
 
 monoc <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Monocle.rds")
+monoc.plt <- monoc[["plot"]] 
 monoc.plt <- monoc[["plot"]] %+% guides(color=FALSE) %+% scale_color_manual(values=cols)
 
 # Combine plots
-subp0 <- plot_grid(g1,g2,monoc.plt,nrow=1,labels="auto")
+subp0 <- plot_grid(monoc.plt,NULL,NULL,nrow=1,labels=c("a","",""))
 cairo_pdf("../paper/figures/S6.pdf",width=11.69,height=8.27)
-plot_grid(subp0,p,ncol=1,labels=c("","d"),rel_heights=c(1,1.5))
+plot_grid(subp0,p,ncol=1,labels=c("","b"),rel_heights=c(1,1.5))
 dev.off()

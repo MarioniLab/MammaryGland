@@ -1,72 +1,70 @@
-# GO-Analysis
+# S4 and S7
+
+library(plyr)
+library(dplyr)
 library(ggplot2)
 library(cowplot)
-library("topGO")
-library(org.Mm.eg.db)
+library(viridis)
+library(RColorBrewer)
+library(reshape2)
+library(pheatmap)
+source("functions.R")
 
-# ---- DEAnalysis4vs5 ----
-output <- data.frame()
-input <- read.csv("../data/Robjects/secondRun_2500/BranchDECluster.R",
-		  stringsAsFactor=FALSE)
-input$BranchCluster <- paste(input$Branch,input$Cluster,sep="-")
+# Load Data
+rnd_seed <- 300
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
+m <- dataList[[1]]
+pD <- dataList[[2]]
+fD <- dataList[[3]]
 
-for (clust in unique(input$BranchCluster)) { 
 
-    # DeGenes
-    deGenes <- input[input$BranchCluster==clust,"Gene"]
+# ---- S4 ----
 
-    # Gene universe
-    if (substr(clust,1,3)=="Hrm") i <- 1 else i <- 2
-    m.smooth <- readRDS("../data/Robjects/secondRun_2500/BranchDEList.rds")[[i]][["mSmooth"]]
-    univrs <- rownames(m.smooth[rowMeans(m.smooth)>0.1,])
+# Rename Condition for plot
+pD$Condition <- mapvalues(pD$Condition, from=c("NP","G","L","PI"),
+			  to=c("Nulliparous", "14.5d Gestation",
+			       "6d Lactation", "11d Post Natural Involution"))
 
-    # ---- Data ----
-    alG <- factor(as.numeric(univrs %in% deGenes))
-    names(alG) <- univrs
+# Remove previously identified outlier and immune cells
+m <- m[,pD$keep]
+pD <- pD[pD$keep,]
 
-    # ---- GOanalysis ----
+# put in rnd order for plotting
+set.seed(rnd_seed)
+fp1 <- pD[sample(c(1:nrow(pD)),nrow(pD)),]
+#t-SNE colored by SampleID
+p1 <- ggplot(fp1, aes(x=tSNE1, y=tSNE2, color=SampleID)) +
+    geom_point(size=1) +
+    scale_color_brewer(palette="Paired")+
+    #     ggtitle("Cluster") +
+    theme_void(base_size=12) +
+    guides(colour = guide_legend(override.aes = list(size=3))) +
+    theme(legend.position="bottom",legend.direction="horizontal",
+	  legend.title=element_blank()) 
 
-    # prepare Data for topGO
-    GO.data <- new("topGOdata", description="Lib GO",ontology="BP", allGenes=alG, 
-		   annot=annFUN.org, mapping="org.Mm.eg.db",
-		   nodeSize=20, ID="symbol")
-    result.classic <- runTest(GO.data, statistic="fisher")
-    tmp <- GenTable(GO.data, Fisher.classic=result.classic, orderBy="topgoFisher", topNodes=50, numChar=300)
+# Normalize
+m.norm <- t(t(m)/pD$sf)
+rownames(m.norm) <- fD$symbol
 
-    tmp$Term <- factor(tmp$Term, levels=unique(rev(tmp$Term)))
-    tmp$Cluster <- clust
-    output <- rbind(tmp,output)
+titles <- genes <- c("Krt18","Krt8","Krt5","Krt14","Acta2")
+add <- data.frame(log2(t(m.norm)[,genes]+1),
+		  barcode=colnames(m))
+colnames(add) <- gsub("X","",colnames(add))
+forPlot <- left_join(add,pD[,c("barcode","tSNE1","tSNE2")])
+forPlot <- melt(forPlot,id=c("barcode","tSNE1","tSNE2")) %>%
+    dplyr::rename(Expression=value)
+plots <- list()
+for(i in seq_along(genes)) {
+    gene <- genes[i]
+    fP <- filter(forPlot,variable==gene) %>% arrange(Expression)
+    p <- ggplot(fP, aes(x=tSNE1, y=tSNE2, color=Expression)) +
+	geom_point(size=1) +
+	scale_color_viridis(guide_legend(title=gene)) +
+	ggtitle(titles[i]) +
+	theme_void(base_size=14) +
+	theme(plot.title=element_text(size=rel(1.05))) 
+    plots[[gene]] <- p
 }
-
-output <- output[output$Fisher.classic < 0.01,]
-
-library(dplyr)
-# ordr <- group_by(output, Cluster) %>%
-#     arrange(-log10(as.numeric(Fisher.classic))) %>%
-#     .$Term
-
-# output$Term <- factor(output$Term,levels=unique(ordr))
-output1 <- output[grepl("Alv",output$Cluster),]
-output2 <- output[grepl("Hrm",output$Cluster),]
-
-p1 <- ggplot(output1, aes(x=Term, y=-log10(as.numeric(Fisher.classic)))) +
-    geom_bar(stat="identity",color="black",fill="white") +
-    coord_flip() +
-    ylab("-log10(P)") +
-    geom_hline(yintercept=2,lty="dashed") +
-    xlab("GO-Term [BP]") +
-    theme(axis.text.y=element_text(size=8)) +
-    facet_grid(Cluster~.,scales="free")
-
-p2 <- ggplot(output2, aes(x=Term, y=-log10(as.numeric(Fisher.classic)))) +
-    geom_bar(stat="identity",color="black",fill="white") +
-    coord_flip() +
-    ylab("-log10(P)") +
-    geom_hline(yintercept=2,lty="dashed") +
-    xlab("GO-Term [BP]") +
-    theme(axis.text.y=element_text(size=8)) +
-    facet_grid(Cluster~.,scales="free")
-
-cairo_pdf("../paper/figures/S4.pdf",width=18,height=10)
-plot_grid(p1,p2)
+cairo_pdf("../paper/figures/S4.pdf",width=11.69,height=8.27)
+plot_grid(p1,plotlist=plots,labels=c("a","b","","c","",""))
 dev.off()

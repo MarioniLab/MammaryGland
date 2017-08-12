@@ -63,7 +63,7 @@ cds <- reduceDimension(cds, max_components=2,norm_method="log")
 cds <- orderCells(cds,reverse=TRUE)
 
 # Plot trajectory colored by clusters
-p0 <- plot_cell_trajectory(cds,x=1,y=2, color_by="SuperCluster", cell_size=1,show_branch_points=FALSE) 
+p0 <- plot_cell_trajectory(cds,x=1,y=2, color_by="SubCluster", cell_size=1,show_branch_points=FALSE) 
 
 # Save
 pD.monoc <- pData(cds)
