@@ -44,7 +44,7 @@ volcano <- ggplot(topTab,aes(x=logFC,y=-log10(FDR))) +
     geom_point(data=interest, aes(x=logFC, y=-log10(FDR)), size=3, color="black", pch=20) +
     geom_point(data=lacinterest, aes(x=logFC, y=-log10(FDR)), size=3, color="dodgerblue", pch=20) +
     geom_point(data=imminterest, aes(x=logFC, y=-log10(FDR)), size=3, color="coral", pch=20) +
-    geom_text_repel(data=interest, aes(x=logFC, y=-log10(FDR), label=symbol)) +
+    geom_text_repel(data=interest, aes(x=logFC, y=-log10(FDR), label=symbol, fontface="italic")) +
     xlab("Log2 Fold Change") +
     ylab("-Log10(P value)") 
 
@@ -57,7 +57,7 @@ interest <- filter(progenitorDE, Gene %in% c("Aldh1a3", "Lypd3", "Prlr", "Esr1",
 p2 <- ggplot(progenitorDE, aes(x=NullParFC,y=ParousFC)) +
     geom_point(color="grey50",size=2) +
     geom_point(data=interest, aes(x=NullParFC, y=ParousFC), color="black") +
-    geom_text_repel(data=interest, aes(x=NullParFC,y=ParousFC,label=Gene)) +
+    geom_text_repel(data=interest, aes(x=NullParFC,y=ParousFC,label=Gene,fontface="italic")) +
     xlab("LFC of Lp-NP vs. luminal cells") +
     ylab("LFC of Lp-PI vs. luminal cells") +
     geom_hline(yintercept=0, lty="dashed") +
@@ -88,12 +88,12 @@ for (i in c(1,2)) {
     #Create DF
     forPl <- data.frame(t(m)[,c(genes)]+1,
 	    barcode=colnames(m))
-    add <- select(pD, barcode, SubCluster, SuperCluster, Condition) %>%
+    add <- select(pD, barcode, SubCluster, SuperCluster, Condition, Colors) %>%
 	mutate(barcode=as.character(barcode))
     forPl <- left_join(forPl,add,by="barcode") %>%
 	filter(SubCluster %in% c("Hsd-NP","Hsd-PI","Hsp-NP","Hsp-PI","Lp-NP","Lp-PI"))
 
-    forPl <- melt(forPl,id=c("barcode","SuperCluster","SubCluster","Condition"))
+    forPl <- melt(forPl,id=c("barcode","SuperCluster","SubCluster","Condition","Colors"))
 
     #Plot
     forPl$SubCluster <- factor(forPl$SubCluster,levels=c("Lp-PI","Lp-NP","Hsp-PI","Hsp-NP","Hsd-PI","Hsd-NP"))
@@ -102,7 +102,7 @@ for (i in c(1,2)) {
 	stat_summary(fun.y = mean, fun.ymin = mean, fun.ymax = mean,
 		     geom = "crossbar", width = 1,color="black") +
 	facet_wrap(~variable,scales="free_y",nrow=1) +
-	scale_color_brewer(type="qual",palette="Paired") +
+	scale_color_manual(values=levels(forPl$Colors)) +
 	ylab("") +
 	xlab("") +
 	theme(strip.background=element_blank(),
@@ -129,6 +129,7 @@ dumleg <- ggplot(dum, aes(x,y,color=grp)) +
     guides(colour = guide_legend(override.aes = list(size=3))) 
 dumleg <- get_legend(dumleg)
 
+
 # Combine plots
 leg <- plot_grid(NULL,dumleg,nrow=1)
 subp <- plot_grid(p2,volcano,nrow=1,labels=c("a","b"),align="h")
@@ -140,29 +141,31 @@ dms2 <- read.csv("../data/Robjects/secondRun_2500/dm_luminal_PI.csv")
 dms <- rbind(dms1[,-c(6,7)],dms2)
 
 pD <- right_join(pD,dms,by="barcode")
-levels(pD$SuperCluster) <- c(levels(pD$SuperCluster),"NP and G")
-pD$SuperCluster[pD$Condition %in% c("NP","G")] <- "NP and G"
-pD$SuperCluster <- factor(as.character(pD$SuperCluster), levels=unique(as.character(pD$SuperCluster)))
+levels(pD$SubCluster) <- c(levels(pD$SubCluster),"NP and G")
+pD$SubCluster[pD$Condition %in% c("NP","G")] <- "NP and G"
+pD$SubCluster <- factor(as.character(pD$SubCluster), levels=unique(as.character(pD$SubCluster)))
+cols <- unique(as.character(pD$Colors))[c(5,7,3,1,6,8,9,4,2)]
+cols[9] <- "#D3D3D3"
 
-p3 <- ggplot(pD, aes(DC1,DC2,color=SuperCluster)) +
+p3 <- ggplot(filter(pD, Condition %in% c("L","PI")), aes(DC1,DC2,color=SubCluster)) +
     geom_point(size=2) +
     xlab("Component 1") +
     ylab("Component 2") +
-    scale_color_manual(values=c("#D3D3D3",as.character(unique(pD$SuperColors)))[c(1,5,6,3,4,2)]) +
+    geom_point(data=pD,aes(DC1,DC2,color=SubCluster),size=0.5) +
+    scale_color_manual(values=cols) +
     theme(legend.position="bottom",
 	  legend.direction="horizontal",
 	  legend.title=element_blank())
     #     facet_wrap(~Condition)
 
-legs <- plot_grid(get_legend(out[[1]]),get_legend(p3),nrow=1)
+legs <- get_legend(p3)
 p3 <- p3 %+% guides(color=FALSE)
 out[[1]] <- out[[1]] %+% guides(color=FALSE)
 out[[2]] <- out[[2]] %+% guides(color=FALSE)
-ExpPlot  <- plot_grid(plotlist=out,nrow=2)
-subp1 <- plot_grid(ExpPlot,p3,nrow=1,labels=c("c","d"))
-subp1 <- plot_grid(subp1,legs,rel_heights=c(1,0.1),nrow=2)
-fullP <- plot_grid(subp,subp1,nrow=2)
+ExpPlot  <- plot_grid(plotlist=out,nrow=2,labels=c("c","d"))
+subp1 <- plot_grid(p3,legs,nrow=1,labels=c("e",""))
+fullP <- plot_grid(subp,ExpPlot,subp1,nrow=3)
 
 cairo_pdf("../paper/figures/Figure4.pdf",width=10.75,height=15.19)
-plot_grid(fullP,NULL,nrow=2,rel_heights=c(1,0.75))
+plot_grid(fullP,NULL,nrow=2,rel_heights=c(1,0.25))
 dev.off()

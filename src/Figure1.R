@@ -42,17 +42,15 @@ p0 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=Condition)) +
 	  legend.title=element_blank()) 
 
 # t-SNE colored by cluster
-p1 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=SuperCluster)) +
+p1 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=SubCluster)) +
     geom_point(size=1.5) +
-    scale_color_manual(values=levels(pD$SuperColors))+
+    scale_color_manual(values=levels(pD$Colors))+
     #     ggtitle("Cluster") +
     theme_void(base_size=12) +
     guides(colour = guide_legend(override.aes = list(size=3))) +
     theme(legend.position="bottom",legend.direction="horizontal",
 	  legend.title=element_blank())  
 #     facet_wrap(~Condition)
-
-plot_grid(p0,NULL,p1,align="h",nrow=1,rel_widths=c(1,0.2,1))
 
 # ---- Dendrogram ----
 pD$SubCluster <- factor(pD$SubCluster) #drop unused levels
@@ -72,7 +70,7 @@ dendr <- dis %>% hclust(.,method="ward.D2") %>% as.dendrogram %>%
     set("leaves_pch",19) %>%
     set("leaves_cex",2) %>%
     set("branches_lwd",3)
-par(cex=.9)
+par(cex=.8)
 plot(dendr,horiz=TRUE,yaxt="n")
 p.dendr <- grab_grob()
 p.dendr <- grid.arrange(p.dendr)
@@ -97,12 +95,16 @@ genes <- c(general,c1,c3,c5,c2,c6,c7,c9)
 
 # Subsample cells from large clusters
 set.seed(rnd_seed)
-ord <- group_by(pD, SuperCluster) %>%
-    do(sample_n(.,200)) %>%
-    ungroup() %>%
-    mutate(SuperCluster=factor(SuperCluster,levels=c("Hsd","Hsp","Lp","Avp","Avd","Bsl","Myo","Prc"))) %>%
-    arrange(SuperCluster,Condition) 
+subsP <- filter(pD, !SubCluster %in% c("Hsd-G","Avd-L")) %>%
+    group_by(SubCluster) %>%
+    do(sample_n(.,100))
 
+# Combine with remaining clusters and relevel factor according to order in plot
+ord <- filter(pD, SubCluster %in% c("Hsd-G","Avd-L")) %>%
+    bind_rows(.,subsP) %>%
+    mutate(SubCluster=factor(SubCluster,levels=c("Hsd-NP","Hsd-PI","Hsd-G","Hsp-NP","Hsp-PI","Lp-NP","Lp-PI","Avp-G",
+					   "Avp-L","Avd-G","Avd-L","Bsl","Bsl-G","Myo","Prc"))) %>%
+    arrange(SubCluster,Condition)
 
 #Normalize data with sizefactors and replace ENSEMBL IDs by gene symbols
 rownames(m) <- fD$symbol
@@ -113,7 +115,7 @@ mheat <- log2(mheat +1)
 mheat <- mheat/apply(mheat,1,max) # Scale to 0-1 for visualization
 
 # Prepare Annotation data.frame for heatmap
-annoCol <- data.frame("Cluster"=ord$SuperCluster,
+annoCol <- data.frame("Cluster"=ord$SubCluster,
 		      "Stage"=ord$Condition)
 rownames(annoCol) <- as.character(ord$barcode)
 
@@ -126,9 +128,9 @@ names(condColors) <- c("Nulliparous", "14.5d Gestation",
 # Cluster color scheme as in F1c
 forcol <- ggplot_build(p1)
 clustColors <- unique(arrange(forcol$data[[1]],group) %>% .[["colour"]])
-clustColors <- clustColors[as.character(levels(ord$SuperColors))]
-clustColors <- as.character(unique(ord$SuperColors))
-names(clustColors) <- levels(ord$SuperCluster)
+clustColors <- clustColors[as.character(levels(ord$Colors))]
+clustColors <- as.character(unique(ord$Colors))
+names(clustColors) <- levels(ord$SubCluster)
 
 # Set Color schemes for annotation data frame 
 annoColors <- list("Stage"=condColors,
@@ -142,7 +144,7 @@ p <-  pheatmap(mheat,
          show_colnames=FALSE,
          annotation_legend=FALSE,
 	 annotation_col=annoCol,
-	 gaps_col=c(200,400,600,800,1000,1200,1400),
+	 gaps_col=c(100,200,263,363,463,563,663,763,863,963,1052,1152,1252,1352),
          gaps_row=9,
 	 annotation_colors=annoColors,
 	 fontsize=8)

@@ -75,14 +75,14 @@ for (i in c(1,2)) {
     pD.ord <- pD
     rownames(pD.ord) <- pD.ord$barcode
     pD.ord <- pD.ord[colnames(m.heat),]
-    annoCol <- data.frame("Cluster"=factor(pD.ord$SuperCluster),
+    annoCol <- data.frame("Cluster"=factor(pD.ord$SubCluster),
 			  "Pseudotime"=rank(pD.ord$dpt,ties.method="first")
 			  )
     rownames(annoCol) <- rownames(pD.ord)
 
     #Set colorscheme for heatmap
-    clustCol <- levels(factor(pD.ord$SuperColors))
-    names(clustCol) <- levels(factor(pD.ord$SuperCluster))
+    clustCol <- levels(factor(pD.ord$Colors))
+    names(clustCol) <- levels(factor(pD.ord$SubCluster))
     dptcols <- viridis(n=nrow(annoCol),,option="magma",begin=1,end=0)
     names(dptcols) <- c(1:length(dptcols))
     annoColors <- list("Cluster"=clustCol,
@@ -174,16 +174,16 @@ fplot2 <- join(fplot2,raw2,by="barcode") %>%
 
 
 #set colorscale
-clustCol <- levels(factor(pD$SuperColors))
+clustCol <- levels(fplot2$Colors)[levels(fplot2$SubCluster)[c(-12,-17,-18,-19,-20)] %in% unique(c(as.character(fplot2$SubCluster),as.character(fplot1$SubCluster)))]
 
+fplot3 <- rbind(fplot1,fplot2)
 #Plot dpt-dependent expression for features
 pList <- list()
 for (feature in features) {
     pnts <- ggname(paste0("raw",feature))
     lns <- ggname(feature)
     p <- ggplot() +
-	geom_point(size=0.8,data=fplot1,aes_string(x="dptNorm",y=pnts, color="SuperCluster")) +
-	geom_point(size=0.8,data=fplot2,aes_string(x="dptNorm",y=pnts, color="SuperCluster")) +
+	geom_point(size=0.8,data=fplot3,aes_string(x="dptNorm",y=pnts, color="SubCluster")) +
 	geom_line(data=fplot1,aes_string(x="dptNorm",y=lns),lty="dashed") +
 	geom_line(data=fplot2,aes_string(x="dptNorm",y=lns)) +
 	ggtitle(feature) +
@@ -241,7 +241,7 @@ fullP <- plot_grid(expPlot,htmps,ncol=2)
 
 
 #close graphics device before plotting
-# dev.off()
+dev.off()
 cairo_pdf("../paper/figures/Figure3.pdf",width=16.55,height=13.0575)
 fullP
 dev.off()

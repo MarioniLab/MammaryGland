@@ -21,7 +21,7 @@ pD <- right_join(pD,dms,by="barcode")
 # Plot for luminal and basal cells
 set.seed(300)
 pD <- pD[sample(1:nrow(pD),nrow(pD)),]
-cols <- pD$SuperColor
+cols <- pD$Colors
 
 scatterplot3d(x=pD[,"DC1"],
 	      y=-pD[,"DC2"],
@@ -42,28 +42,28 @@ g <- grid.arrange(g)
 dev.off()
 
 # Create the alternative view inlet
-inlet <- ggplot(pD, aes(DC1,DC2,color=SuperCluster)) +
+inlet <- ggplot(pD, aes(DC1,DC2,color=SubCluster)) +
     geom_point(size=2,pch=20) +
     scale_color_manual(values=levels(cols))+
     xlab("Component 1") +
     ylab("-Component 2") 
 
-library(ggExtra)
-ggMarginal(inlet, type="histogram",margins="x",fill="white",bins=30)
+# library(ggExtra)
+# ggMarginal(inlet, type="histogram",margins="x",fill="white",bins=30)
 # cairo_pdf("../paper/figures/F2inlet.pdf",width=17.54,height=17.54)
-inlet
+# inlet
 # dev.off()
 
 # Create legend for luminal only and luminal/basal plot
 pal <- levels(cols)
 # forcLeg <- filter(pD, !cluster %in% c(4))
-clustLeg <- ggplot(pD, aes(x=tSNE1,y=tSNE2,color=SuperCluster)) +
+clustLeg <- ggplot(pD, aes(x=tSNE1,y=tSNE2,color=SubCluster)) +
     geom_point() +
     scale_color_manual(values=pal) +
     theme(legend.direction="horizontal",
 	  legend.title=element_blank(),
 	  legend.position="bottom")+
-    guides(colour=guide_legend(nrow=1,
+    guides(colour=guide_legend(nrow=2,
 			       override.aes=list(size=3)))
 clustLeg <- get_legend(clustLeg)
 
@@ -72,13 +72,13 @@ dms <- read.csv("../data/Robjects/secondRun_2500/dm_luminal.csv")
 pD <- dataList[[2]]
 pD <- right_join(pD,dms,by="barcode")
 
-cols <- levels(pD$SuperColors)
+cols <- levels(pD$Colors)
 
 # Luminal compartment colored by clusters
-p.clust <- ggplot(pD, aes(x=DC1,y=DC2, color=SuperCluster)) +
+p.clust <- ggplot(pD, aes(x=DC1,y=DC2, color=SubCluster)) +
     geom_point(size=2, pch=20) +
     guides(colour = guide_legend(override.aes = list(size=3))) +
-    scale_color_manual(values=cols)+
+    scale_color_manual(values=cols) +
     guides(colour=FALSE) +
     xlab("Component 1") +
     ylab("Component 2") 
@@ -96,7 +96,7 @@ m <- m[,pD$barcode]
 m.norm <- t(t(m)/pD$sf)
 
 # Genes to plot for trends
-genes <- c("Aldh1a3","Csn2","Glycam1","Pgr","Cited1")
+genes <- c("Aldh1a3","Csn2","Pgr","Glycam1","Cited1")
 rownames(m.norm) <- fD$symbol
 exps <- log2(m.norm[genes,]+1)
 exps <- t(exps/apply(exps,1,max))
@@ -134,7 +134,9 @@ pls <- lapply(pltlist,function(x){
 # Combine all plots
 
 subPa <-plot_grid(g,clustLeg,nrow=2,labels=c("a"),rel_heights=c(1,0.1))
-subPb1 <- plot_grid(plotlist=pls,nrow=3)
+subPb0 <- plot_grid(NULL,pls[[1]],NULL,rel_widths=c(0.5,1,0.5),nrow=1,labels=c("c","",""))
+subPb1 <- plot_grid(plotlist=pls[-1],nrow=2)
+subPb1 <- plot_grid(subPb0,subPb1,nrow=2,rel_heights=c(0.5,1))
 subPb1b <- plot_grid(subPb1,leg,nrow=2,rel_heights=c(1,0.05))
 subPb2 <- plot_grid(p.clust,subPb1b,labels=c("b"))
 

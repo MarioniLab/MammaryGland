@@ -22,7 +22,7 @@ cells <- list("all","luminal")
 
 for (cell in cells) {
     if(cell=="luminal") {
-	excludeClustComb <- c("Bsl-G1","Bsl","Myo","Prc")
+	excludeClustComb <- c("Bsl-G","Bsl","Myo","Prc")
     } else{
 	excludeClustComb <- NULL
     }
