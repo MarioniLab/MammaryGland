@@ -377,7 +377,7 @@ We used the following metrics to flag poor quality cells: number of genes detect
 Poor quality cells were then identified by setting a threshold on the number of genes and number of UMIs that was defined as three median absolute deviations (MAD) below the median for each sample, while requiring a minimum value of 1,000 total molecules and 500 genes detected.  
 This resulted in the following thresholds for total number of genes detected: 1,042 for NP, 836 for G, 500 for L and 759 for PI; and the following for total number of molecules : 2,012 in NP, 1,479 in G, 1,000 in L and 1,379 in G.
 In addition, all cells with 5\% or more of UMIs mapping to mitochondrial genes were defined as non-viable or apoptotic and removed from the analysis (Supplementary Fig 1d).
-We finally also ensured that none of the reads in our dataset derived from index swapping (CITATION).
+We finally also ensured that none of the reads in our dataset derived from index swapping\autocite{Sinha2017}.
 For this we excluded cells from the analysis with barcodes that appeared in more than one sample (non-unique barcodes).
 The reasoning being that any index swapped read between samples will also share the same cellular barcode.
 Exclusion of these cells hence offers protection against index swapping.
@@ -393,19 +393,19 @@ Due to the large number of cells we used a two-step approach to identify cluster
 In a first step we clustered cells using a shared-nearest-neighbor graph (SNN-graph) based approach.
 This has the advantage of not requiring the computation of a distance matrix which is computationally inhibitive for a large number of cells.
 The SNN-graph was constructed using the \texttt{buildSNNGraph} function from scran with the number of nearest-neighbors set to 20.
-Community-based clustering was then performed on the SNN-graph by multi-level modularity optimization using the \texttt{cluster\_louvain} function in igraph (CITATION).
+Community-based clustering was then performed on the SNN-graph by multi-level modularity optimization using the \texttt{cluster\_louvain} function in igraph\autocite{Csardi2006}.
 This identified a total of 13 clusters.
 Yet, the majority of clusters still contained substructure as evident from the t-SNE (Supplementary Figure 5a).
 In order to resolve the cellular heterogeneity further we then applied agglomerative hierarchical clustering on each of the 13 clusters (Supplementary Figure 5b).
 For this, we first computed the pairwise distances between cells based on the Spearman's rank correlation of log-transformed HVG counts.
 The dissimilarity matrix was then used to perform hierarchical clustering with the 'hclust' function in R using average linkage.
-Clusters were defined using the \texttt{cutree} function and the optimal $k$ was determined by maximizing the gap statistic using the \texttt{clusGap} function from the cluster package (CITATION).
+Clusters were defined using the \texttt{cutree} function and the optimal $k$ was determined by maximizing the gap statistic using the \texttt{clusGap} function from the cluster package\autocite{Maechler2017}.
 With this we identified a total number of 21 clusters.
 As the last step we performed a \textit{post-hoc} test as previously reported\autocite{Macosko2015} by merging clusters with less than 10 differentially expressed genes (at a P value threshold of 0.01 and minimum log fold change of 1), resulting in one merged cluster (Myo). 
 Next, we flagged clusters that expressed clear markers of non-epithelial cells as contaminating cells and removed them from the downstream analysis.
-Cluster 6.1 and 6.2 were tagged as immune cells based on the expression of \textit{Cd74}, \textit{Cd72} and \textit{Cd54}\autocite{Scheele2017} and cluster 10.3 as endothelial cells based on the expression of \textit{Eng}, \textit{S1pr1} and \textit{Emcn} (CITATION, Supplementary Figure 5c, Supplementary Figure 5d).
-We retained cluster 10.2 as it expressed markers of a previously described celltype in the gland (CITATION), yet it was also positive for 2 out of 4 (\textit{Des} and \textit{Cspg4}) pericyte markers (CITATION) (Supplementary Figure 5e).
-The high number of cells that was loaded on the 10x increased the chance of doublet formation in the droplet encapsulation (CITATION).
+Cluster 6.1 and 6.2 were tagged as immune cells based on the expression of \textit{Cd74}, \textit{Cd72} and \textit{Cd54}\autocite{Scheele2017} and cluster 10.3 as endothelial cells based on the expression of \textit{Eng}, \textit{S1pr1} and \textit{Emcn} (Supplementary Figure 5c, Supplementary Figure 5d).
+We retained cluster 10.2 as it expressed markers of a previously described celltype in the gland\autocite{Wang2015}, yet it was also positive for 2 out of 4 (\textit{Des} and \textit{Cspg4}) pericyte markers\autocite{Armulik2011} (Supplementary Figure 5e).
+The high number of cells that was loaded on the 10x increased the chance of doublet formation in the droplet encapsulation\autocite{Zheng2017}.
 A major concern a doublets of two cell types as they can substantially confound downstream analysis.
 We thus identified clusters that appeared at low frequencies (less than the maximum doublet rate of 7\%, Supplementary Figure 9b) and that were highly similar to at least two other clusters present in the same sample ($p > 0.9$ of mean log2(counts+1)).
 The only cluster that fulfilled this criterion was cluster Bsl-G2, whose gene expression was strongly correlated with Bsl-G and Avd-G (Supplementary Figure 9b)
