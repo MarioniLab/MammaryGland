@@ -19,17 +19,15 @@ pD <- right_join(pD,dms,by="barcode")
 
 
 # Plot for luminal and basal cells
-set.seed(300)
-pD <- pD[sample(1:nrow(pD),nrow(pD)),]
-cols <- pD$Colors
-
+# pD <- pD[sample(1:nrow(pD),nrow(pD)),]
+cols <- as.character(pD$Colors)
 scatterplot3d(x=pD[,"DC1"],
 	      y=-pD[,"DC2"],
 	      z=pD[,"DC3"],
 	      color=cols,
 	      pch=20,
 	      angle=60,
-              cex.symbols=1.5,
+              cex.symbols=1.0,
 	      scale.y=0.5,
 	      mar=c(5,3,-0.1,3)+0.1,
 	      xlab="Component 1",
@@ -41,30 +39,20 @@ g <- grab_grob()
 g <- grid.arrange(g)
 dev.off()
 
-# Create the alternative view inlet
-inlet <- ggplot(pD, aes(DC1,DC2,color=SubCluster)) +
-    geom_point(size=2,pch=20) +
-    scale_color_manual(values=levels(cols))+
-    xlab("Component 1") +
-    ylab("-Component 2") 
+cols <- unique(as.character(pD$Colors))
+names(cols) <- unique(as.character(pD$SubCluster))
+cols <- cols[levels(pD$SubCluster)[levels(pD$SubCluster) %in% unique(pD$SubCluster)]]
 
-# library(ggExtra)
-# ggMarginal(inlet, type="histogram",margins="x",fill="white",bins=30)
-# cairo_pdf("../paper/figures/F2inlet.pdf",width=17.54,height=17.54)
-# inlet
-# dev.off()
-
-# Create legend for luminal only and luminal/basal plot
-pal <- levels(cols)
 # forcLeg <- filter(pD, !cluster %in% c(4))
 clustLeg <- ggplot(pD, aes(x=tSNE1,y=tSNE2,color=SubCluster)) +
     geom_point() +
-    scale_color_manual(values=pal) +
+    scale_color_manual(values=cols) +
     theme(legend.direction="horizontal",
 	  legend.title=element_blank(),
 	  legend.position="bottom")+
     guides(colour=guide_legend(nrow=2,
 			       override.aes=list(size=3)))
+
 clustLeg <- get_legend(clustLeg)
 
 # ---- LuminalOnly ----
@@ -121,7 +109,8 @@ for (gene in genes) {
 	theme_void() +
 	theme(legend.position="bottom",
 	      legend.direction="horizontal",
-	      legend.title=element_blank())
+	      legend.title=element_blank(),
+	      plot.title=element_text(face="italic"))
     pltlist[[gene]] <- p
 }
 

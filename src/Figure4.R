@@ -58,8 +58,8 @@ p2 <- ggplot(progenitorDE, aes(x=NullParFC,y=ParousFC)) +
     geom_point(color="grey50",size=2) +
     geom_point(data=interest, aes(x=NullParFC, y=ParousFC), color="black") +
     geom_text_repel(data=interest, aes(x=NullParFC,y=ParousFC,label=Gene,fontface="italic")) +
-    xlab("LFC of Lp-NP vs. luminal cells") +
-    ylab("LFC of Lp-PI vs. luminal cells") +
+    xlab("Lp-NP vs. luminal cells [log2 FC]") +
+    ylab("Lp-PI vs. luminal cells [log2 FC]") +
     geom_hline(yintercept=0, lty="dashed") +
     geom_vline(xintercept=0, lty="dashed") +
     coord_equal(xlim=c(-5,5),ylim=c(-5,5))
@@ -96,13 +96,16 @@ for (i in c(1,2)) {
     forPl <- melt(forPl,id=c("barcode","SuperCluster","SubCluster","Condition","Colors"))
 
     #Plot
+    cols <- levels(forPl$Colors)[levels(forPl$SubCluster) %in% unique(forPl$SubCluster)]
+    names(cols) <- as.character(levels(forPl$SubCluster))[levels(forPl$SubCluster) %in% unique(forPl$SubCluster)]
     forPl$SubCluster <- factor(forPl$SubCluster,levels=c("Lp-PI","Lp-NP","Hsp-PI","Hsp-NP","Hsd-PI","Hsd-NP"))
+    cols <- cols[as.character(levels(forPl$SubCluster))]
     out[[i]] <- ggplot(forPl, aes(y=value,x=SubCluster,color=SubCluster)) +
 	geom_jitter(size=0.9) +
 	stat_summary(fun.y = mean, fun.ymin = mean, fun.ymax = mean,
 		     geom = "crossbar", width = 1,color="black") +
 	facet_wrap(~variable,scales="free_y",nrow=1) +
-	scale_color_manual(values=levels(forPl$Colors)) +
+	scale_color_manual(values=cols) +
 	ylab("") +
 	xlab("") +
 	theme(strip.background=element_blank(),
@@ -112,11 +115,14 @@ for (i in c(1,2)) {
 	      legend.title=element_blank(),
 	      axis.text.y = element_text(size=4),
       	      axis.text.x = element_blank(), 
-	      axis.ticks.x = element_blank())+
-	guides(colour = guide_legend(override.aes = list(size=3))) +
+	      axis.ticks.x = element_blank(),
+	      strip.text.x=element_text(face="italic"))+
+	guides(colour = FALSE) +
 	scale_y_log10()
 }
-
+plot(out[[1]])
+plot(out[[2]])
+dev.off()
 
 #dummy legend
 dum <- data.frame(x=c(1,1),y=c(1,1),grp=c("Immune response","Lactation"))
@@ -160,8 +166,8 @@ p3 <- ggplot(filter(pD, Condition %in% c("L","PI")), aes(DC1,DC2,color=SubCluste
 
 legs <- get_legend(p3)
 p3 <- p3 %+% guides(color=FALSE)
-out[[1]] <- out[[1]] %+% guides(color=FALSE)
-out[[2]] <- out[[2]] %+% guides(color=FALSE)
+# out[[1]] <- out[[1]] %+% guides(color=FALSE,fill=FALSE)
+# out[[2]] <- out[[2]] %+% guides(color=FALSE,fill=FALSE)
 ExpPlot  <- plot_grid(plotlist=out,nrow=2,labels=c("c","d"))
 subp1 <- plot_grid(p3,legs,nrow=1,labels=c("e",""))
 fullP <- plot_grid(subp,ExpPlot,subp1,nrow=3)

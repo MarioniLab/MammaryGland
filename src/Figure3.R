@@ -192,7 +192,8 @@ for (feature in features) {
 	scale_x_continuous(breaks=c(0,1)) +
 	theme(legend.position="bottom",
 	      legend.direction="horizontal",
-	      legend.title=element_blank()) +
+	      legend.title=element_blank(),
+	      plot.title=element_text(face="italic")) +
 	guides(colour = guide_legend(override.aes = list(size=3))) +
 	xlab("") 
     pList[[feature]] <- p
