@@ -71,7 +71,7 @@ Marioni (\href{mailto:marioni@ebi.ac.uk}{\emph{marioni@ebi.ac.uk}})
 \textbf{Abstract:}
 \textbf{The mammary gland is a unique organ as it undergoes most of its development during puberty and adulthood.
 Characterising the hierarchy of the various mammary epithelial cells and how they are regulated in response to gestation, lactation and involution is important for understanding how breast cancer develops.
-Recent studies have used various markers to enrich, isolate and characterise the different epithelial cell compartments within the adult mammary gland.
+Recent studies have used numerous markers to enrich, isolate and characterise the different epithelial cell compartments within the adult mammary gland.
 However, in all of these studies only a handful of markers were used to isolate, define and trace cell populations.
 Therefore, there is a need for an unbiased and comprehensive description of mammary epithelial cells within the gland at different developmental stages.
 To this end we herein used single cell RNA sequencing (scRNAseq) to determine the gene expression profile of individual mammary epithelial cells across four adult developmental stages; nulliparous, mid gestation, lactation and post weaning (full natural involution).
@@ -85,18 +85,18 @@ This view highlights the plasticity of the tissue and might help to explain some
 
 \section{Introduction}
 The purpose of the mammary gland is to provide nourishment and passive immunity for the young until they are capable of feeding themselves.
-From a developmental biology perspective, the mammary gland is a unique organ as it undergoes most of its development during puberty and adulthood\autocite{Watson2008,Hennighausen2005,Hennighausen1998,Inman2015}
-In the pre-pubertal mouse the mammary gland consists of a rudimentary epithelial ductal structure embedded within a mammary fatpad, which is connected to the nipple\autocite{Mikkola2006,Hens2005}
-At the onset of puberty and in response to hormonal changes, the rudimentary ductal structure will proliferate and migrate to fill the entire mammary fatpad leaving a developed network of ductal structures that later serve as channels for milk transport during lactation.
+From a developmental biology perspective, the mammary gland is a unique organ as it undergoes most of its development during puberty and adulthood\autocite{Watson2008,Hennighausen2005,Hennighausen1998,Inman2015}.
+In the pre-pubertal mouse the mammary gland consists of a rudimentary epithelial ductal structure embedded within a mammary fat pad, which is connected to the nipple\autocite{Mikkola2006,Hens2005}.
+At the onset of puberty and in response to hormonal changes, the rudimentary ductal structure will proliferate and migrate to fill the entire mammary fat pad leaving a developed network of ductal structures that later serve as channels for milk transport during lactation.
 At the onset of pregnancy a highly proliferative stage is initiated characterised by further ductal side-branching and widespread lobuloalveolar development\autocite{Watson2008}.
 Differentiation of the epithelial cells within alveoli prepares the gland for milk production and secretion.
 Towards the end of pregnancy the gland is extremely dense and primarily occupied by epithelial cells and very little fat.
 This morphology is largely maintained throughout lactation.
-However, in response to cessation of suckling the gland undergoes involution, which is characterised by extensive cell death and tissue remodelling \autocite{Inman2015,Watson2006} .
+However, in response to cessation of suckling the gland undergoes involution, which is characterised by extensive cell death and tissue remodelling \autocite{Inman2015,Watson2006}.
 Towards the end of involution the gland reaches a morphology resembling that of glands prior to pregnancy and subsequent pregnancies will trigger the same chain of events.
 
 Recent efforts have focused on the identification and characterisation of the various mammary epithelial cell lineages within the gland that contribute to this developmental homeostasis.
-Pioneering fat-pad transplantation studies nearly 70 years ago were the first to demonstrate the regenerative and differentiation capacity of small numbers of cells\autocite{Faulkin1960,Daniel197,Smalley1998}.
+Pioneering fat pad transplantation studies nearly 70 years ago were the first to demonstrate the regenerative and differentiation capacity of small numbers of cells\autocite{Faulkin1960,Daniel197,Smalley1998}.
 More recently the use of cell surface markers coupled with flow cytometry has been used to enrich for various progenitor and stem cell compartments\autocite{Smalley1998,Stingl2006,Shackleton2006,Asselin2007} and showed the imbalance of such cell populations results in cellular transformation and subsequently breast cancer\autocite{Lim2009,Molyneux2010}.
 Other studies, inspired by breast cancer transcriptomic profiling, have identified transcriptional regulators of mammary epithelial cell types such as \textit{GATA3} in luminal cells\autocite{Asselin2007,Kouros2006}.
 More recently, elegant lineage-tracing studies used key markers to address the contribution of each lineage to adult mammary epithelial cell homeostasis\autocite{Inman2015}.
@@ -110,8 +110,8 @@ Our data from 25,010 individual cells, identifies 15 distinct cell populations w
 
 \textbf{Single cell RNA sequencing identifies 15 clusters of mammary epithelial cells}
 
-First, we isolated mammary epithelial cells from four developmental time points; nulliparous (NP), day 14.5 gestation (G), day 6 lactation (L) and two weeks post natural involution (PI) (Supplementary Figure 2).
-For each time point we sorted mammary epithelial cells based on the Epcam cell surface marker from two independent mice (\autoref{F1}a).
+First, we isolated mammary epithelial cells from four developmental time points; nulliparous (NP), day 14.5 gestation (G), day 6 lactation (L) and 11 days post natural involution (PI) (Supplementary Figure 2).
+For each time point we sorted mammary epithelial cells based on the EpCAM cell surface marker from two independent mice (\autoref{F1}a).
 All samples were then prepared for single-cell RNA-sequencing using the 10x Chromium platform\autocite{Zheng2017}.
 Following quality control (materials and methods), this yielded an average of 6,175 unique transcripts and 2,118 genes detected from 25,010 cells (4,223 in NP, 5,826 in G, 9,319 in L and 5,642 in P) (Supplementary Figure 3).
 Visual inspection of the data using t-distributed stochastic neighbor embedding (t-SNE) suggested that although there is grouping of cells by time-point, there are also other factors that underlie structure within the dataset (\autoref{F1}b and Supplementary Figure 4).
@@ -265,11 +265,11 @@ Overview of the different clusters including number of cells captured for each t
 \textbf{Missing!}
 
 \textbf{Supplementary Figure 1. Estrus cycle}
-Vaginal smears of the mice from the NP and PI timepoints. The animals were classified as (CHECK). The scale bar represents 200$\mu m$.
+Vaginal smears of the mice from the NP and PI timepoints. The animals were classified as being in estrus (NP1, NP2, PI1) or diestrus (PI1). The scale bar represents 200$\mu m$.
 
 \textbf{Supplementary Figure 2. Gating strategy to isolate MECs}
-\textbf{(a)} Gating strategy used to select live, lineage\textsuperscript{-} singlets.
-\textbf{(b)} Sorting of epithelial cells based on Epcam. Representative plots for each of the four timepoints are shown.
+\textbf{(a)} Gating strategy used to select live, lineage\textsuperscript{negative} singlets.
+\textbf{(b)} Representative plots for each of the four timepoints are shown. FSC-W: forward scatter width, FSC-A: forward scatter area, BSC-A: backward scatter area.
 
 \textbf{Supplementary Figure 3. Quality control of sequencing data}
 \textbf{(a)} Table summarizing quality control criteria per sample.
@@ -336,26 +336,26 @@ Two individual mice per developmental time point were used in the study.
 
 \textbf{Mammary gland dissociation into single-cell suspension}
 
-Lymph node divested mammary glands (excluding the cervical pair and the proximal region of one of the fourth glands) were dissected from the mice and mechanically dissociated.
-The finely minced tissue was transferred to a digestion mix consisting of DMEM/F12 (Gibco) + 10 mM HEPES (Gibco) + 1 mg ml\textsuperscript{-1} collagenase (Roche) + 100 U ml\textsuperscript{-1} hyaluronidase (Sigma) + 50 mycg ml\textsuperscript{-1} gentamicin (Gibco) for 2.5 hours at \SI{37}{\celsius} and vortexed every 30 minutes.
-After the lysis of red blood cells in NH\textsubscript{4}Cl, cells were briefly digested with warm 0.05\% Trypsin-EDTA (Gibco), 5 mg ml\textsuperscript{-1} dispase (Sigma) and 1 mg ml\textsuperscript{-1} DNase (Sigma), and filtered through a 40 mycm cell strainer (BD Biosciences).
+Lymph node divested mammary glands (excluding the cervical pair) were dissected from the mice and mechanically dissociated.
+The finely minced tissue was transferred to a digestion mix consisting of DMEM/F12 (Gibco) + 10 mM HEPES (Gibco) + \SI{2}{\milli\gram\per\milli\litre} collagenase (Roche) + 200 U ml\textsuperscript{-1} hyaluronidase (Sigma) + \SI{50}{\micro\gram\per\milli\litre} gentamicin (Gibco) for 3 hours at \SI{37}{\celsius} and vortexed every 30 minutes.
+After the lysis of red blood cells in NH\textsubscript{4}Cl, cells were briefly digested with warm 0.05\% Trypsin-EDTA (Gibco), 5 mg ml\textsuperscript{-1} dispase (Sigma) and 1 mg ml\textsuperscript{-1} DNase (Sigma), and filtered through a \SI{40}{\micro\meter} cell strainer (BD Biosciences).
 
 \textbf{Cell labelling, flow cytometry and sorting}
 
 Single cell suspensions were incubated in HF medium (Hank's balanced salt solution (Gibco) + 1\% foetal bovine serum, Gibco) + 10\% normal rat serum (Sigma) for 20 min on ice to pre-block before antibody staining.
 All antibody incubations were performed for 10 min on ice in HF media.
-Mammary cells were stained with the following primary antibodies: 1 mycg ml\textsuperscript{-1} CD31-biotin (eBioscience); 1 mycg ml\textsuperscript{-1} CD45-biotin (eBioscience); 1 mycg ml\textsuperscript{-1} Ter119-biotin (eBioscience) and 0.5 mycg ml\textsuperscript{-1} EpCAM--PE (Biolegend).
-Cells were then stained with 0.4 mycg ml\textsuperscript{-1} streptavidin-PE-CF594 (BD-Biosciences).
-Propidium Iodide (PI, 1 mycg ml\textsuperscript{-1}; Sigma) was used to detect dead cells.
-Cells were filtered through a 30 mycm cell strainer (Partec) before sorting.
-Sorting of cells was done using a SH800 sorter (SONY).
+Mammary cells were stained with the following primary antibodies: \SI{1}{\micro\gram\per\milli\litre} CD31-biotin (eBioscience, clone 390); \SI{1}{\micro\gram\per\milli\litre} CD45-biotin (eBioscience, clone 30F11); \SI{1}{\micro\gram\per\milli\litre} Ter119-biotin (eBioscience, clone Ter119) and \SI{0.5}{\micro\gram\per\milli\litre} EpCAM-PE (Biolegend, clone G8.8).
+Cells were then stained with \SI{0.4}{\micro\gram\per\milli\litre} streptavidin-PE-CF594 (BD-Biosciences).
+Propidium Iodide (PI, \SI{1}{\micro\gram\per\milli\litre}; Sigma) was used to detect dead cells.
+Cells were filtered through a \SI{40}{\micro\meter} cell strainer (Partec) before sorting.
+Sorting of cells was done using a SH800Z sorter (SONY).
 Single-stained control cells were used to perform compensation manually and unstained cells were used to set gates.
 Chip alignment and sorting calibration was performed with automatic setup beads (SONY) immediately prior to sorting.
-Doublets, dead cells and contaminating haematopoietic, endothelial and stromal cells were gated out and EpCAM positive cells were sorted in FACS tubes (BD Biosciences) containing 1 mL of HF.
-After sorting, cells were transferred to a 1.5 ml tube through a 30 mycm cell strainer, spun down and resuspended in 15-50 mycl of HF according to the number of cells sorted per sample.
-Representative samples were manually counted using an improved Neubauer chamber to estimate sample loss from centrifugation and filtering.
+Doublets, dead cells and contaminating haematopoietic, endothelial and stromal cells were gated out and EpCAM positive cells were sorted in LoBind\textsuperscript{\textregistered} microcentrifuges tubes (Eppendorf) with \SI{100}{\micro\litre} HF.
+After sorting cells were spun down and resuspended in \SI{50}{\micro\litre} of HF. 
+Samples were manually counted using an improved Neubauer chamber and the cell concentration was normalized by addition of HF.
 Equal numbers of cells per sample were processed for scRNA library preparation.
-Samples were processed for scRNA library preparation within 10 hours from tissue isolation.
+Samples were processed for scRNA library preparation within 9 hours from tissue isolation.
 
 \textbf{Library preparation and sequencing}
 
