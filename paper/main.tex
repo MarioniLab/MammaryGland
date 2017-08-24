@@ -72,13 +72,13 @@ Marioni (\href{mailto:marioni@ebi.ac.uk}{\emph{marioni@ebi.ac.uk}})
 \textbf{The mammary gland is a unique organ as it undergoes most of its development during puberty and adulthood.
 Characterising the hierarchy of the various mammary epithelial cells and how they are regulated in response to gestation, lactation and involution is important for understanding how breast cancer develops.
 Recent studies have used numerous markers to enrich, isolate and characterise the different epithelial cell compartments within the adult mammary gland.
-However, in all of these studies only a handful of markers were used to isolate, define and trace cell populations.
+However, in all of these studies only a handful of markers were used to define and trace cell populations.
 Therefore, there is a need for an unbiased and comprehensive description of mammary epithelial cells within the gland at different developmental stages.
-To this end we herein used single cell RNA sequencing (scRNAseq) to determine the gene expression profile of individual mammary epithelial cells across four adult developmental stages; nulliparous, mid gestation, lactation and post weaning (full natural involution).
+To this end we used single cell RNA sequencing (scRNAseq) to determine the gene expression profile of individual mammary epithelial cells across four adult developmental stages; nulliparous, mid gestation, lactation and post weaning (full natural involution).
 Our data from 25,010 individual cells identifies 8 distinct mammary epithelial cell populations and allows their hierarchical structure across development to be charted.
 Interestingly, the effect of gestation and lactation appeared to be more pronounced for some cell types.
 For example, our analysis revealed a cluster of luminal progenitor cells in post involution glands, which is distinct from progenitors found in nulliparous glands.
-The data also showed that only a few clusters could be fully characterized by a single marker gene.
+The data also showed that few clusters could be fully characterized by a single marker gene.
 We argue instead that the epithelial cells -- especially in the luminal compartment -- should rather be conceptualized as being part of a continuous spectrum of differentiation.
 This view highlights the plasticity of the tissue and might help to explain some of the conflicting results from lineage tracing studies.}
 \newpage
@@ -87,8 +87,8 @@ This view highlights the plasticity of the tissue and might help to explain some
 The purpose of the mammary gland is to provide nourishment and passive immunity for the young until they are capable of feeding themselves.
 From a developmental biology perspective, the mammary gland is a unique organ as it undergoes most of its development during puberty and adulthood\autocite{Watson2008,Hennighausen2005,Hennighausen1998,Inman2015}.
 In the pre-pubertal mouse the mammary gland consists of a rudimentary epithelial ductal structure embedded within a mammary fat pad, which is connected to the nipple\autocite{Mikkola2006,Hens2005}.
-At the onset of puberty and in response to hormonal changes, the rudimentary ductal structure will proliferate and migrate to fill the entire mammary fat pad leaving a developed network of ductal structures that later serve as channels for milk transport during lactation.
-At the onset of pregnancy a highly proliferative stage is initiated characterised by further ductal side-branching and widespread lobuloalveolar development\autocite{Watson2008}.
+At the onset of puberty and in response to hormonal changes, the rudimentary ductal structure will proliferate and migrate to fill the entire mammary fat pad, leaving a developed network of ductal structures that later serve as channels for milk transport during lactation.
+At the onset of pregnancy a highly proliferative stage is initiated, characterised by further ductal side-branching and widespread lobuloalveolar development\autocite{Watson2008}.
 Differentiation of the epithelial cells within alveoli prepares the gland for milk production and secretion.
 Towards the end of pregnancy the gland is extremely dense and primarily occupied by epithelial cells and very little fat.
 This morphology is largely maintained throughout lactation.
@@ -117,7 +117,7 @@ Following quality control (materials and methods), this yielded an average of 6,
 Visual inspection of the data using t-distributed stochastic neighbor embedding (t-SNE) suggested that although there is grouping of cells by time-point, there are also other factors that underlie structure within the dataset (\autoref{F1}b and Supplementary Figure 4).
 First, we dissected the global structure by unsupervised clustering using a shared-nearest-neighbor clustering approach.
 This resulted in a coarse clustering into 13 groups (Supplementary Figure 5a).
-In a second step we used hierarchical clustering on each of the identified groups to further resolve the cellular heterogeneity (\autoref{F1}c, Supplementary Figure 5b).
+In a second step we applied hierarchical clustering to each of the identified groups to further resolve the cellular heterogeneity (\autoref{F1}c, Supplementary Figure 5b).
 After removal of endothelial and immune cell clusters this resulted in a total of 15 clusters of mammary epithelial cells.
 Differential gene expression analysis allowed us to further characterise the clusters and infer putative identities (\autoref{F1}d, \autoref{T1} and Supplementary Table 1).
 Notably, some clusters mainly represent the same putative cell type at different developmental time points (indicated by the NP, G, L or PI suffix, in the following the suffix might be omitted to refer to a group of clusters). 
@@ -147,17 +147,17 @@ This allows us to identify genes whose expression changes during the process of 
 We found 456 genes that showed a pseudotime-dependent expression with the same directionality along both differentiation trajectories (Supplementary Table 2).
 These included genes associated with known progenitor characteristics such as \textit{Aldh1a3} and \textit{Tspan8} as well as transcription factors that have not previously been associated with luminal differentiation such as \textit{Creb5}, \textit{Hmga1} and \textit{Fosl1} (\autoref{F3}b).
 Interestingly, \textit{Hmga1} is a known chromatin remodeller with reprogramming activity that has been implicated in basal-like breast cancer\autocite{Shah2012,Shah2013}.
-In addition, we identified 1005 genes with branch-specific expression patterns (\autoref{F3}d, \autoref{F3}e Supplementary Table 3).
-We further clustered the gene expression trend on each of the two branches and identified sets of genes that change over pseudotime (Supplementary Figure 7).
+In addition, we identified 1005 genes with branch-specific expression patterns (\autoref{F3}d, \autoref{F3}e, Supplementary Table 3).
+We further clustered the gene expression trend on each of the two branches and identified sets of genes that change over pseudotime (\fixme{Supplementary Figure 7}).
 On the alveolar branch we found two clusters of genes that increase in expression during differentiation, one that is switched on early and another that is activated later in the final stages of differentiation.
 The early cluster is enriched for genes involved in fatty-acid oxidation and lipid biosynthetic processes (e.g. \textit{Lipa}, \textit{Dbi} and \textit{Acox1}) .
 The second, smaller group of genes that is switched on during the late stages of differentiation was enriched for genes involved in fatty-acid transport and lipid homeostasis (e.g. \textit{Olah}, \textit{Cd36}).
 Genes involved in cell division and translation show a transient phase of up-regulation during the alveolar differentiation process (e.g. \textit{Aurka}, \textit{Cenpa}, \textit{Cdk6}), whereas genes regulating cell shape and morphogenesis of a branching epithelium are repressed early on (e.g. \textit{Vdr} and \textit{Areg}).
 During the process of differentiation towards hormone-sensing luminal cells, we identified two broad clusters of genes that gradually increase or decrease their expression.
 Genes with increasing expression are involved in hormone metabolic processes and the regulation of morphogenesis of an epithelium (e.g. \textit{Vdr}, \textit{Esr1}, \textit{Pgr} and \textit{Msx2}).
-Amongst the branch-specific transcription factors we found for example \textit{Runx1, Tox2} and \textit{Bhlhe41} (also known as \textit{Sharp1}) to be transcribed during differentiation towards the hormone-sensing lineage (\autoref{F3}d) and \textit{Elf5, Foxs1} and \textit{Ehf} in the secretory lineage (\autoref{F3}e).
+Amongst the branch-specific transcription factors we found for example \textit{Runx1, Tox2} and \textit{Bhlhe41} (also known as \textit{Sharp1}) to be transcribed during differentiation towards the hormone-sensing lineage (\autoref{F3}c) and \textit{Elf5, Foxs1} and \textit{Ehf} in the secretory lineage (\autoref{F3}d).
 \textit{Runx1} is a known repressor of \textit{Elf5} and its deletion has been shown to be deleterious for ductal morphogenesis\autocite{VanBragt2014}.
-The expression of the known progenitor master regulator \textit{Elf5} is maintained and further increased during secretory differentiation suggesting that its transcriptional level is fine-tuned in luminal progenitors (\autoref{F3}e).
+The expression of the known progenitor master regulator \textit{Elf5} is maintained and further increased during secretory differentiation suggesting that its transcriptional level is fine-tuned in luminal progenitors (\autoref{F3}d).
 
 \textbf{Parity primes luminal progenitors towards the alveolar fate}
 
@@ -176,9 +176,9 @@ These included genes that play roles in various processes during lactation, e.g.
 Of note, the genes of the casein locus (\textit{Csn2}, \textit{Csn1s1}, \textit{Csn1s2a}, \textit{Csn3}) have previously been reported to be up-regulated in the parous gland, most likely due to changes in chromatin accessibility\autocite{Dos2015,Rijnkels2013}.
 However, it has not been shown before that this effect is confined to the progenitor population of the luminal compartment.
 Some of the genes that are involved in the immune response are known regulators of the involution process such as \textit{Ctsc}, \textit{Tgfb3} or \textit{Mfge8}.
-The up-regulation of these genesets was also present in the Hsp and in some cases even the differentiated Hsd cluster, yet the effect remained strongest in the progenitor cells (\autoref{F4}c).
+The up-regulation of these genesets was also present in the Hsp and in some cases even the differentiated Hsd cluster, yet the effect remained strongest in the progenitor cells (\autoref{F4}c-d).
 Finally, we compared the differentiation processes of the luminal compartment of the parous gland to the nulliparous gland by mapping the luminal cells from PI to the trajectory of NP and G cells.
-Interestingly, the Hsp and Hsd cluster generally maintain their position of their nulliparous counterpart in the differentiation hierarchy whereas the Lp-PI cluster is stretched out from the origin down towards the alveolar branch, suggesting that these are biased towards the alveolar fate (\autoref{F4}d).
+Interestingly, the Hsp and Hsd cluster generally maintain the position of their nulliparous counterpart in the differentiation hierarchy whereas the Lp-PI cluster is stretched out from the origin down towards the alveolar branch, suggesting that these are biased towards the alveolar fate (\autoref{F4}e).
 Together, the data suggest that luminal progenitor cells maintain memory of having undergone gestation and involution.
 This memory could potentially prime progenitor cells towards the alveolar fate to facilitate alveologenesis in subsequent pregnancies.
 
@@ -197,7 +197,7 @@ In addition, cells from the Prc cluster also express some but not all markers of
 Based on the gene expression data presented here, the luminal compartment appears to have one common progenitor population (Lp).
 Lp gives rise to intermediate states of either hormone-sensing (Hsp) or secretory (Avp) cells that express differentiation markers as well as progenitor markers and appear to represent meta-stable states on the differentiation path from luminal progenitors towards fully differentiated cells (Hsd).
 Furthermore, we characterised gene expression patterns along the differentiation hierarchy.
-Here we identified genes that are lineage-specific, thus enabling to disentangle the transcriptional events that regulate differentiation of the luminal compartment.
+Here we identified genes that are lineage-specific, thus enabling us to disentangle the transcriptional events that regulate differentiation of the luminal compartment.
 By analysing the mammary gland at various stages of development we were also able to describe the effects of parity at cellular resolution.
 We found that the luminal progenitor compartment undergoes lasting changes at the transcriptional level.
 This is especially interesting in the light of the protective effect of pregnancies against breast cancer and the role of luminal progenitors as cell of origin.
@@ -216,7 +216,7 @@ The dataset will be a useful resource for future studies that aim to understand 
 \textbf{(a)} Schematic diagram highlighting the experimental setup for isolating and sequencing the RNA of single cells using the 10X chromium system.
 \textbf{(b)} t-SNE plot of 25,010 cells visualizes general structure in the data.
 Cells are coloured by the four developmental time points Pink=NP, Dark Green=G, Light Green=L, Purple=PI.
-\textbf{(c)} Dendrogram of clusters based on the mean expression values of the 15 clusters. The tree was computed based on Spearman's rank correlation with ward linkage.
+\textbf{(c)} Dendrogram of clusters based on the mean expression values of the 15 clusters. The tree was computed based on Spearman's rank correlation with Ward linkage.
 \textbf{(d)} Same as \textbf{(b)} but colouring cells by clusters.
 \textbf{(e)} Heatmap highlighting some key marker genes to distinguish the main classes of clusters.
 Colour scale represents log-transformed and normalized UMI counts scaled to a maximum of 1 per row.
@@ -231,7 +231,7 @@ For visualization purposes only 100 randomly selected cells were shown for large
 \fakefigure{F2}
 \textbf{(a)} Diffusion map of epithelial cells from the NP and G time points, showing the first three diffusion components.
 \textbf{(b)} Differentiation trajectory of the luminal compartment based on the first two diffusion components.
-\textbf{(c)} Same plot as in \textbf{(b)}, colored by the normalized and scaled expression values of various genes.
+\textbf{(c)} Same plot as in \textbf{(b)}, coloured by the normalized and scaled expression values of various genes.
 %-------------------------------------------------------------------------------------------------------------------
 
 
@@ -372,14 +372,14 @@ The output from different lanes were then aggregated using ``cellranger aggr'' w
 \textbf{Quality control and preprocessing}
 
 In total the Cell Ranger software identified 25,806 barcodes that contained enough unique molecules to be considered as cells (4,376 in NP, 6,021 in G, 9,603 in L and 5,806 in PI).
-Libraries prepared from all time points showed high quality that was reproducible between the two biological replicates (Supplementary 1a).
-We used the following metrics to flag poor quality cells: number of genes detected, total number of unique molecules (UMIs) and percentage of molecules mapped to mitochondrial genes.
+Libraries prepared from all time points showed high quality that was reproducible between the two biological replicates (Supplementary 2a).
+We used the following metrics to flag poor quality cells: number of genes detected, total number of unique molecular identifiers (UMIs) and percentage of molecules mapped to mitochondrial genes.
 Poor quality cells were then identified by setting a threshold on the number of genes and number of UMIs that was defined as three median absolute deviations (MAD) below the median for each sample, while requiring a minimum value of 1,000 total molecules and 500 genes detected.  
 This resulted in the following thresholds for total number of genes detected: 1,042 for NP, 836 for G, 500 for L and 759 for PI; and the following for total number of molecules : 2,012 in NP, 1,479 in G, 1,000 in L and 1,379 in G.
-In addition, all cells with 5\% or more of UMIs mapping to mitochondrial genes were defined as non-viable or apoptotic and removed from the analysis (Supplementary Fig 1d).
-We finally also ensured that none of the reads in our dataset derived from index swapping\autocite{Sinha2017}.
-For this we excluded cells from the analysis with barcodes that appeared in more than one sample (non-unique barcodes).
-The reasoning being that any index swapped read between samples will also share the same cellular barcode.
+In addition, all cells with 5\% or more of UMIs mapping to mitochondrial genes were defined as non-viable or apoptotic and removed from the analysis (Supplementary Figure 2d).
+We finally also ensured that none of the reads in our dataset derived from index swapping\autocite{Sinha2017, Griffiths2017}.
+For this we excluded cells with barcodes that appeared in more than one sample (non-unique barcodes).
+The reasoning behind this being that any index swapped read between samples will also share the same cellular barcode.
 Exclusion of these cells hence offers protection against index swapping.
 This left us with a total number of 25,010 cells (4,223 in NP, 5,826 in G, 9,319 in L and 5,642 in P).
 Gene expression values were then normalised by size factors, that were estimated as previously described\autocite{Lun2016}.
@@ -391,26 +391,25 @@ The t-SNE embeddings were computed using the ``Rtsne'' package with default sett
 \textbf{Clustering}
 Due to the large number of cells we used a two-step approach to identify clusters of cells.
 In a first step we clustered cells using a shared-nearest-neighbor graph (SNN-graph) based approach.
-This has the advantage of not requiring the computation of a distance matrix which is computationally inhibitive for a large number of cells.
+This has the advantage of not requiring the computation of a distance matrix which is computationally prohibitive for large numbers of cells.
 The SNN-graph was constructed using the \texttt{buildSNNGraph} function from scran with the number of nearest-neighbors set to 20.
 Community-based clustering was then performed on the SNN-graph by multi-level modularity optimization using the \texttt{cluster\_louvain} function in igraph\autocite{Csardi2006}.
 This identified a total of 13 clusters.
-Yet, the majority of clusters still contained substructure as evident from the t-SNE (Supplementary Figure 5a).
-In order to resolve the cellular heterogeneity further we then applied agglomerative hierarchical clustering on each of the 13 clusters (Supplementary Figure 5b).
-For this, we first computed the pairwise distances between cells based on the Spearman's rank correlation of log-transformed HVG counts.
-The dissimilarity matrix was then used to perform hierarchical clustering with the 'hclust' function in R using average linkage.
+Despite this, the majority of clusters still contained substructure as evident from the t-SNE (Supplementary Figure 5a).
+To resolve the cellular heterogeneity further we then applied agglomerative hierarchical clustering on each of the 13 clusters (Supplementary Figure 5b).
+For this, we first computed the pairwise distances between cells based on Spearman's rank correlation of log-transformed HVG counts.
+The dissimilarity matrix was then used to perform hierarchical clustering with the \texttt{hclust} function in R using average linkage.
 Clusters were defined using the \texttt{cutree} function and the optimal $k$ was determined by maximizing the gap statistic using the \texttt{clusGap} function from the cluster package\autocite{Maechler2017}.
 With this we identified a total number of 21 clusters.
 As the last step we performed a \textit{post-hoc} test as previously reported\autocite{Macosko2015} by merging clusters with less than 10 differentially expressed genes (at a P value threshold of 0.01 and minimum log fold change of 1), resulting in one merged cluster (Myo). 
-Next, we flagged clusters that expressed clear markers of non-epithelial cells as contaminating cells and removed them from the downstream analysis.
-Cluster 6.1 and 6.2 were tagged as immune cells based on the expression of \textit{Cd74}, \textit{Cd72} and \textit{Cd54}\autocite{Scheele2017} and cluster 10.3 as endothelial cells based on the expression of \textit{Eng}, \textit{S1pr1} and \textit{Emcn} (Supplementary Figure 5c, Supplementary Figure 5d).
-We retained cluster 10.2 as it expressed markers of a previously described celltype in the gland\autocite{Wang2015}, yet it was also positive for 2 out of 4 (\textit{Des} and \textit{Cspg4}) pericyte markers\autocite{Armulik2011} (Supplementary Figure 5e).
-The high number of cells that was loaded on the 10x increased the chance of doublet formation in the droplet encapsulation\autocite{Zheng2017}.
-A major concern a doublets of two cell types as they can substantially confound downstream analysis.
-We thus identified clusters that appeared at low frequencies (less than the maximum doublet rate of 7\%, Supplementary Figure 9b) and that were highly similar to at least two other clusters present in the same sample ($p > 0.9$ of mean log2(counts+1)).
+Next, we flagged clusters that expressed clear markers of non-epithelial cells as ``contaminating cells'' and removed them from the downstream analysis.
+Clusters 6.1 and 6.2 were tagged as immune cells based on the expression of \textit{Cd74}, \textit{Cd72} and \textit{Cd54}\autocite{Scheele2017} and cluster 10.3 as endothelial cells based on the expression of \textit{Eng}, \textit{S1pr1} and \textit{Emcn} (Supplementary Figure 5c, Supplementary Figure 5d).
+We retained cluster 10.2 as it expressed markers of a previously described celltype in the gland\autocite{Wang2015}, despite being positive for 2 out of 4 (\textit{Des} and \textit{Cspg4}) pericyte markers\autocite{Armulik2011} (Supplementary Figure 5e).
+The high number of cells loaded on the 10x increased the chance of doublet formation in the droplet encapsulation\autocite{Zheng2017}, \fixme{which can result in artificial clusters}.
+We thus identified clusters that appeared at low frequencies (less than the maximum doublet rate of 7\%, Supplementary Figure 9b) and that were highly similar to at least two other clusters present in the same sample ($\rho > 0.9$ of mean log2(counts+1)).
 The only cluster that fulfilled this criterion was cluster Bsl-G2, whose gene expression was strongly correlated with Bsl-G and Avd-G (Supplementary Figure 9b)
 In addition, the gene expression profile of this cluster is virtually identical to the average expression values of Bsl-G and Avd-G, supporting the hypothesis that it is indeed a mixture of the two clusters (Supplementary Figure 9b).
-As Bsl-G and Avd-G are the most prevalent clusters in these samples doublets would be expected to be enriched for a combination of the two (Table 1).
+As Bsl-G and Avd-G are the most prevalent clusters in these samples (Table 1), doublets would be expected to be enriched for a combination of the two.
 Finally, Bsl-G2 also belonged to the clusters with a high number of genes detected and a high number of unique molecules, which is also indicative for doublet clusters (Supplementary Figure 9c).
 We hence excluded Bsl-G2 from any downstream analysis.
 
@@ -418,7 +417,7 @@ We hence excluded Bsl-G2 from any downstream analysis.
 \textbf{Differential expression analysis }
 
 Differential gene expression analysis was performed using ``edgeR''\autocite{Robinson2010}.
-Genes with a mean expression level below 0.1 counts were removed from the analysis.
+\fixme{Genes with a mean expression level below 0.1 counts were removed from the analysis.}
 A negative binomial generalized log-linear model was fitted to the remaining genes with the cluster assignments as covariate(s).
 The 'glmTreat' function was used to identify genes that have a significantly higher log fold change than 1 at an FDR of 0.01.
 
@@ -426,12 +425,13 @@ The 'glmTreat' function was used to identify genes that have a significantly hig
 
 For inferring the differentiation trajectory we used diffusion maps.
 First, we selected all cells from the NP and G time point (\autoref{F2}a) and detected the HVGs as described above.
-The log-transformed (log2(count+1)) gene counts were then used to compute the first twenty diffusion components using the \texttt{DiffusionMap} function (default parameters as in 'destiny'\autocite{Angerer2016}.
+The log-transformed (log2(count+1)) gene counts were then used to compute the first twenty diffusion components using the \texttt{DiffusionMap} function (default parameters as in 'destiny'\autocite{Angerer2016}).
 After inspecting the fraction of explained variation for the first twenty components, we decided to retain the first 3.
 In \autoref{F2}b we then focused on the luminal compartment and recomputed the diffusion map based only on the luminal cells, using the aforementioned procedure.
-Here we retained only the first two components (Supplementary Fig 3a).
+\fixme{Here we retained only the first two components (Supplementary Fig 3a).
 Notably, the structure inferred by the diffusion map algorithm was robust to the choice of features and down-sampling of cells (Supplementary Fig 3d).
 The structure of a common origin and the two branches could also be inferred using Monocle with standard settings\autocite{Trapnell2014} (Supplementary Fig 3c).
+}
 For inferring the branches and pseudotime ordering, we defined the following three tips, the cell with the smallest value for the second eigenvector (which was set as root) and the cells with the largest and smallest values for the first eigenvector (compare \autoref{F2}b).  
 
 \textbf{Pseudotime-dependent expression}
@@ -454,9 +454,10 @@ The genes of interest were compared to all genes that were tested for differenti
 
 \textbf{Code availability}
 
-All computational analyses were performed in R (Version 3.3.3) using standard functions unless otherwise indicated.
+\fixme{All computational analyses were performed in R (Version 3.3.3) using standard functions unless otherwise indicated.
 Code is available online at \href{https://github.com/MarioniLab/MammaryGland}{\textit{https://github.com/MarioniLab/MammaryGland}}.
 Data can be accessed at this link (\url{https://karstenbach.shinyapps.io/webapp/}).
+}
 
 \textbf{Author contribution}
 
@@ -465,7 +466,7 @@ S.P. and K.B. setup and collected the mammary epithelial cells.
 M.G. and J.H performed the 10X library production and sequencing.
 J.C.M, D.A., K.B and W.T.K conceptualised the study and wrote the manuscript.
 
-\textbf{Acknowledgements }
+\textbf{Acknowledgements}
 
 We would like to thank the staff at Sanger Institute, Research Service Facility (RSF) for their assistance.
 We would like to thank Dr. Aaron T. Lun (CRUK CI) for helpful discussions and comments on the manuscript.
