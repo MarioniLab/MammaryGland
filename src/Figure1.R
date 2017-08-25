@@ -19,38 +19,18 @@ pD <- dataList[[2]]
 fD <- dataList[[3]]
 
 
-# ---- tSNE-Plots ----
-
-# Rename Condition for plot
-pD$Condition <- mapvalues(pD$Condition, from=c("NP","G","L","PI"),
-			  to=c("Nulliparous", "14.5d Gestation",
-			       "6d Lactation", "11d Post Natural Involution"))
-
 # Remove outlier and immune cells
 m <- m[,pD$keep]
 pD <- pD[pD$keep,]
 
 m <- t(t(m)/pD$sf)
 
-# t-SNE colored by Condition
-p0 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=Condition)) +
-    geom_point(size=1.5) +
-    #     ggtitle("Conditions") +
-    theme_void(base_size=12) +
-    guides(colour = guide_legend(override.aes = list(size=3))) +
-    theme(legend.position="bottom",legend.direction="horizontal",
-	  legend.title=element_blank()) 
 
-# t-SNE colored by cluster
-p1 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=SubCluster)) +
-    geom_point(size=1.5) +
-    scale_color_manual(values=levels(pD$Colors))+
-    #     ggtitle("Cluster") +
-    theme_void(base_size=12) +
-    guides(colour = guide_legend(override.aes = list(size=3))) +
-    theme(legend.position="bottom",legend.direction="horizontal",
-	  legend.title=element_blank())  
-#     facet_wrap(~Condition)
+# Rename Condition for plot
+pD$Condition <- mapvalues(pD$Condition, from=c("NP","G","L","PI"),
+			  to=c("Nulliparous", "14.5d Gestation",
+			       "6d Lactation", "11d Post Natural Involution"))
+
 
 # ---- Dendrogram ----
 pD$SubCluster <- factor(pD$SubCluster) #drop unused levels
@@ -79,7 +59,6 @@ dev.off()
 # ---- Heatmap ----
 
 # Select key genes for each cluster as well as luminal basal markers (general)
-general <- c("Acta2","Mylk","Krt5","Krt14","Cnn1","Trp63","Epcam","Krt18","Krt8")
 c1 <- c("Cited1","Prlr","Esr1","Areg")
 c2 <- c("Rspo1","Atp6v1c2","Fabp3","Thrsp","Wap","Glycam1","Olah")
 c3 <- c("Foxa1","Ly6a","Aldh1a3","Kit","Cd14")
@@ -90,13 +69,13 @@ c7 <- c("Oxtr","Krt15","Igfbp6","Igfbp2","Tns1")
 c9 <- c("Gng11","Procr","Igfbp7","Nrip2","Notch3","Zeb2")
 
 # Combine in order for heatmap
-genes <- c(general,c1,c3,c5,c2,c6,c7,c9)
+genes <- c(c1,c3,c5,c2,c6,c7,c9)
 
 # Subsample cells from large clusters
 set.seed(rnd_seed)
 subsP <- filter(pD, !SubCluster %in% c("Hsd-G","Avd-L")) %>%
     group_by(SubCluster) %>%
-    do(sample_n(.,100))
+    do(sample_n(.,200))
 
 # Combine with remaining clusters and relevel factor according to order in plot
 ord <- filter(pD, SubCluster %in% c("Hsd-G","Avd-L")) %>%
@@ -118,11 +97,32 @@ annoCol <- data.frame("Cluster"=ord$SubCluster,
 		      "Stage"=ord$Condition)
 rownames(annoCol) <- as.character(ord$barcode)
 
+#
+############################## overly complicated and copied from old F1
+# t-SNE colored by Condition
+p0 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=Condition)) +
+    geom_point(size=1.5) +
+    #     ggtitle("Conditions") +
+    theme_void(base_size=12) +
+    guides(colour = guide_legend(override.aes = list(size=3))) +
+    theme(legend.position="bottom",legend.direction="horizontal",
+	  legend.title=element_blank()) 
+
 # Condition color scheme as in F1b
 forcol <- ggplot_build(p0)
 condColors <- unique(arrange(forcol$data[[1]],group) %>% .[["colour"]])
 names(condColors) <- c("Nulliparous", "14.5d Gestation",
 			       "6d Lactation", "11d Post Natural Involution")
+
+# t-SNE colored by cluster
+p1 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=SubCluster)) +
+    geom_point(size=1.5) +
+    scale_color_manual(values=levels(pD$Colors))+
+    #     ggtitle("Cluster") +
+    theme_void(base_size=12) +
+    guides(colour = guide_legend(override.aes = list(size=3))) +
+    theme(legend.position="bottom",legend.direction="horizontal",
+	  legend.title=element_blank())  
 
 # Cluster color scheme as in F1c
 forcol <- ggplot_build(p1)
@@ -134,6 +134,7 @@ names(clustColors) <- levels(ord$SubCluster)
 # Set Color schemes for annotation data frame 
 annoColors <- list("Stage"=condColors,
 		   "Cluster"=clustColors)
+#################################
 
 # Plot heatmap
 p <-  pheatmap(mheat,
@@ -144,18 +145,14 @@ p <-  pheatmap(mheat,
          annotation_legend=FALSE,
 	 annotation_col=annoCol,
 	 gaps_col=c(263,463,663,863,1052,1252,1352),
-         gaps_row=9,
 	 annotation_colors=annoColors,
-	 fontsize=8)
+	 fontsize=9)
 
 
 # Combine all plots
-topRow <- plot_grid(NULL,NULL,p0,labels=c("a","","b"),rel_widths=c(1,0.4,1),nrow=1)
-secondRow <- plot_grid(p.dendr,NULL,p1,align="h",nrow=1,rel_widths=c(1,0.4,1),
-		  labels=c("c","","d"))
-fullP <- plot_grid(topRow,secondRow,p[[4]],nrow=3,
-		   labels=c("","","e"),vjust=0)
 
+fullP <- plot_grid(p.dendr,p[[4]],nrow=2)
+dev.off()
 cairo_pdf("../paper/figures/Figure1.pdf",width=12.41,height=17.54)
 fullP
 dev.off()
