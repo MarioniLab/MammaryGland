@@ -1,4 +1,4 @@
-# S4 and S7
+# S5
 
 library(plyr)
 library(dplyr)
@@ -6,65 +6,60 @@ library(ggplot2)
 library(cowplot)
 library(viridis)
 library(RColorBrewer)
-library(reshape2)
 library(pheatmap)
+library(gridExtra)
+library(gridGraphics)
 source("functions.R")
 
 # Load Data
 rnd_seed <- 300
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
 
+# Remove outlier and immune cells
+m <- m[,pD$PassAll]
+pD <- pD[pD$PassAll,]
 
-# ---- S4 ----
+m <- t(t(m)/pD$sf)
 
-# Rename Condition for plot
-pD$Condition <- mapvalues(pD$Condition, from=c("NP","G","L","PI"),
-			  to=c("Nulliparous", "14.5d Gestation",
-			       "6d Lactation", "11d Post Natural Involution"))
 
-# Remove previously identified outlier and immune cells
-m <- m[,pD$keep]
-pD <- pD[pD$keep,]
+# First step
+p1 <- ggplot(pD,aes(tSNE1,tSNE2,color=Cluster)) +
+    geom_point()
 
-# put in rnd order for plotting
-set.seed(rnd_seed)
-fp1 <- pD[sample(c(1:nrow(pD)),nrow(pD)),]
-#t-SNE colored by SampleID
-p1 <- ggplot(fp1, aes(x=tSNE1, y=tSNE2, color=SampleID)) +
-    geom_point(size=1) +
-    scale_color_brewer(palette="Paired")+
-    #     ggtitle("Cluster") +
-    theme_void(base_size=12) +
-    guides(colour = guide_legend(override.aes = list(size=3))) +
-    theme(legend.position="bottom",legend.direction="horizontal",
-	  legend.title=element_blank()) 
+# Second round
+fp2 <- pD
+fp2$SubCluster <- as.character(fp2$SubCluster)
+fp2$SubCluster <- substr(fp2$SubCluster,nchar(fp2$SubCluster),nchar(fp2$SubCluster))
+p2 <- ggplot(fp2,aes(tSNE1,tSNE2,color=SubCluster)) +
+    geom_point(size=.8) +
+    facet_wrap(~Cluster)
 
-# Normalize
-m.norm <- t(t(m)/pD$sf)
-rownames(m.norm) <- fD$symbol
+subP1 <- plot_grid(p1,p2, labels=c("a","b"))
 
-titles <- genes <- c("Krt18","Krt8","Krt5","Krt14","Acta2")
-add <- data.frame(log2(t(m.norm)[,genes]+1),
-		  barcode=colnames(m))
-colnames(add) <- gsub("X","",colnames(add))
-forPlot <- left_join(add,pD[,c("barcode","tSNE1","tSNE2")])
-forPlot <- melt(forPlot,id=c("barcode","tSNE1","tSNE2")) %>%
-    dplyr::rename(Expression=value)
-plots <- list()
-for(i in seq_along(genes)) {
-    gene <- genes[i]
-    fP <- filter(forPlot,variable==gene) %>% arrange(Expression)
-    p <- ggplot(fP, aes(x=tSNE1, y=tSNE2, color=Expression)) +
-	geom_point(size=1) +
-	scale_color_viridis(guide_legend(title=gene)) +
-	ggtitle(titles[i]) +
-	theme_void(base_size=14) +
-	theme(plot.title=element_text(size=rel(1.05))) 
-    plots[[gene]] <- p
-}
-cairo_pdf("../paper/figures/S4.pdf",width=11.69,height=8.27)
-plot_grid(p1,plotlist=plots,labels=c("a","b","","c","",""))
+# ---- PlotImmuneCellMarkers ----
+
+genes <- c("Cd52","Cd74","Cd72")
+p3 <- plotGeneDist(m, pD, fD, genes, colorBy="SubCluster")
+p3 <- p3 %+% facet_grid(variable~.) %+% xlab("SubCluster") %+% ylab("Log-Expression")
+
+# ---- PlotEnodthelialCellMarkers ----
+
+genes <- c("Eng","S1pr1","Emcn")
+p4 <- plotGeneDist(m, pD, fD, genes, colorBy="SubCluster")
+p4 <- p4 %+% facet_grid(variable~.) %+% xlab("Cluster") %+% ylab("Log-Expression")
+
+# ---- PlotPericyteMarkers ----
+
+genes <- c("Pdgfrb","Cspg4","Anpep","Des")
+p5 <- plotGeneDist(m, pD, fD, genes, colorBy="SubCluster")
+p5 <- p5 %+% facet_grid(variable~.) %+% xlab("Cluster") %+% ylab("Log-Expression")
+
+subP2 <- plot_grid(p3,p4,p5, nrow=1, labels=c("c","d","e"))
+
+fullP <- plot_grid(subP1,subP2,nrow=2)
+cairo_pdf("../paper/figures/S4.pdf",height=12.41,width=17.54)
+fullP
 dev.off()

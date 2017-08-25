@@ -1,65 +1,122 @@
-# S5
-
+# Figure S6
 library(plyr)
+library(destiny)
 library(dplyr)
 library(ggplot2)
 library(cowplot)
-library(viridis)
 library(RColorBrewer)
-library(pheatmap)
-library(gridExtra)
 library(gridGraphics)
+library(gridExtra)
+library(scran)
 source("functions.R")
 
 # Load Data
 rnd_seed <- 300
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered.rds")
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
 
-# Remove outlier and immune cells
-m <- m[,pD$PassAll]
-pD <- pD[pD$PassAll,]
+# ---- Robustness -----
+condComb <- c("NP","G")
+set <- c("Bsl-G","Bsl","Myo","Prc")
+keepCells <- pD$keep & !(pD$SuperCluster %in% set) & pD$Condition %in% condComb
 
-m <- t(t(m)/pD$sf)
+# Cell filtering
+m.vp <- m[,keepCells]
+pD.vp <- pD[keepCells,]
 
+# Gene filtering
+keep <- rowMeans(m.vp)>0.01
+m.vp <- m.vp[keep,]
+fD.vp <- fD[keep,]
 
-# First step
-p1 <- ggplot(pD,aes(tSNE1,tSNE2,color=Cluster)) +
-    geom_point()
+# Normalize
+m.norm <- t(t(m.vp)/pD.vp$sf)
 
-# Second round
-fp2 <- pD
-fp2$SubCluster <- as.character(fp2$SubCluster)
-fp2$SubCluster <- substr(fp2$SubCluster,nchar(fp2$SubCluster),nchar(fp2$SubCluster))
-p2 <- ggplot(fp2,aes(tSNE1,tSNE2,color=SubCluster)) +
-    geom_point(size=.8) +
-    facet_wrap(~Cluster)
+out <- NULL
+features <- c("HVG","selected","PCA","all") 
+subsampls <- c(1,0.5,0.25)
 
-subP1 <- plot_grid(p1,p2, labels=c("a","b"))
+for (subsampl in subsampls) {
+for (feats in features) {
+    pD.cur <- pD.vp
+    
+    if (feats=="HVG") {
+    # Highly variable genes 
+    var.des <- trendVar(log2(m.norm+1),trend="semiloess")
+    var.out <- decomposeVar(log2(m.norm+1),var.des)
+    o <- order(var.out$mean)
+    hvg.out <- var.out[which(var.out$FDR <= 0.05 & var.out$bio >=0.5),]
 
-# ---- PlotImmuneCellMarkers ----
+    # Prepare expression matrix
+    exps <- m.norm[rownames(hvg.out),]
+    exps <- t(log(exps+1))
+    }
 
-genes <- c("Cd52","Cd74","Cd72")
-p3 <- plotGeneDist(m, pD, fD, genes, colorBy="SubCluster")
-p3 <- p3 %+% facet_grid(variable~.) %+% xlab("SubCluster") %+% ylab("Log-Expression")
+    if (feats=="selectedGenes") {
+    genes <- c("Csn2","Gata3","Prlr","Elf5","Esr1","Pgr","Aldh1a3","Wap",
+	       "Tspan8","Krt18","Krt8","Fgfr1","Areg","Fgfr2",
+		"Notch1","Notch3","Foxc1","Zeb2")
+    exps <- m.norm[fD.vp$symbol %in% genes,]
+    exps <- t(log(exps+1))
+    }
 
-# ---- PlotEnodthelialCellMarkers ----
+    if (feats=="PCA") {
+    pcs <- prcomp(t(log(m.norm+1)))
+    exps  <-pcs$x[,1:50]
+    }
 
-genes <- c("Eng","S1pr1","Emcn")
-p4 <- plotGeneDist(m, pD, fD, genes, colorBy="SubCluster")
-p4 <- p4 %+% facet_grid(variable~.) %+% xlab("Cluster") %+% ylab("Log-Expression")
+    if (feats=="all") {
+    exps <- t(log(m.norm+1))
+    }
 
-# ---- PlotPericyteMarkers ----
+    # Subsampling
+    smplsz <- round(subsampl*nrow(exps))
+    set.seed(rnd_seed)
+    smpl <- sample(rownames(exps),size=smplsz)
+    pD.cur <- dplyr::filter(pD.cur, as.character(barcode) %in% smpl)
+    exps <- exps[as.character(pD.cur$barcode),]
 
-genes <- c("Pdgfrb","Cspg4","Anpep","Des")
-p5 <- plotGeneDist(m, pD, fD, genes, colorBy="SubCluster")
-p5 <- p5 %+% facet_grid(variable~.) %+% xlab("Cluster") %+% ylab("Log-Expression")
+    # Compute Diffusion map
+    set.seed(rnd_seed)
+    dm <- DiffusionMap(exps,n_eigs=20,rotate=TRUE)
+    pD.cur$DC1 <- eigenvectors(dm)[,1]
+    pD.cur$DC2 <- eigenvectors(dm)[,2]
+    pD.cur$features <- feats
+    pD.cur$SubSample <- paste0(subsampl*100,"%")
+    out <- rbind(out,pD.cur)
+}
+}
 
-subP2 <- plot_grid(p3,p4,p5, nrow=1, labels=c("c","d","e"))
+# Set color scheme
+cols <- levels(pD.vp$Colors)[levels(pD.vp$SubCluster) %in% unique(pD.vp$SubCluster)]
 
-fullP <- plot_grid(subP1,subP2,nrow=2)
-cairo_pdf("../paper/figures/S5.pdf",height=12.41,width=17.54)
-fullP
+# Plot
+out$SubSample <- factor(out$SubSample, levels=c("100%","50%","25%"))
+p <- ggplot(out, aes(DC1,DC2, color=SubCluster)) +
+    geom_point(size=0.8) +
+    scale_color_manual(values=cols) +
+    facet_grid(features~SubSample) +
+    theme(axis.text=element_blank(),
+	  axis.ticks=element_blank(),
+	  strip.background=element_blank(),
+	  strip.text=element_text(face="bold"),
+	  legend.position="bottom",
+	  legend.direction="horizontal",
+	  ) 
+
+# Run script if not done yet
+if (!file.exists("../data/Robjects/secondRun_2500/ExpressionList_Monocle.rds")){
+    source("Monocle.R")
+}
+
+monoc <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_Monocle.rds")
+monoc.plt <- monoc[["plot"]] 
+monoc.plt <- monoc[["plot"]] %+% guides(color=FALSE) %+% scale_color_manual(values=cols)
+
+# Combine plots
+subp0 <- plot_grid(monoc.plt,NULL,NULL,nrow=1,labels=c("a","",""))
+cairo_pdf("../paper/figures/S5.pdf",width=11.69,height=8.27)
+plot_grid(subp0,p,ncol=1,labels=c("","b"),rel_heights=c(1,1.5))
 dev.off()

@@ -110,18 +110,18 @@ Our data from 25,010 individual cells, identifies 15 distinct cell populations w
 
 \textbf{Single cell RNA sequencing identifies 15 clusters of mammary epithelial cells}
 
-First, we isolated mammary epithelial cells from four developmental time points; nulliparous (NP), day 14.5 gestation (G), day 6 lactation (L) and 11 days post natural involution (PI) (Supplementary Figure 2).
+First, we isolated mammary epithelial cells from four developmental time points; nulliparous (NP), day 14.5 gestation (G), day 6 lactation (L) and 11 days post natural involution (PI) (Supplementary Figure 1).
 For each time point we sorted mammary epithelial cells based on the EpCAM cell surface marker from two independent mice (\autoref{F1}a).
 All samples were then prepared for single-cell RNA-sequencing using the 10x Chromium platform\autocite{Zheng2017}.
-Following quality control (materials and methods), this yielded an average of 6,175 unique transcripts and 2,118 genes detected from 25,010 cells (4,223 in NP, 5,826 in G, 9,319 in L and 5,642 in P) (Supplementary Figure 3).
-Visual inspection of the data using t-distributed stochastic neighbor embedding (t-SNE) suggested that although there is grouping of cells by time-point, there are also other factors that underlie structure within the dataset (\autoref{F1}b and Supplementary Figure 4).
+Following quality control (materials and methods), this yielded an average of 6,175 unique transcripts and 2,118 genes detected from 25,010 cells (4,223 in NP, 5,826 in G, 9,319 in L and 5,642 in P) (Supplementary Figure 2).
+Visual inspection of the data using t-distributed stochastic neighbor embedding (t-SNE) suggested that although there is grouping of cells by time-point, there are also other factors that underlie structure within the dataset (\autoref{F1}b and Supplementary Figure 3).
 First, we dissected the global structure by unsupervised clustering using a shared-nearest-neighbor clustering approach.
-This resulted in a coarse clustering into 13 groups (Supplementary Figure 5a).
-In a second step we applied hierarchical clustering to each of the identified groups to further resolve the cellular heterogeneity (\autoref{F1}c, Supplementary Figure 5b).
+This resulted in a coarse clustering into 13 groups (Supplementary Figure 4a).
+In a second step we applied hierarchical clustering to each of the identified groups to further resolve the cellular heterogeneity (\autoref{F1}c, Supplementary Figure 4b).
 After removal of endothelial and immune cell clusters this resulted in a total of 15 clusters of mammary epithelial cells.
 Differential gene expression analysis allowed us to further characterise the clusters and infer putative identities (\autoref{F1}d, \autoref{T1} and Supplementary Table 1).
 Notably, some clusters mainly represent the same putative cell type at different developmental time points (indicated by the NP, G, L or PI suffix, in the following the suffix might be omitted to refer to a group of clusters). 
-Based on the expression of \textit{Krt18,} \textit{Krt8, Krt5, Krt14} and \textit{Acta2} we noted that 11 clusters show a luminal profile (Lp, Hsp, Hsd, Avp \& Avd clusters) and 4 a basal profile (Bsl, Myo \& Prc clusters) (\autoref{F1}D, Supplementary Fig 2b and 2c).
+Based on the expression of \textit{Krt18,} \textit{Krt8, Krt5, Krt14} and \textit{Acta2} we noted that 11 clusters show a luminal profile (Lp, Hsp, Hsd, Avp \& Avd clusters) and 4 a basal profile (Bsl, Myo \& Prc clusters) (\autoref{F1}D, Supplementary Fig 3b and 3c).
 The Avd and Avp clusters express high levels of beta-casein, \textit{Csn2}, and are exclusively composed of cells from the gestation and lactation time-points, suggesting that these cells are secretory alveolar cells (\autoref{F1}d).
 Hsd and Hsp on the other hand represent the clusters with the highest expression of hormone receptors, suggesting hormone sensing function.
 Lp expresses high levels of the luminal progenitor marker \textit{Aldh1a3} suggesting progenitor function, while Hsp and Avp also express progenitor markers but to a lesser extent.
@@ -135,7 +135,7 @@ Briefly, the method embeds the data in a low-dimensional space, where distances 
 In diffusion maps constructed from all epithelial cells, we observed a clear segregation between the luminal and basal clusters, with virtually no transition states between the two (\autoref{F2}a).
 This supports the hypothesis that during normal tissue homoeostasis the two lineages are largely self-maintained, which is in agreement with the majority of the lineage tracing studies\autocite{VanKeymeulen2011,VanAmerongen2012,Davis2016}.
 In contrast, the luminal compartment showed a distinct structure, with gradual transitions between different clusters and cells originating from a common origin (\autoref{F2}b).
-We confirmed the robustness of this bifurcation by verifying that it was present when different methods of feature selection, algorithms for trajectory inference and down-sampling were employed (Supplementary Figure 6).
+We confirmed the robustness of this bifurcation by verifying that it was present when different methods of feature selection, algorithms for trajectory inference and down-sampling were employed (Supplementary Figure 5).
 
 The expression of the progenitor marker \textit{Aldh1a3} gradually decreased as cells progressed away from their common origin (\autoref{F2}c), which was largely composed of Lp.
 We further noted that the left arm of the differentiation trajectory terminates at Avd and shows increasing expression of \textit{Csn2} and \textit{Glycam1} (\autoref{F2}c), consistent with a secretory phenotype.
@@ -148,7 +148,7 @@ We found 456 genes that showed a pseudotime-dependent expression with the same d
 These included genes associated with known progenitor characteristics such as \textit{Aldh1a3} and \textit{Tspan8} as well as transcription factors that have not previously been associated with luminal differentiation such as \textit{Creb5}, \textit{Hmga1} and \textit{Fosl1} (\autoref{F3}b).
 Interestingly, \textit{Hmga1} is a known chromatin remodeller with reprogramming activity that has been implicated in basal-like breast cancer\autocite{Shah2012,Shah2013}.
 In addition, we identified 1005 genes with branch-specific expression patterns (\autoref{F3}d, \autoref{F3}e, Supplementary Table 3).
-We further clustered the gene expression trend on each of the two branches and identified sets of genes that change over pseudotime (\fixme{Supplementary Figure 7}).
+We further clustered the gene expression trend on each of the two branches and identified sets of genes that change over pseudotime (\fixme{Supplementary Figure 6}).
 On the alveolar branch we found two clusters of genes that increase in expression during differentiation, one that is switched on early and another that is activated later in the final stages of differentiation.
 The early cluster is enriched for genes involved in fatty-acid oxidation and lipid biosynthetic processes (e.g. \textit{Lipa}, \textit{Dbi} and \textit{Acox1}) .
 The second, smaller group of genes that is switched on during the late stages of differentiation was enriched for genes involved in fatty-acid transport and lipid homeostasis (e.g. \textit{Olah}, \textit{Cd36}).
@@ -166,12 +166,12 @@ The luminal compartment shifts from giving rise to mainly hormone sensing cells 
 The basal compartment on the other hand differentiates to produce oxytocin-sensing, myoepithelial cells that enable duct contraction and milk secretion during lactation.
 At the end of lactation the gland then reverts back to a stage that resembles the pre-pregnancy state.
 However, we found that in particular the luminal compartment differs from its nulliparous counterpart (\autoref{F1}b and \autoref{F1}d).
-Interestingly, the effect of parity is most pronounced for the less differentiated and more progenitor-like cell types (\autoref{F1}c, Supplementary Figure 8).
+Interestingly, the effect of parity is most pronounced for the less differentiated and more progenitor-like cell types (\autoref{F1}c, Supplementary Figure 7).
 To ensure that Lp-PI still represents the progenitor population in the post-parous gland, we identified genes that distinguish Lp-NP from the rest of the luminal compartment to see if they are also characteristic for the proposed post-parity progenitor population Lp-PI.
 Indeed, we find genes that are differentially expressed between Lp-NP and the rest of the luminal compartment to show the same trend between Lp-PI and the luminal compartment (\autoref{F4}a).
-In a similar manner we can distinguish Lp-PI from the rest of the PI gland in a principal component analysis (PCA) using the identified progenitor genes (Supplementary Fig 8b and c).
+In a similar manner we can distinguish Lp-PI from the rest of the PI gland in a principal component analysis (PCA) using the identified progenitor genes (Supplementary Fig 7b and c).
 From this we conclude, that Lp-PI indeed represents the post-parity luminal progenitor population.
-Interestingly, genes that were up-regulated in Lp-PI compared to Lp-NP were significantly enriched for pathways that are involved in the immune response and lactation (\autoref{F4}b, Supplementary Fig 8d).
+Interestingly, genes that were up-regulated in Lp-PI compared to Lp-NP were significantly enriched for pathways that are involved in the immune response and lactation (\autoref{F4}b, Supplementary Fig 7d).
 These included genes that play roles in various processes during lactation, e.g. milk-proteins (\textit{Csn2}, \textit{Lalba}), lipases (\textit{Lipa}), proteins involved in milk secretion (\textit{Xdh}, \textit{Cd36}) and transcriptional regulators of lactation (\textit{Cidea}).
 Of note, the genes of the casein locus (\textit{Csn2}, \textit{Csn1s1}, \textit{Csn1s2a}, \textit{Csn3}) have previously been reported to be up-regulated in the parous gland, most likely due to changes in chromatin accessibility\autocite{Dos2015,Rijnkels2013}.
 However, it has not been shown before that this effect is confined to the progenitor population of the luminal compartment.
@@ -264,40 +264,37 @@ P values are adjusted for multiple testing using Benjamini-Hochberg.
 Overview of the different clusters including number of cells captured for each time-point and key genes that were used to infer their identities.
 \textbf{Missing!}
 
-\textbf{Supplementary Figure 1. Estrus cycle}
-Vaginal smears of the mice from the NP and PI timepoints. The animals were classified as being in estrus (NP1, NP2, PI1) or diestrus (PI1). The scale bar represents 200$\mu m$.
-
-\textbf{Supplementary Figure 2. Gating strategy to isolate MECs}
+\textbf{Supplementary Figure 1. Gating strategy to isolate MECs}
 \textbf{(a)} Gating strategy used to select live, lineage\textsuperscript{negative} singlets.
 \textbf{(b)} Representative plots for each of the four timepoints are shown. FSC-W: forward scatter width, FSC-A: forward scatter area, BSC-A: backward scatter area.
 
-\textbf{Supplementary Figure 3. Quality control of sequencing data}
+\textbf{Supplementary Figure 2. Quality control of sequencing data}
 \textbf{(a)} Table summarizing quality control criteria per sample.
 Number of unique molecules, genes detected and number of reads represent the median value for each sample.
 \textbf{(b-c)} Histograms for the four conditions showing the distributions of the number of genes detected \textbf{(b)} or total number of molecules \textbf{(c)} metric.
 \textbf{(d)} Scatterplot of number of genes detected versus percentage of mitochondrial RNA molecules.
 For choice of thresholds see materials and methods.
 
-\textbf{Supplementary Figure 4. Biological replicates account for little structure in the data.}
+\textbf{Supplementary Figure 3. Biological replicates account for little structure in the data.}
 \textbf{(a)} t-SNE plot coloured by the eight different samples. All biological replicates are well mixed and none of the identified clusters is composed of cells from only one replicate.
 \textbf{(b-c)} t-SNE plots highlighting the expression of luminal \textbf{(b)} and basal \textbf{(c)} genes in all 25,010 cells.
 
-\textbf{Supplementary Figure 5. Clustering strategy}
+\textbf{Supplementary Figure 4. Clustering strategy}
 \textbf{(a)} First round of clustering using an SNN-Graph and modularity maximization for cluster identification.
 \textbf{(b)} Second round of clustering using hierarchical clustering based on Spearman's rank correlation with average linkage.
 The gap statistic was used as optimization criterion to choose $k$.
 \textbf{(c-e)} Marker genes that were used to remove immune \textbf{(c)} and endothelial \textbf{(d)} cells from the analysis. Cluster 10.2 (Prc) showed some degree of expression for some pericyte markers \textbf{(e)}.
 
-\textbf{Supplementary Figure 6. Robustness of bifurcation event in diffusion map}
+\textbf{Supplementary Figure 5. Robustness of bifurcation event in diffusion map}
 \textbf{(a)} The differentiation trajectory as determined by Monocle (see materials and methods) coloured by cluster assignment.
 \textbf{(b)} The diffusion map is robust towards down-sampling of cells (100, 50 or 25\% of all cells were used in the left, middle or right panel, respectively) as well as the method of feature selection (all= all genes with mean expression level above 0.1, HVG= highly variable genes, PCA= first 50 components of PCA, selected= a manually selected choice of genes that are known to be involved in luminal cell differentiation).
 The gene list included: \textit{Csn2, Gata3, Prlr, Elf5, Esr1, Pgr, Aldh1a3, Wap, Tspan8, Krt18, Krt8, Areg, Fgfr1, Fgfr2, Notch1, Notch3, Foxc1} and \textit{Zeb2}.
 
-\textbf{Supplementary Figure 7. Gene set enrichment analysis of pseudo-time dependent genes}
+\textbf{Supplementary Figure 6. Gene set enrichment analysis of pseudo-time dependent genes}
 \textbf{(a)} Significantly enriched GO-Terms for genes in the two clusters of the hormone-sensing branch.
 \textbf{(b)} Significantly enriched GO-Terms for genes in the four clusters of the secretory branch.
 
-\textbf{Supplementary Figure 8. Lp-PI is a post-parity luminal progenitor cluster}
+\textbf{Supplementary Figure 7. Lp-PI is a post-parity luminal progenitor cluster}
 \textbf{(a)} Number of differentially expressed genes between the NP and PI clusters of Hsd, Hsp and Lp.
 \textbf{(b)} Principal component analysis (PCA) on all luminal cells from the PI time-point.
 The PCA was computed on the top 500 differentially expressed genes between Lp and the rest of the luminal NP gland.
@@ -305,6 +302,9 @@ PC1 separates the progenitors and the differentiated cells, with the progenitors
 \textbf{(c)} Genes that are higher expressed in Lp compared to the rest of the NP gland also have negative PC1 loadings.
 \textbf{(d)} Top GO-terms (biological processes) that are significantly enriched in upregulated genes from \textbf{(a)}.
 Dashed line indicates P value threshold at 0.001.
+
+\textbf{Supplementary Figure 8. Estrus cycle}
+Vaginal smears of the mice from the NP and PI timepoints. The animals were classified as being in estrus (NP1, NP2, PI1) or diestrus (PI1). The scale bar represents 200$\mu m$.
 
 \textbf{Supplementary Figure 9. Removal of doublet clusters}
 \textbf{(a)} Frequency of each cluster in all 8 samples, the threshold of 7\% is indicated by the red dashed line.
@@ -333,6 +333,7 @@ Females were mated with studs and allowed to litter.
 Tissues were then harvested at gestation day 14.5 (G), lactation day 6 (L) and day 11 post natural weaning of the pups (PI).
 Tissue from NP females was harvested at 8 weeks of age.
 Two individual mice per developmental time point were used in the study.
+The estrus cycle stage of animals from the NP and PI timepoint were determined by vaginal smears (Supplementary Figure 8).
 
 \textbf{Mammary gland dissociation into single-cell suspension}
 
@@ -395,16 +396,16 @@ This has the advantage of not requiring the computation of a distance matrix whi
 The SNN-graph was constructed using the \texttt{buildSNNGraph} function from scran with the number of nearest-neighbors set to 20.
 Community-based clustering was then performed on the SNN-graph by multi-level modularity optimization using the \texttt{cluster\_louvain} function in igraph\autocite{Csardi2006}.
 This identified a total of 13 clusters.
-Despite this, the majority of clusters still contained substructure as evident from the t-SNE (Supplementary Figure 5a).
-To resolve the cellular heterogeneity further we then applied agglomerative hierarchical clustering on each of the 13 clusters (Supplementary Figure 5b).
+Despite this, the majority of clusters still contained substructure as evident from the t-SNE (Supplementary Figure 4a).
+To resolve the cellular heterogeneity further we then applied agglomerative hierarchical clustering on each of the 13 clusters (Supplementary Figure 4b).
 For this, we first computed the pairwise distances between cells based on Spearman's rank correlation of log-transformed HVG counts.
 The dissimilarity matrix was then used to perform hierarchical clustering with the \texttt{hclust} function in R using average linkage.
 Clusters were defined using the \texttt{cutree} function and the optimal $k$ was determined by maximizing the gap statistic using the \texttt{clusGap} function from the cluster package\autocite{Maechler2017}.
 With this we identified a total number of 21 clusters.
 As the last step we performed a \textit{post-hoc} test as previously reported\autocite{Macosko2015} by merging clusters with less than 10 differentially expressed genes (at a P value threshold of 0.01 and minimum log fold change of 1), resulting in one merged cluster (Myo). 
 Next, we flagged clusters that expressed clear markers of non-epithelial cells as ``contaminating cells'' and removed them from the downstream analysis.
-Clusters 6.1 and 6.2 were tagged as immune cells based on the expression of \textit{Cd74}, \textit{Cd72} and \textit{Cd54}\autocite{Scheele2017} and cluster 10.3 as endothelial cells based on the expression of \textit{Eng}, \textit{S1pr1} and \textit{Emcn} (Supplementary Figure 5c, Supplementary Figure 5d).
-We retained cluster 10.2 as it expressed markers of a previously described celltype in the gland\autocite{Wang2015}, despite being positive for 2 out of 4 (\textit{Des} and \textit{Cspg4}) pericyte markers\autocite{Armulik2011} (Supplementary Figure 5e).
+Clusters 6.1 and 6.2 were tagged as immune cells based on the expression of \textit{Cd74}, \textit{Cd72} and \textit{Cd54}\autocite{Scheele2017} and cluster 10.3 as endothelial cells based on the expression of \textit{Eng}, \textit{S1pr1} and \textit{Emcn} (Supplementary Figure 4c, Supplementary Figure 4d).
+We retained cluster 10.2 as it expressed markers of a previously described celltype in the gland\autocite{Wang2015}, despite being positive for 2 out of 4 (\textit{Des} and \textit{Cspg4}) pericyte markers\autocite{Armulik2011} (Supplementary Figure 4e).
 The high number of cells loaded on the 10x increased the chance of doublet formation in the droplet encapsulation\autocite{Zheng2017}, \fixme{which can result in artificial clusters}.
 We thus identified clusters that appeared at low frequencies (less than the maximum doublet rate of 7\%, Supplementary Figure 9b) and that were highly similar to at least two other clusters present in the same sample ($\rho > 0.9$ of mean log2(counts+1)).
 The only cluster that fulfilled this criterion was cluster Bsl-G2, whose gene expression was strongly correlated with Bsl-G and Avd-G (Supplementary Figure 9b)

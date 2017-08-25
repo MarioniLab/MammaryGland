@@ -1,49 +1,70 @@
-# Figure S1
-library(scran)
+# S4 and S7
+
 library(plyr)
 library(dplyr)
-library(knitr)
 library(ggplot2)
-library(gridExtra)
-library(Rtsne)
 library(cowplot)
+library(viridis)
+library(RColorBrewer)
+library(reshape2)
+library(pheatmap)
 source("functions.R")
 
 # Load Data
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
-sumDat <- read.csv("../data/CellRangerData/secondRun_2500/Summary.csv")
-m <- dataList[["counts"]]
-pD <- dataList[["phenoData"]]
-fD <- dataList[["featureData"]]
+rnd_seed <- 300
+dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
+m <- dataList[[1]]
+pD <- dataList[[2]]
+fD <- dataList[[3]]
 
-# Summary table 
-sumry <- group_by(pD, SampleID) %>%
-    summarize("Number of cells"=n(),
-	      "Total molecules"=median(UmiSums),
-	      "Genes Detected"=median(GenesDetected))
-sumry <- left_join(sumry, sumDat[,c("SampleID","NumberOfReads","Saturation")])
 
-p1 <- tableGrob(sumry,rows=NULL,)
+# ---- S4 ----
 
-# Load plots from QCAnalysis
-# Illustrate thresholds
-gdHist <- ggplot(pD, aes(x=GenesDetected,y=..density..)) +
-    geom_histogram(fill="white",color="black",bins=100) +
-    scale_x_log10() +
-    xlab("Total number of genes detected") +
-    facet_wrap(~Condition) 
+# Rename Condition for plot
+pD$Condition <- mapvalues(pD$Condition, from=c("NP","G","L","PI"),
+			  to=c("Nulliparous", "14.5d Gestation",
+			       "6d Lactation", "11d Post Natural Involution"))
 
-libSizeHist <- ggplot(pD, aes(x=UmiSums,y=..density..)) +
-    geom_histogram(fill="white",color="black",bins=100) +
-    scale_x_log10() +
-    facet_wrap(~Condition) +
-    xlab("Total number of unique molecules") 
+# Remove previously identified outlier and immune cells
+m <- m[,pD$keep]
+pD <- pD[pD$keep,]
 
-cellViability <- ggplot(pD, aes(x=prcntMito, y=GenesDetected, color=Condition, shape=Replicate))+
-    geom_point() +
-    xlab("Percentage of Mitochondrial RNA molecules") +
-    ylab("Total number of genes detected")
+# put in rnd order for plotting
+set.seed(rnd_seed)
+fp1 <- pD[sample(c(1:nrow(pD)),nrow(pD)),]
+#t-SNE colored by SampleID
+p1 <- ggplot(fp1, aes(x=tSNE1, y=tSNE2, color=SampleID)) +
+    geom_point(size=1) +
+    scale_color_brewer(palette="Paired")+
+    #     ggtitle("Cluster") +
+    theme_void(base_size=12) +
+    guides(colour = guide_legend(override.aes = list(size=3))) +
+    theme(legend.position="bottom",legend.direction="horizontal",
+	  legend.title=element_blank()) 
 
-cairo_pdf("../paper/figures/S3.pdf",height=12.41,width=17.54)
-plot_grid(p1,gdHist,libSizeHist,cellViability, labels="auto")
+# Normalize
+m.norm <- t(t(m)/pD$sf)
+rownames(m.norm) <- fD$symbol
+
+titles <- genes <- c("Krt18","Krt8","Krt5","Krt14","Acta2")
+add <- data.frame(log2(t(m.norm)[,genes]+1),
+		  barcode=colnames(m))
+colnames(add) <- gsub("X","",colnames(add))
+forPlot <- left_join(add,pD[,c("barcode","tSNE1","tSNE2")])
+forPlot <- melt(forPlot,id=c("barcode","tSNE1","tSNE2")) %>%
+    dplyr::rename(Expression=value)
+plots <- list()
+for(i in seq_along(genes)) {
+    gene <- genes[i]
+    fP <- filter(forPlot,variable==gene) %>% arrange(Expression)
+    p <- ggplot(fP, aes(x=tSNE1, y=tSNE2, color=Expression)) +
+	geom_point(size=1) +
+	scale_color_viridis(guide_legend(title=gene)) +
+	ggtitle(titles[i]) +
+	theme_void(base_size=14) +
+	theme(plot.title=element_text(size=rel(1.05))) 
+    plots[[gene]] <- p
+}
+cairo_pdf("../paper/figures/S3.pdf",width=11.69,height=8.27)
+plot_grid(p1,plotlist=plots,labels=c("a","b","","c","",""))
 dev.off()
