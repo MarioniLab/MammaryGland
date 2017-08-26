@@ -33,11 +33,11 @@ pD$Condition <- mapvalues(pD$Condition, from=c("NP","G","L","PI"),
 
 
 # ---- Dendrogram ----
-pD$SubCluster <- factor(pD$SubCluster) #drop unused levels
+pD$SubClusterNumbers <- factor(pD$SubClusterNumbers) #drop unused levels
 out <- data.frame(numeric(nrow(m)))
-colnames(out) <- levels(pD$SubCluster)[1]
-for (clust in levels(pD$SubCluster)) {
-    expr <- rowMeans(log2(m[,pD$SubCluster==clust]+1))
+colnames(out) <- levels(pD$SubClusterNumbers)[1]
+for (clust in levels(pD$SubClusterNumbers)) {
+    expr <- rowMeans(log2(m[,pD$SubClusterNumbers==clust]+1))
     colname <- clust
     out[,colname] <- expr
 }
@@ -75,7 +75,7 @@ genes <- c(c1,c3,c5,c2,c6,c7,c9)
 set.seed(rnd_seed)
 subsP <- filter(pD, !SubCluster %in% c("Hsd-G","Avd-L")) %>%
     group_by(SubCluster) %>%
-    do(sample_n(.,200))
+    do(sample_n(.,100))
 
 # Combine with remaining clusters and relevel factor according to order in plot
 ord <- filter(pD, SubCluster %in% c("Hsd-G","Avd-L")) %>%

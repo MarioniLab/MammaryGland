@@ -36,7 +36,7 @@ p0 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=Condition)) +
 	  legend.title=element_blank()) 
 
 # t-SNE colored by cluster
-p1 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=SubCluster)) +
+p1 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=SubClusterNumbers)) +
     geom_point(size=1.5) +
     scale_color_manual(values=levels(pD$Colors))+
     #     ggtitle("Cluster") +
