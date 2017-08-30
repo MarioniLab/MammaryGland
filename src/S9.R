@@ -120,7 +120,8 @@ p3 <- ggplot(fp3, aes(y=GenesDetected, x=SubClusterNumbers)) +
     geom_boxplot() +
     scale_y_log10() +
     theme_bw() +
-    ylab("Total number of genes detected")
+    ylab("Total number of genes detected") +
+    xlab("Cluster")
 
 fp4 <- pD
 
@@ -136,7 +137,8 @@ p4 <- ggplot(fp4, aes(y=UmiSums, x=SubClusterNumbers)) +
     geom_boxplot() +
     scale_y_log10() +
     theme_bw() +
-    ylab("Total number of molecules detected")
+    ylab("Total number of molecules detected") +
+    xlab("Cluster")
 
 library(cowplot)
 
