@@ -28,17 +28,30 @@ pD$SubCluster <- mapvalues(pD$SubCluster,
 			     "10.2","10.3","11.1","11.2","12.1","12.2","13.1"),
 			   c("Lp-NP","Hsd-PI","Hsp-PI","Hsp-NP","Lp-PI","Hsd-NP","Hsd-G",
 			     "6-1","6-2","Myo","Myo","Avp-L","Avd-L","10.1","Prc",
-			     "10.3","Bsl-G1","Bsl-G2","Avd-G","Avp-G","Bsl"))
+			     "10.3","Bsl-G","Bsl-G2","Avd-G","Avp-G","Bsl"))
+
+pD$SubClusterNumbers <- mapvalues(pD$SubCluster,
+			    c("Lp-NP","Hsd-PI","Hsp-PI","Hsp-NP","Lp-PI","Hsd-NP","Hsd-G",
+   			    "6-1","6-2","Myo","Avp-L","Avd-L","10.1","Prc",
+			    "10.3","Bsl-G","Bsl-G2","Avd-G","Avp-G","Bsl"),
+			    c("C6","C3","C1","C2","C7","C4","C5",
+			      "C16","C17","C14","C11","C9","C18","C15",
+			      "C19","C13","C20","C8","C10","C12"))
+
+pD$SubClusterNumbers <- factor(pD$SubClusterNumbers, levels=c("C4","C3","C5","C10","C8",
+							      "C2","C1","C7","C6","C12",
+							      "C13","C20","C14","C11","C9",
+							      "C15","C16","C17","C18","C19"))
 
 pD$SubCluster <- factor(pD$SubCluster, levels=c("Hsd-NP","Hsd-PI","Hsd-G","Avp-G","Avd-G",
 						"Hsp-NP","Hsp-PI","Lp-PI","Lp-NP","Bsl",
-						"Bsl-G1","Bsl-G2","Myo","Avp-L","Avd-L",
+						"Bsl-G","Bsl-G2","Myo","Avp-L","Avd-L",
 						"Prc","6-1","6-2","10.1","10.3"))
 
 pD$SuperCluster <- mapvalues(pD$SubCluster, 
 			     c("Hsd-NP","Hsd-PI","Hsd-G","Avp-G","Avd-G",
 			       "Hsp-NP","Hsp-PI","Lp-PI","Lp-NP","Bsl",
-			       "Bsl-G1","Bsl-G2","Myo","Avp-L","Avd-L",
+			       "Bsl-G","Bsl-G2","Myo","Avp-L","Avd-L",
 			       "Prc","6-1","6-2","10.1","10.3"),
 			     c("Hsd","Hsd","Hsd","Avp","Avd",
 			       "Hsp","Hsp","Lp","Lp","Bsl",
@@ -48,12 +61,12 @@ pD$SuperCluster <- mapvalues(pD$SubCluster,
 pD$Colors <- mapvalues(pD$SubCluster,
 		       c("Hsd-NP","Hsd-PI","Hsd-G","Avp-G","Avd-G",
 		       "Hsp-NP","Hsp-PI","Lp-PI","Lp-NP","Bsl",
-		       "Bsl-G1","Bsl-G2","Myo","Avp-L","Avd-L",
+		       "Bsl-G","Bsl-G2","Myo","Avp-L","Avd-L",
 		       "Prc","6-1","6-2","10.1","10.3"),
-		       c("#77947D","#7EDF9A","#7FE659","#7FD1DAFF",
-			 "#7FAEDA","#D7DD5B","#DE9C56","#DA5D74",
-			 "#D9A7A4","#8478D7","#A844E5",NA,"#D7ACC9",
-			 "#D6DCDF","#D7DFA7","#DC61C9",NA,NA,NA,NA))
+		       c("#AD2323","#2A4BD7","#1D6914","#814A19","#8126C0",
+			 "#81C57A","#9DAFFF","#29D0D0","#FF9233","#E9DEBB",
+			 "#A0A0A0",NA,"#575757","#FFEE15","#FFCDF3",
+			 "#000000",NA,NA,NA,NA))
 
 pD$SuperColors <- mapvalues(pD$SuperCluster,
 		        c("Hsd","Avp","Avd",
