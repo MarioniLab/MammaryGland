@@ -26,7 +26,7 @@ pD <- right_join(pD,dms,by="barcode")
 b1 <- pD[pD$branch %in% c("Root","Intermediate",
 			  "Hormone-sensing lineage"),]
 pb1 <- ggplot(pD,aes(x=DC1,y=DC2)) +
-    geom_point(size=0.8,color="grey80") +
+    geom_point(size=2,color="grey80") +
     geom_point(data=b1,aes(x=DC1,y=DC2,color=dpt)) +
     scale_color_viridis(option="magma",begin=1,end=0) +
     xlab("Component 1") +
@@ -40,7 +40,7 @@ pb1 <- ggplot(pD,aes(x=DC1,y=DC2)) +
 b2 <- pD[pD$branch %in% c("Root","Intermediate",
 			  "Secretory lineage"),]
 pb2 <- ggplot(pD,aes(x=DC1,y=DC2)) +
-    geom_point(size=0.8,color="grey80") +
+    geom_point(size=2,color="grey80") +
     geom_point(data=b2,aes(x=DC1,y=DC2,color=dpt)) +
     scale_color_viridis(option="magma",begin=1,end=0) +
     xlab("Component 1") +
@@ -183,9 +183,9 @@ for (feature in features) {
     pnts <- ggname(paste0("raw",feature))
     lns <- ggname(feature)
     p <- ggplot() +
-	geom_point(size=0.8,data=fplot3,aes_string(x="dptNorm",y=pnts, color="SubCluster")) +
-	geom_line(data=fplot1,aes_string(x="dptNorm",y=lns),lty="dashed") +
-	geom_line(data=fplot2,aes_string(x="dptNorm",y=lns)) +
+	geom_point(size=2,data=fplot3,aes_string(x="dptNorm",y=pnts, color="SubCluster")) +
+	geom_line(data=fplot1,aes_string(x="dptNorm",y=lns),lty="dashed",size=1) +
+	geom_line(data=fplot2,aes_string(x="dptNorm",y=lns), size=1) +
 	ggtitle(feature) +
 	ylab("") +
 	scale_color_manual(values=clustCol) +
@@ -240,7 +240,10 @@ htmps <- plot_grid(res[[1]][[1]][[4]],
 		   rel_widths=c(1,0.75,1,0.75))
 fullP <- plot_grid(expPlot,htmps,ncol=2)
 
-
+ggsave(filename="../paper/figures/f4_e.png",res[[1]][[1]][[4]],dpi=500)
+ggsave(filename="../paper/figures/f4_f.png",res[[2]][[1]][[4]],dpi=500)
+ggsave(filename="../paper/figures/f4_bcd.pdf",expPlot,width=21,height=24)
+ggsave(filename="../paper/figures/f4_a",branches)
 #close graphics device before plotting
 dev.off()
 cairo_pdf("../paper/figures/Figure4.pdf",width=16.55,height=13.0575)

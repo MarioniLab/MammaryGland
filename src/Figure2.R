@@ -151,6 +151,8 @@ p <-  pheatmap(mheat,
 
 # Combine all plots
 
+ggsave(filename="../paper/figures/f2_a.pdf",p[[4]],width=14,height=7)
+ggsave(filename="../paper/figures/f2_b.svg",p.dendr)
 fullP <- plot_grid(p.dendr,p[[4]],nrow=2)
 dev.off()
 cairo_pdf("../paper/figures/Figure2.pdf",width=12.41,height=17.54)

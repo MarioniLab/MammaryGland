@@ -129,6 +129,10 @@ subPb1 <- plot_grid(subPb0,subPb1,nrow=2,rel_heights=c(0.5,1))
 subPb1b <- plot_grid(subPb1,leg,nrow=2,rel_heights=c(1,0.05))
 subPb2 <- plot_grid(p.clust,subPb1b,labels=c("b"))
 
+ggsave(filename="../paper/figures/f3_a.pdf",subPa)
+ggsave(filename="../paper/figures/f3_b.pdf",p.clust)
+ggsave(filename="../paper/figures/f3_c.pdf",subPb1b)
+
 cairo_pdf("../paper/figures/Figure3.pdf",width=8.27,height=11.69)
 plot_grid(subPa,subPb2,nrow=2)
 dev.off()
