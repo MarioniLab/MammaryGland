@@ -1,5 +1,4 @@
 # S4 and S7
-
 library(plyr)
 library(dplyr)
 library(ggplot2)
@@ -8,6 +7,8 @@ library(viridis)
 library(RColorBrewer)
 library(reshape2)
 library(pheatmap)
+library(gridExtra)
+library(gridGraphics)
 source("functions.R")
 
 # Load Data
@@ -19,6 +20,42 @@ fD <- dataList[[3]]
 
 
 # ---- S4 ----
+
+pD$SampleID <- factor(pD$SampleID) #drop unused levels
+out <- data.frame(numeric(nrow(m)))
+colnames(out) <- levels(pD$SampleID)[1]
+for (sample in levels(pD$SampleID)) {
+    expr <- rowMeans(log2(m[,pD$SampleID==sample]+1))
+    colname <- sample
+    out[,colname] <- expr
+}
+plot(out[,1]~out[,2],pch=20,xlab="NP1",ylab="NP2")
+abline(0,1,col="dodgerblue",lwd=2)
+legend(x="topleft",legend=paste("Cor=",round(cor(out[,1],out[,2]),digits=4)))
+pNP <- grab_grob()
+pNP <- grid.arrange(pNP)
+dev.off()
+
+plot(out[,3]~out[,4],pch=20,xlab="G1",ylab="G2")
+abline(0,1,col="dodgerblue",lwd=2)
+legend(x="topleft",legend=paste("Cor=",round(cor(out[,3],out[,4]),digits=4)))
+pG <- grab_grob()
+pG <- grid.arrange(pG)
+dev.off()
+
+plot(out[,5]~out[,6],pch=20,xlab="L1",ylab="L2")
+abline(0,1,col="dodgerblue",lwd=2)
+legend(x="topleft",legend=paste("Cor=",round(cor(out[,5],out[,6]),digits=4)))
+pL <- grab_grob()
+pL <- grid.arrange(pL)
+dev.off()
+
+plot(out[,7]~out[,8],pch=20,xlab="PI1",ylab="PI2")
+abline(0,1,col="dodgerblue",lwd=2)
+legend(x="topleft",legend=paste("Cor=",round(cor(out[,7],out[,8]),digits=4)))
+pPI <- grab_grob()
+pPI <- grid.arrange(pPI)
+dev.off()
 
 # Rename Condition for plot
 pD$Condition <- mapvalues(pD$Condition, from=c("NP","G","L","PI"),
@@ -42,29 +79,7 @@ p1 <- ggplot(fp1, aes(x=tSNE1, y=tSNE2, color=SampleID)) +
     theme(legend.position="bottom",legend.direction="horizontal",
 	  legend.title=element_blank()) 
 
-# Normalize
-m.norm <- t(t(m)/pD$sf)
-rownames(m.norm) <- fD$symbol
-
-titles <- genes <- c("Krt18","Krt8","Krt5","Krt14","Acta2")
-add <- data.frame(log2(t(m.norm)[,genes]+1),
-		  barcode=colnames(m))
-colnames(add) <- gsub("X","",colnames(add))
-forPlot <- left_join(add,pD[,c("barcode","tSNE1","tSNE2")])
-forPlot <- melt(forPlot,id=c("barcode","tSNE1","tSNE2")) %>%
-    dplyr::rename(Expression=value)
-plots <- list()
-for(i in seq_along(genes)) {
-    gene <- genes[i]
-    fP <- filter(forPlot,variable==gene) %>% arrange(Expression)
-    p <- ggplot(fP, aes(x=tSNE1, y=tSNE2, color=Expression)) +
-	geom_point(size=1) +
-	scale_color_viridis(guide_legend(title=gene)) +
-	ggtitle(titles[i]) +
-	theme_void(base_size=14) +
-	theme(plot.title=element_text(size=rel(1.05))) 
-    plots[[gene]] <- p
-}
+corPlots <- plot_grid(pNP,pG,pL,pPI)
 cairo_pdf("../paper/figures/S3.pdf",width=11.69,height=8.27)
-plot_grid(p1,plotlist=plots,labels=c("a","b","","c","",""))
+plot_grid(p1,corPlots)
 dev.off()
