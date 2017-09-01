@@ -121,17 +121,19 @@ In a second step we applied hierarchical clustering to each of the identified gr
 After removal of endothelial and immune cell clusters this resulted in a total of 15 clusters of mammary epithelial cells (C1-C15).
 Based on the expression of \textit{Krt18,} \textit{Krt8, Krt5, Krt14} and \textit{Acta2} we noted that 11 clusters show a luminal profile (C1-C11) and 4 a basal profile (C12-C15).\\
 To further charactarise the clusters we identified differentially expressed genes and inferred putative identities based on known marker (\autoref{F2}a and b).
+As shown in Table 1 multiple clusters of cells have been assigned to the same putative cell type. We found that in these instances the cells showed a high similarity and expressed the same marker genes but are from different developmental stages, suggesting that the stage of the gland has specific effects on the transcriptional landscape of certain cell types.\\
+
 In the luminal compartment we found two larger subgroups.
-The first one expressed hormone receptors (\textit{Pgr}, \textit{Esr1}, \textit{Prlr} and \textit{Vdr)} (\autoref{F2}a).
-We noted that one group of hormone-sensing clusters showed a more differentiated state (Hsd), whereas others also expressed progenitor markers (e.g. \textit{Aldh1a3}), suggesting progenitor function (Hsp) (\autoref{F2}a).
-The second subgroup within the luminal compartment was devoid of hormone-receptors.
-Here, the Avd and Avp clusters expressed genes associated with the production of milk (e.g. \textit{Wap}, \textit{Csn2}), and were exclusively composed of cells from gestation and lactation, suggesting that these are secretory alveolar cells (\autoref{F2}a).
-Similar to the hormone-sensing cells we found alveolar cells that appeared to be in a more differentiated (Avd) or progenitor-like state (Avp).
-In addition to the alveolar cells, the subgroup that is devoid of hormone-receptors also contained the cells that showed the highest expression of progenitor genes and were devoid of lactation associated genes, suggesting that these are luminal progenitor cells (Lp) (\autoref{F2}a).
-In the basal compartment we found a group of cells (Myo) that showed characteristics of myoepithelial cells such as high levels of \textit{Acta2}, \textit{Oxtr} and \textit{Krt15} (\autoref{F1}d).
-Another group of cluster appeared to be less differentiated and expressed genes associated with basal progenitor cells (Bsl) (e.g. \textit{Pdpn}, \autoref{F1}d).
-In addition the basal compartment also contained a cluster of cells that expressed high levels of \textit{Procr}, \textit{Gng11} and \textit{Zeb2} suggesting that these represent the previously identified Procr\textsuperscript{+}  basal cells, which are enriched for mammary repopulating units (\autoref{F2}a).
-Notably, the above described group of clusters were in some instances further separated by the different developmental time points (indicated by the NP, G, L or PI suffix), suggesting that the developmental stage of the animal has specific effects on the transcriptional landscape of certain mammary epithelial cell types (\autoref{F2}b).
+The first one expressed hormone receptors (\textit{Pgr}, \textit{Esr1}, \textit{Prlr}) (\autoref{F2}a) suggesting that these cells are putative hormone sensing (Hs) cells.
+Of the putative Hs cells we noted that C1/C2 expressed progenitor markers (e.g. \textit{Aldh1a3}), suggesting progenitor function (Hsp) (\autoref{F2}a) whereas C3/4/5 showed a more differentiated state (Hsd) (\autoref{F2}b and \autoref{T1}).
+The second subgroup within the luminal compartment (C6-C11) was devoid of hormone-receptors.
+C8-C11 expressed expressed genes associated with the production of milk (e.g. \textit{Wap}, \textit{Csn2}), and were exclusively composed of cells from gestation and lactation, suggesting that these are secretory alveolar cells (Av) (\autoref{F2}a).
+Of the putative alveolar cells we noted that C10/C11 expressed progenitor markers suggesting a progenitor like function (Avp) wherease C8/C9 appeared to be in a more differentiated state (Avd) (\autoref{F2}a and \autoref{T1}).
+We also found C6/7 which were devoid of hormone-receptors and milk genes but expressed high levels of progenitor markers, suggesting that these are luminal progenitor cells (Lp) (\autoref{F2}a).\\
+
+In the basal compartment we found that cells from C14 showed characteristics of myoepithelial cells such as high levels of \textit{Acta2}, \textit{Oxtr} and \textit{Krt15} (\autoref{F2}a).
+Whereas C12/13 cells appeared to be less differntiated and expressed genes associated with basal cells (Bsl) such as \textit{Pdpn} (REF).
+In addition the basal compartment also contained a cluster of cells, C15, that expressed high levels of \textit{Procr}, \textit{Gng11} and \textit{Zeb2} suggesting that these represent the previously identified Procr\textsuperscript{+}  basal cells, which have been shown to be enriched for mammary repopulating units (\autoref{F2}a).
 
 \textbf{Reconstruction of the luminal differentiation hierarchy}
 
@@ -143,10 +145,10 @@ This supports the hypothesis that during normal tissue homoeostasis the two line
 In contrast, the luminal compartment showed a distinct structure, with gradual transitions between different clusters and cells originating from a common origin (\autoref{F3}b).
 We confirmed the robustness of this bifurcation by verifying that it was present when different methods of feature selection, algorithms for trajectory inference and down-sampling were employed (Supplementary Figure 5).
 
-The expression of the progenitor marker \textit{Aldh1a3} gradually decreased as cells progressed away from their common origin (\autoref{F3}c), which was largely composed of Lp.
-We further noted that the left arm of the differentiation trajectory terminates at Avd and shows increasing expression of \textit{Csn2} and \textit{Glycam1} (\autoref{F3}c), consistent with a secretory phenotype.
-Between Lp and Avd we found cells from Avp (\autoref{F3}b).
-On the right arm of the differentiation trajectory, cells in Lp transitioned to Hsp and Hsd, during which the expression of \textit{Cited1} and \textit{Pgr} increase suggesting that this branch represents differentiation towards hormone-sensing luminal cells (\autoref{F3}c).
+The expression of the progenitor marker \textit{Aldh1a3} gradually decreased as cells progressed away from their common origin (\autoref{F3}c), which was largely composed of cells from C6 (Lp).  
+We further noted that the left arm of the differentiation trajectory terminates at C8 (Avd) and shows increasing expression of \textit{Csn2} and \textit{Glycam1} (\autoref{F3}c), consistent with a secretory phenotype.
+Between C6 and C8 we found cells from C10 (\autoref{F3}b), suggesting the presence of an alveolar restricted progenitor (Avp).
+On the right arm of the differentiation trajectory, cells in C6 transitioned to C2 and C4/5(Hsp and Hsd), during which the expression of \textit{Cited1} and \textit{Pgr} increase suggesting that this branch represents differentiation towards hormone-sensing luminal cells (\autoref{F3}c).
 
 Being confident that the diffusion map recapitulates the luminal differentiation process, we then computationally inferred the two branches and ordered the cells according to their progression through ``pseudotime''\autocite{Haghverdi2016} (see materials and methods for further explanation) (\autoref{F4}a).
 This allows us to identify genes whose expression changes during the process of differentiation.
@@ -154,7 +156,7 @@ We found 456 genes that showed a pseudotime-dependent expression with the same d
 These included genes associated with known progenitor characteristics such as \textit{Aldh1a3} and \textit{Tspan8} as well as transcription factors that have not previously been associated with luminal differentiation such as \textit{Creb5}, \textit{Hmga1} and \textit{Fosl1} (\autoref{F4}b).
 Interestingly, \textit{Hmga1} is a known chromatin remodeller with reprogramming activity that has been implicated in basal-like breast cancer\autocite{Shah2012,Shah2013}.
 In addition, we identified 1005 genes with branch-specific expression patterns (\autoref{F4}d, \autoref{F4}e, Supplementary Table 3).
-We further clustered the gene expression trend on each of the two branches and identified sets of genes that change over pseudotime (\fixme{Supplementary Figure 6}).
+We further clustered the gene expression trend on each of the two branches and identified sets of genes that change over pseudotime (Supplementary Figure 6).
 On the alveolar branch we found two clusters of genes that increase in expression during differentiation, one that is switched on early and another that is activated later in the final stages of differentiation.
 The early cluster is enriched for genes involved in fatty-acid oxidation and lipid biosynthetic processes (e.g. \textit{Lipa}, \textit{Dbi} and \textit{Acox1}) .
 The second, smaller group of genes that is switched on during the late stages of differentiation was enriched for genes involved in fatty-acid transport and lipid homeostasis (e.g. \textit{Olah}, \textit{Cd36}).
@@ -172,19 +174,19 @@ The luminal compartment shifts from giving rise to mainly hormone sensing cells 
 The basal compartment on the other hand differentiates to produce oxytocin-sensing, myoepithelial cells that enable duct contraction and milk secretion during lactation.
 At the end of lactation the gland then reverts back to a stage that resembles the pre-pregnancy state.
 However, we found that in particular the luminal compartment differs from its nulliparous counterpart (\autoref{F1}b and \autoref{F1}d).
-Interestingly, the effect of parity is most pronounced for the less differentiated and more progenitor-like cell types (\autoref{F1}c, Supplementary Figure 7).
-To ensure that Lp-PI still represents the progenitor population in the post-parous gland, we identified genes that distinguish Lp-NP from the rest of the luminal compartment to see if they are also characteristic for the proposed post-parity progenitor population Lp-PI.
-Indeed, we find genes that are differentially expressed between Lp-NP and the rest of the luminal compartment to show the same trend between Lp-PI and the luminal compartment (\autoref{F5}a).
-In a similar manner we can distinguish Lp-PI from the rest of the PI gland in a principal component analysis (PCA) using the identified progenitor genes (Supplementary Fig 7b and c).
-From this we conclude, that Lp-PI indeed represents the post-parity luminal progenitor population.
-Interestingly, genes that were up-regulated in Lp-PI compared to Lp-NP were significantly enriched for pathways that are involved in the immune response and lactation (\autoref{F5}b, Supplementary Fig 7d).
+Interestingly, the effect of parity is most pronounced for the less differentiated and more progenitor-like cell types C6/7 (\autoref{F1}c, Supplementary Figure 7).
+To ensure that C7 still represents the progenitor population in the post-parous gland, we identified genes that distinguish C6 from the rest of the luminal compartment to see if they are also characteristic for the proposed post-parity progenitor population C7.
+Indeed, we find genes that are differentially expressed between C6 and the rest of the luminal compartment to show the same trend between C7 and the luminal compartment (\autoref{F5}a).
+In a similar manner we can distinguish C7 from the rest of the PI gland in a principal component analysis (PCA) using the identified progenitor genes (Supplementary Fig 7b and c).
+From this we conclude, that C7 indeed represents the post-parity luminal progenitor population.
+Interestingly, genes that were up-regulated in C7 compared to C6 were significantly enriched for pathways that are involved in the immune response and lactation (\autoref{F5}b, Supplementary Fig 7d).
 These included genes that play roles in various processes during lactation, e.g. milk-proteins (\textit{Csn2}, \textit{Lalba}), lipases (\textit{Lipa}), proteins involved in milk secretion (\textit{Xdh}, \textit{Cd36}) and transcriptional regulators of lactation (\textit{Cidea}).
 Of note, the genes of the casein locus (\textit{Csn2}, \textit{Csn1s1}, \textit{Csn1s2a}, \textit{Csn3}) have previously been reported to be up-regulated in the parous gland, most likely due to changes in chromatin accessibility\autocite{Dos2015,Rijnkels2013}.
 However, it has not been shown before that this effect is confined to the progenitor population of the luminal compartment.
 Some of the genes that are involved in the immune response are known regulators of the involution process such as \textit{Ctsc}, \textit{Tgfb3} or \textit{Mfge8}.
-The up-regulation of these genesets was also present in the Hsp and in some cases even the differentiated Hsd cluster, yet the effect remained strongest in the progenitor cells (\autoref{F5}c-d).
+The up-regulation of these genesets was also present in C1 (Hsp) and in some cases even the differentiated C3 (Hsd) cluster, yet the effect remained strongest in the progenitor cells (\autoref{F5}c-d).
 Finally, we compared the differentiation processes of the luminal compartment of the parous gland to the nulliparous gland by mapping the luminal cells from PI to the trajectory of NP and G cells.
-Interestingly, the Hsp and Hsd cluster generally maintain the position of their nulliparous counterpart in the differentiation hierarchy whereas the Lp-PI cluster is stretched out from the origin down towards the alveolar branch, suggesting that these are biased towards the alveolar fate (\autoref{F5}e).
+Interestingly, C1 and C3 cluster generally maintain the position of their nulliparous counterpart in the differentiation hierarchy whereas the C7 cluster is stretched out from the origin down towards the alveolar branch, suggesting that these are biased towards the alveolar fate (\autoref{F5}e).
 Together, the data suggest that luminal progenitor cells maintain memory of having undergone gestation and involution.
 This memory could potentially prime progenitor cells towards the alveolar fate to facilitate alveologenesis in subsequent pregnancies.
 
@@ -197,9 +199,9 @@ We note, however, that only some of the clusters can be fully characterized by a
 Instead we argue that the epithelial cells - especially in the luminal compartment - should rather be conceptualized as being part of a continuous spectrum of differentiation as visualised in \autoref{F3}.
 This view highlights the plasticity of the tissue and might help to explain some of the conflicting results from lineage tracing studies\autocite{Inman2015}.
 In this study we could not provide any evidence for contribution of a putative mutlipotent stem cell to the day-to-day homoeostasis of the gland.
-We do note, however, that the Prc cluster expresses low levels of both luminal and basal markers, high levels of the stem cell marker \textit{Procr}\autocite{Wang2015} and high levels of the luminal progenitor marker \textit{Notch3}\autocite{Lafkas2013} (\autoref{F1}d).
+We do note, however, that cells form C15 (Prc) cluster expresses low levels of both luminal and basal markers, high levels of the stem cell marker \textit{Procr}\autocite{Wang2015} and high levels of the luminal progenitor marker \textit{Notch3}\autocite{Lafkas2013} (\autoref{F1}d).
 Yet, our data does not support a central role of this cluster in the day-to-day homeostasis of the gland. 
-In addition, cells from the Prc cluster also express some but not all markers of pericytes and we thus cannot exclude that these are non-epithelial cells. 
+In addition, cells from the C15 also express some but not all markers of pericytes and we thus cannot exclude that these are non-epithelial cells. 
 Based on the gene expression data presented here, the luminal compartment appears to have one common progenitor population (Lp).
 Lp gives rise to intermediate states of either hormone-sensing (Hsp) or secretory (Avp) cells that express differentiation markers as well as progenitor markers and appear to represent meta-stable states on the differentiation path from luminal progenitors towards fully differentiated cells (Hsd).
 Furthermore, we characterised gene expression patterns along the differentiation hierarchy.
@@ -208,7 +210,7 @@ By analysing the mammary gland at various stages of development we were also abl
 We found that the luminal progenitor compartment undergoes lasting changes at the transcriptional level.
 This is especially interesting in the light of the protective effect of pregnancies against breast cancer and the role of luminal progenitors as cell of origin.
 The majority of the changes were related to pathways involved in immunity and lactation, suggesting that, in particular, the luminal progenitors maintain a memory of gestation and involution.
-It is reasonable to assume that Lp-PI overlaps with the previously described parity-induced mammary epithelial cells (PI-MECs)\autocite{Wagner2002}.
+It is reasonable to assume that C7 overlaps with the previously described parity-induced mammary epithelial cells (PI-MECs)\autocite{Wagner2002}.
 
 In summary, the study provides a novel view of mammary gland development.
 This unbiased approach helps support some previously formed hypotheses in the mammary gland field and describes differentiation processes at a high cellular resolution.
