@@ -75,7 +75,7 @@ Recent studies have used numerous markers to enrich, isolate and characterise th
 However, in all of these studies only a handful of markers were used to define and trace cell populations.
 Therefore, there is a need for an unbiased and comprehensive description of mammary epithelial cells within the gland at different developmental stages.
 To this end we used single cell RNA sequencing (scRNAseq) to determine the gene expression profile of individual mammary epithelial cells across four adult developmental stages; nulliparous, mid gestation, lactation and post weaning (full natural involution).
-Our data from 25,010 individual cells identifies 8 distinct mammary epithelial cell populations and allows their hierarchical structure across development to be charted.
+Our data from 25,010 individual cells identifies 15 distinct mammary epithelial cell populations and allows their hierarchical structure across development to be charted.
 Interestingly, the effect of gestation and lactation appeared to be more pronounced for some cell types.
 For example, our analysis revealed a cluster of luminal progenitor cells in post involution glands, which is distinct from progenitors found in nulliparous glands.
 The data also showed that few clusters could be fully characterized by a single marker gene.
@@ -129,7 +129,7 @@ Here, the Avd and Avp clusters expressed genes associated with the production of
 Similar to the hormone-sensing cells we found alveolar cells that appeared to be in a more differentiated (Avd) or progenitor-like state (Avp).
 In addition to the alveolar cells, the subgroup that is devoid of hormone-receptors also contained the cells that showed the highest expression of progenitor genes and were devoid of lactation associated genes, suggesting that these are luminal progenitor cells (Lp) (\autoref{F2}a).
 In the basal compartment we found a group of cells (Myo) that showed characteristics of myoepithelial cells such as high levels of \textit{Acta2}, \textit{Oxtr} and \textit{Krt15} (\autoref{F1}d).
-Another group of cluster appeared to be less differentiated and expressed genes associated with basal progenitor cells (Bsl) (\textbf{Examples and Citation}).
+Another group of cluster appeared to be less differentiated and expressed genes associated with basal progenitor cells (Bsl) (e.g. \textit{Pdpn}, \autoref{F1}d).
 In addition the basal compartment also contained a cluster of cells that expressed high levels of \textit{Procr}, \textit{Gng11} and \textit{Zeb2} suggesting that these represent the previously identified Procr\textsuperscript{+}  basal cells, which are enriched for mammary repopulating units (\autoref{F2}a).
 Notably, the above described group of clusters were in some instances further separated by the different developmental time points (indicated by the NP, G, L or PI suffix), suggesting that the developmental stage of the animal has specific effects on the transcriptional landscape of certain mammary epithelial cell types (\autoref{F2}b).
 
@@ -416,16 +416,15 @@ Clusters were defined using the \texttt{cutree} function and the optimal $k$ was
 With this we identified a total number of 21 clusters.
 As the last step we performed a \textit{post-hoc} test as previously reported\autocite{Macosko2015} by merging clusters with less than 10 differentially expressed genes (at a P value threshold of 0.01 and minimum log fold change of 1), resulting in one merged cluster (Myo). 
 Next, we flagged clusters that expressed clear markers of non-epithelial cells as ``contaminating cells'' and removed them from the downstream analysis.
-Clusters 6.1 and 6.2 were tagged as immune cells based on the expression of \textit{Cd74}, \textit{Cd72} and \textit{Cd54}\autocite{Scheele2017} and cluster 10.3 as endothelial cells based on the expression of \textit{Eng}, \textit{S1pr1} and \textit{Emcn} (Supplementary Figure 4c, Supplementary Figure 4d).
-We retained cluster 10.2 as it expressed markers of a previously described celltype in the gland\autocite{Wang2015}, despite being positive for 2 out of 4 (\textit{Des} and \textit{Cspg4}) pericyte markers\autocite{Armulik2011} (Supplementary Figure 4e).
+Clusters C16 and C17 were tagged as immune cells based on the expression of \textit{Cd74}, \textit{Cd72} and \textit{Cd54}\autocite{Scheele2017}, C18 as fibroblasts based on the expression of collagens and fibronectin and C19 as endothelial cells based on the expression of \textit{Eng}, \textit{S1pr1} and \textit{Emcn} (Supplementary Figure 4c-e).
+We retained cluster 10.2 as it expressed markers of a previously described celltype in the gland\autocite{Wang2015}, despite being positive for 2 out of 4 (\textit{Des} and \textit{Cspg4}) pericyte markers\autocite{Armulik2011} (Supplementary Figure 4f).
 The high number of cells loaded on the 10x increased the chance of doublet formation in the droplet encapsulation\autocite{Zheng2017}, \fixme{which can result in artificial clusters}.
 We thus identified clusters that appeared at low frequencies (less than the maximum doublet rate of 7\%, Supplementary Figure 9b) and that were highly similar to at least two other clusters present in the same sample ($\rho > 0.9$ of mean log2(counts+1)).
-The only cluster that fulfilled this criterion was cluster Bsl-G2, whose gene expression was strongly correlated with Bsl-G and Avd-G (Supplementary Figure 9b)
-In addition, the gene expression profile of this cluster is virtually identical to the average expression values of Bsl-G and Avd-G, supporting the hypothesis that it is indeed a mixture of the two clusters (Supplementary Figure 9b).
-As Bsl-G and Avd-G are the most prevalent clusters in these samples (Table 1), doublets would be expected to be enriched for a combination of the two.
-Finally, Bsl-G2 also belonged to the clusters with a high number of genes detected and a high number of unique molecules, which is also indicative for doublet clusters (Supplementary Figure 9c).
-We hence excluded Bsl-G2 from any downstream analysis.
-
+The only cluster that fulfilled this criterion was cluster C20, whose gene expression was strongly correlated with C13 and C8 (Supplementary Figure 9b)
+In addition, the gene expression profile of this cluster is virtually identical to the average expression values of C13 and C8, supporting the hypothesis that it is indeed a mixture of the two clusters (Supplementary Figure 9b).
+As C13 and C8 are the most prevalent clusters in these samples (Table 1), doublets would be expected to be enriched for a combination of the two.
+Finally, C20 also belonged to the clusters with a high number of genes detected and a high number of unique molecules, which is also indicative for doublet clusters (Supplementary Figure 9c).
+We hence excluded C20 from any downstream analysis.
 
 \textbf{Differential expression analysis }
 
