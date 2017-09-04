@@ -95,7 +95,7 @@ fPlot <- data.frame(exps,
 fPlot <- full_join(fPlot, pD[,c("barcode","DC1","DC2")], by="barcode")
 
 # color
-pal <- colorRampPalette(brewer.pal(n=7,name="YlOrRd"))(200)
+pal <- colorRampPalette(rev(brewer.pal(n=7,name="RdYlBu")))(200)
 
 #  forloop for all genes
 pltlist <- list()

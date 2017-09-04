@@ -58,7 +58,7 @@ forPlot <- left_join(add,pD[,c("barcode","tSNE1","tSNE2")])
 forPlot <- melt(forPlot,id=c("barcode","tSNE1","tSNE2")) %>%
     dplyr::rename(Expression=value)
 plots <- list()
-pal <- colorRampPalette(brewer.pal(n=7,name="YlOrRd"))(200)
+pal <- colorRampPalette(rev(brewer.pal(n=7,name="RdYlBu")))(200)
 
 for(i in seq_along(genes)) {
     gene <- genes[i]
