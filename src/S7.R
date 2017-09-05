@@ -96,7 +96,7 @@ m <- m[,pD$keep]
 pD <- pD[pD$keep,]
 
 # DE Test on NP cells progenitor versus rest
-pD.sub <- filter(pD,Condition %in% "NP", !(SubCluster %in% c("Bsl","Bsl-G1","Myo","Prc")))
+pD.sub <- filter(pD,Condition %in% "NP", !(SubCluster %in% c("Bsl","Bsl-G","Myo","Prc")))
 m.sub <- m[,as.character(pD.sub$barcode)]
 keep <- rowMeans(m.sub) > 0.01
 m.sub <- m.sub[keep,]
@@ -120,7 +120,7 @@ resTab <- topTags(res,n=Inf,sort.by="PValue")
 tabNulPar <- resTab$table[1:500,]
 
 # ---- PCA ----
-pD.sub <- filter(pD,Condition %in% "PI", !(SubCluster %in% c("Bsl","Bsl-G1","Myo","Prc")))
+pD.sub <- filter(pD,Condition %in% "PI", !(SubCluster %in% c("Bsl","Bsl-G","Myo","Prc")))
 m.sub <- m[,as.character(pD.sub$barcode)]
 
 genes <- tabNulPar$id %in% rownames(m.sub)
@@ -132,7 +132,7 @@ pD.sub$PC1 <- pc$x[,1]
 pD.sub$PC2 <- pc$x[,2]
 
 cols <- levels(pD.sub$Colors)[levels(pD.sub$SubCluster) %in% unique(pD.sub$SubCluster)]
-pcplot <- ggplot(pD.sub, aes(PC1,PC2,color=SubCluster)) +
+pcplot <- ggplot(pD.sub, aes(PC1,PC2,color=SubClusterNumbers)) +
     geom_point() +
     scale_color_manual(values=cols)
 
