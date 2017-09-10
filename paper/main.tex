@@ -192,7 +192,7 @@ The up-regulation of these genesets was also present in C1 (Hsp) and in some cas
 Finally, we compared the differentiation processes of the luminal compartment of the parous gland to the nulliparous gland by mapping the luminal cells from PI to the trajectory of NP and G cells.
 Interestingly, C1 and C3 generally maintain the position of their nulliparous counterpart in the differentiation hierarchy whereas the C7 cluster is stretched out from the origin down towards the alveolar branch, suggesting that these are biased towards the alveolar fate (\autoref{F5}e).
 This is in agreement with the overexpression of genes related to the production and secretion of milk.
-Together, the data suggest that luminal progenitor cells maintain memory of having undergone gestation and involution.
+Together, the data suggest that luminal progenitor cells maintain memory of having undergone gestation and lactation.
 This memory could potentially prime progenitor cells towards the alveolar fate to facilitate alveologenesis in subsequent pregnancies.
 
 \section{Discussion}
@@ -214,7 +214,7 @@ Here we identified genes that are lineage-specific, thus enabling us to disentan
 By analysing the mammary gland at various stages of development we were also able to describe the effects of parity at cellular resolution.
 We found that the luminal progenitor compartment undergoes lasting changes at the transcriptional level.
 This is especially interesting in the light of the protective effect of pregnancies against breast cancer and the role of luminal progenitors as cell of origin.
-The majority of the changes were related to pathways involved in immunity and lactation, suggesting that, in particular, the luminal progenitors maintain a memory of gestation and involution.
+The majority of the changes were related to pathways involved in immunity and lactation, suggesting that, in particular, the luminal progenitors maintain a memory of gestation and lactation.
 We assume that C7 overlaps at least partially with the previously described parity-induced mammary epithelial cells (PI-MECs)\autocite{Wagner2002}.
 
 In summary, the study provides a novel view of mammary gland development.
@@ -324,7 +324,7 @@ PC1 separates the progenitors and the differentiated cells, with the progenitors
 Dashed line indicates P value threshold at 0.001.
 
 \textbf{Supplementary Figure 8. Estrus cycle}
-Vaginal smears of the mice from the NP and PI time-points. The animals were classified as being in estrus (NP1, NP2, PI1) or diestrus (PI1). The scale bar represents 200$\mu m$.
+Vaginal smears of the mice from the NP and PI time-points. The animals were classified as being in estrus (NP1, NP2, PI2) or diestrus (PI1). The scale bar represents 200$\mu m$.
 
 \textbf{Supplementary Figure 9. Removal of doublet clusters}
 \textbf{(a)} Frequency of each cluster in all 8 samples, the threshold of 7\% is indicated by the red dashed line.
@@ -395,7 +395,7 @@ The output from different lanes were then aggregated using ``cellranger aggr'' w
 In total the Cell Ranger software identified 25,806 barcodes that contained enough unique molecules to be considered as cells (4,376 in NP, 6,021 in G, 9,603 in L and 5,806 in PI).
 Libraries prepared from all time-points showed high quality that was reproducible between the two biological replicates (Supplementary Figure 2,3).
 We used the following metrics to flag poor quality cells: number of genes detected, total number of unique molecular identifiers (UMIs) and percentage of molecules mapped to mitochondrial genes.
-Poor quality cells were then identified by setting a threshold on the number of genes and number of UMIs that was defined as three median absolute deviations (MAD) below the median for each sample, while requiring a minimum value of 1,000 total molecules and 500 genes detected.  
+Poor quality cells were then identified by setting a threshold on the number of genes and number of UMIs that was defined as three median absolute deviations (MAD) below the median for each time-point, while requiring a minimum value of 1,000 total molecules and 500 genes detected.  
 This resulted in the following thresholds for total number of genes detected: 1,042 for NP, 836 for G, 500 for L and 759 for PI; and the following for total number of molecules : 2,012 in NP, 1,479 in G, 1,000 in L and 1,379 in G.
 In addition, all cells with 5\% or more of UMIs mapping to mitochondrial genes were defined as non-viable or apoptotic and removed from the analysis (Supplementary Figure 2d).
 We finally also ensured that none of the reads in our dataset derived from index swapping\autocite{Sinha2017, Griffiths2017}.
