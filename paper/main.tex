@@ -119,9 +119,9 @@ First, we dissected the global structure by unsupervised clustering using a shar
 This resulted in a coarse clustering into 13 groups (Supplementary Figure 4a).
 In a second step we applied hierarchical clustering to each of the identified groups to further resolve the cellular heterogeneity (\autoref{F1}c, Supplementary Figure 4b).
 After removal of endothelial and immune cell clusters (Supplementary Figure 4c-e) this resulted in a total of 15 mammary epithelial cell clusters (C1-C15).
-Based on the expression of \textit{Krt18,} \textit{Krt8, Krt5, Krt14} and \textit{Acta2} we noted that 11 clusters showed a luminal profile (C1-C11) and 4 showed a basal profile (C12-C15) (\autoref{F1}d).\\
+Based on the expression of \textit{Krt18,} \textit{Krt8, Krt5, Krt14} and \textit{Acta2} we noted that 11 clusters showed a luminal profile (C1-C11) and 4 showed a basal profile (C12-C15) (\autoref{F1}d, Supplementary Table 1).\\
 
-To further characterise the clusters we identified differentially expressed genes and inferred putative identities based on known marker (\autoref{F2}a and b).
+To further characterise the clusters, we identified differentially expressed genes and inferred putative identities based on known marker (\autoref{F2}a and b).
 As shown in Table 1 multiple clusters of cells have been assigned to the same putative cell type.
 We found that in these instances the cells showed a high similarity and expressed the same marker genes but derived from different developmental stages, suggesting that the stage of the gland has specific effects on the transcriptional landscape of certain cell types.\\
 
@@ -139,7 +139,7 @@ In addition, it also contained a cluster of cells, C15, that expressed high leve
 \textbf{Reconstruction of the luminal differentiation hierarchy}
 
 We focused on cells from the NP and G time-points to investigate mammary epithelial differentiation states of the gland.
-These differentiation states and the transitions between them can be computationally reconstructed using diffusion maps.
+These differentiation states and the transitions between them can be computationally reconstructed using diffusion maps\autocite{Haghverdi2015}.
 Briefly, the method embeds the data in a low-dimensional space, where distances between cells represent the progression through a gradual but stochastic process such as differentiation.
 In diffusion maps constructed from all epithelial cells, we observed a clear segregation between the luminal and basal clusters, with virtually no transition states between the two (\autoref{F3}a).
 This supports the hypothesis that during normal tissue homoeostasis the two lineages are largely self-maintained, which is in agreement with the majority of the lineage tracing studies\autocite{VanKeymeulen2011,VanAmerongen2012,Davis2016}.
@@ -149,7 +149,7 @@ We confirmed the robustness of this bifurcation by verifying that it was present
 The expression of the progenitor marker \textit{Aldh1a3} gradually decreased as cells progressed away from their common origin (\autoref{F3}c), which was largely composed of cells from C6 (Lp).  
 We further noted that the left arm of the differentiation trajectory terminates at C8 (Avd) and shows increasing expression of \textit{Csn2} and \textit{Glycam1} (\autoref{F3}c), consistent with a secretory phenotype.
 In between C6 and C8  cells mainly derived from C10 (Avp, \autoref{F3}b) .
-On the right arm of the differentiation trajectory, cells from C6 transitioned to C2 and C4/5 (Hsp and Hsd), during which the expression of \textit{Cited1} and \textit{Pgr} increased suggesting that this branch represents differentiation towards hormone-sensing luminal cells (\autoref{F3}c).
+On the right arm of the differentiation trajectory, cells from C6 transitioned to C2 and C4/5 (Hsp and Hsd), during which the expression of \textit{Esr1} and \textit{Pgr} increased suggesting that this branch represents differentiation towards hormone-sensing luminal cells (\autoref{F3}c).
 
 Being confident that the diffusion map recapitulates the luminal differentiation process, we then computationally inferred the two branches and ordered the cells according to their progression through ``pseudotime''\autocite{Haghverdi2016} (see materials and methods for further explanation) (\autoref{F4}a).
 This allows us to identify genes whose expression changes during the process of differentiation.\\
@@ -176,9 +176,9 @@ Our data illustrates how the cellular composition of the gland changes during th
 The luminal compartment shifts from giving rise to mainly hormone sensing cells to producing alveolar, milk-producing cells during pregnancy and lactation. 
 The basal compartment on the other hand differentiates to produce oxytocin-sensing, myoepithelial cells that enable duct contraction and milk secretion during lactation.
 At the end of lactation the gland then reverts back to a stage that resembles the pre-pregnancy state.
-However, we found that in particular the luminal compartment differs from its nulliparous counterpart (\autoref{F1}b and \autoref{F1}c).
-Here, the effect of parity is most pronounced for the luminal progenitor cell types (\autoref{F1}c, Supplementary Figure 7).
-C6 and C7 both showed characteristics of luminal progenitor cells, but we identified C6 practically only in the nulliparous gland and C7 in the gland from parous animals.
+However, we found that in particular the post-parous luminal compartment differs from its nulliparous counterpart (\autoref{F1}b and \autoref{F1}c).
+Here, the effect of parity is most pronounced for the luminal progenitor cell types (\autoref{F1}c), which show larger numbers of differentially expressed genes as compared to the differentiated cell types (Supplementary Figure 7a).
+C6 and C7 both showed characteristics of luminal progenitor cells, but we identified C6 predominantly in the nulliparous gland and C7 predominantly in the post-parous gland.
 To ensure that C7 still represents the progenitor population in the post-parous gland, we identified genes that distinguish C6 from the rest of the luminal compartment to see if they are also characteristic for the proposed post-parity progenitor population C7.
 Indeed, we find genes that are differentially expressed between C6 and the rest of the luminal compartment to show the same trend between C7 and the luminal compartment (\autoref{F5}a).
 In a similar manner we can distinguish C7 from the rest of the PI gland in a principal component analysis (PCA) using the identified progenitor genes (Supplementary Fig 7b and c).
