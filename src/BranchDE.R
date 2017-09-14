@@ -152,13 +152,13 @@ table.sameGrad$hrm.gradient <- sign(table.sameGrad$hrm.gradient)
 table.sameGrad$alv.gradient <- sign(table.sameGrad$alv.gradient)
 colnames(table.sameGrad) <- gsub("hrm","HormoneSensing",colnames(table.sameGrad))
 colnames(table.sameGrad) <- gsub("alv","Secretory",colnames(table.sameGrad))
-# write.csv(table.sameGrad,"../paper/supps/DE_sameGradient.csv",quote=FALSE,row.names=FALSE)
+write.csv(table.sameGrad,"../data/DE_sameGradient.csv",quote=FALSE,row.names=FALSE)
 
 table.diffGrad <-res.diffGrad[,!grepl("c",colnames(res.diffGrad))]
 table.diffGrad$hrm.gradient <- sign(table.diffGrad$hrm.gradient)
 table.diffGrad$alv.gradient <- sign(table.diffGrad$alv.gradient)
 colnames(table.diffGrad) <- gsub("hrm","HormoneSensing",colnames(table.diffGrad))
 colnames(table.diffGrad) <- gsub("alv","Secretory",colnames(table.diffGrad))
-# write.csv(table.diffGrad,"../paper/supps/DE_diffGradient.csv",quote=FALSE,row.names=FALSE)
+write.csv(table.diffGrad,"../data/DE_diffGradient.csv",quote=FALSE,row.names=FALSE)
 
 saveRDS(out,"../data/Robjects/secondRun_2500/BranchDEList.rds")
