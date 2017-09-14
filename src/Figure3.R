@@ -55,6 +55,16 @@ clustLeg <- ggplot(pD, aes(x=tSNE1,y=tSNE2,color=SubCluster)) +
 
 clustLeg <- get_legend(clustLeg)
 
+p.clust <- ggplot(pD, aes(x=DC1,y=DC2, color=SubCluster)) +
+    geom_point(size=2, pch=20) +
+    guides(colour = guide_legend(override.aes = list(size=3))) +
+    scale_color_manual(values=cols) +
+    guides(colour=FALSE) +
+    xlab("Component 1") +
+    ylab("Component 2") 
+
+ggsave(filename="../paper/figures/f3_alternative.pdf",p.clust)
+
 # ---- LuminalOnly ----
 dms <- read.csv("../data/Robjects/secondRun_2500/dm_luminal.csv")
 pD <- dataList[[2]]
