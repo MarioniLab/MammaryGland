@@ -132,8 +132,9 @@ alv.genes <- data.frame("Branch"="Alv",
 		  "Cluster"=res[[2]][[2]],
 		  "Gene"=names(res[[2]][[2]]))
 
-write.csv(rbind(hrm.genes,alv.genes),file="../data/Robjects/secondRun_2500/BranchDECluster.R",
-	  row.names=FALSE)
+# uncomment to print
+# write.csv(rbind(hrm.genes,alv.genes),file="../data/Robjects/secondRun_2500/BranchDECluster.R",
+#           row.names=FALSE)
 
 
 # ---- PlotTFExamples ----
@@ -240,13 +241,13 @@ htmps <- plot_grid(res[[1]][[1]][[4]],
 		   rel_widths=c(1,0.75,1,0.75))
 fullP <- plot_grid(expPlot,htmps,ncol=2)
 
-ggsave(filename="../paper/figures/f4_e.png",res[[1]][[1]][[4]],dpi=500)
-ggsave(filename="../paper/figures/f4_f.png",res[[2]][[1]][[4]],dpi=500)
-ggsave(filename="../paper/figures/f4_bcd.pdf",expPlot,width=21,height=24)
-ggsave(filename="../paper/figures/f4_a",branches)
-#close graphics device before plotting
-dev.off()
-cairo_pdf("../paper/figures/Figure4.pdf",width=16.55,height=13.0575)
-fullP
-dev.off()
+# uncomment to print
+# ggsave(filename="../paper/figures/f4_e.png",res[[1]][[1]][[4]],dpi=500)
+# ggsave(filename="../paper/figures/f4_f.png",res[[2]][[1]][[4]],dpi=500)
+# ggsave(filename="../paper/figures/f4_bcd.pdf",expPlot,width=21,height=24)
+# ggsave(filename="../paper/figures/f4_a",branches)
+# dev.off()
+# cairo_pdf("../paper/figures/Figure4.pdf",width=16.55,height=13.0575)
+# fullP
+# dev.off()
 # 
