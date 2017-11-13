@@ -13,7 +13,7 @@ m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
 
-# ---- LpDE ----
+# ---- LpVolcanoPlot ----
 
 topTab <- read.csv(file="../data/Robjects/secondRun_2500/Lp_NPvsPI.csv")
 
@@ -49,11 +49,12 @@ volcano <- ggplot(topTab,aes(x=logFC,y=-log10(FDR))) +
     ylab("-Log10(P value)") 
 
 # ---- ProgenitorvsLuminal ----
+
 progenitorDE <- read.csv("../data/Robjects/secondRun_2500/ProgenitorDE.csv")
 # genes to highlight
 interest <- filter(progenitorDE, Gene %in% c("Aldh1a3", "Lypd3", "Prlr", "Esr1", "Pgr"))
 
-# FC plot
+# fold-change plot
 p2 <- ggplot(progenitorDE, aes(x=NullParFC,y=ParousFC)) +
     geom_point(color="grey50",size=2) +
     geom_point(data=interest, aes(x=NullParFC, y=ParousFC), color="black") +
@@ -83,8 +84,10 @@ genes2 <- c("Ctsc","Cd14","Tgfb3","Mfge8","Hp","Spp1")
 geneList <- list(genes1,genes2)
 out <- list()
 
+# loop over the two gene list to create expression plots
 for (i in c(1,2)) {
     genes <- geneList[[i]]
+
     #Create DF
     forPl <- data.frame(t(m)[,c(genes)]+1,
 	    barcode=colnames(m))
@@ -95,11 +98,13 @@ for (i in c(1,2)) {
 
     forPl <- melt(forPl,id=c("barcode","SuperCluster","SubCluster","Condition","Colors"))
 
-    #Plot
+    #color scheme
     cols <- levels(forPl$Colors)[levels(forPl$SubCluster) %in% unique(forPl$SubCluster)]
     names(cols) <- as.character(levels(forPl$SubCluster))[levels(forPl$SubCluster) %in% unique(forPl$SubCluster)]
     forPl$SubCluster <- factor(forPl$SubCluster,levels=c("Lp-PI","Lp-NP","Hsp-PI","Hsp-NP","Hsd-PI","Hsd-NP"))
     cols <- cols[as.character(levels(forPl$SubCluster))]
+
+    #Plot
     out[[i]] <- ggplot(forPl, aes(y=value,x=SubCluster,color=SubCluster)) +
 	geom_jitter(size=0.9) +
 	stat_summary(fun.y = mean, fun.ymin = mean, fun.ymax = mean,
@@ -153,6 +158,7 @@ pD$SubCluster <- factor(as.character(pD$SubCluster), levels=unique(as.character(
 cols <- unique(as.character(pD$Colors))[c(5,7,3,1,6,8,4,9,2)]
 cols[9] <- "#D3D3D3"
 
+# Plot with post-involution cells highlighted
 p3 <- ggplot(filter(pD, Condition %in% c("L","PI")), aes(DC1,DC2,color=SubCluster)) +
     geom_point(size=2) +
     xlab("Component 1") +
@@ -162,16 +168,14 @@ p3 <- ggplot(filter(pD, Condition %in% c("L","PI")), aes(DC1,DC2,color=SubCluste
     theme(legend.position="bottom",
 	  legend.direction="horizontal",
 	  legend.title=element_blank())
-    #     facet_wrap(~Condition)
 
 legs <- get_legend(p3)
 p3 <- p3 %+% guides(color=FALSE)
-# out[[1]] <- out[[1]] %+% guides(color=FALSE,fill=FALSE)
-# out[[2]] <- out[[2]] %+% guides(color=FALSE,fill=FALSE)
 ExpPlot  <- plot_grid(plotlist=out,nrow=2,labels=c("c","d"))
 subp1 <- plot_grid(p3,legs,nrow=1,labels=c("e",""))
 fullP <- plot_grid(subp,ExpPlot,subp1,nrow=3)
 
-cairo_pdf("../paper/figures/Figure5.pdf",width=10.75,height=15.19)
-plot_grid(fullP,NULL,nrow=2,rel_heights=c(1,0.25))
-dev.off()
+# uncomment to save
+# cairo_pdf("../paper/figures/Figure5.pdf",width=10.75,height=15.19)
+# plot_grid(fullP,NULL,nrow=2,rel_heights=c(1,0.25))
+# dev.off()
