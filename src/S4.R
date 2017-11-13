@@ -13,13 +13,13 @@ source("functions.R")
 
 # Load Data
 rnd_seed <- 300
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered.rds")
+dataList <- readRDS("../data/Robjects/ExpressionList_QC_norm_clustered.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
 
 # add SubClusterNumbers
-dataList2 <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
+dataList2 <- readRDS("../data/Robjects/ExpressionList_QC_norm_clustered_clean.rds")
 pD.add <- dataList2[[2]]
 rm(dataList2)
 pD.add <- pD.add[,c("barcode","SubClusterNumbers")]

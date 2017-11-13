@@ -7,12 +7,12 @@ source("functions.R")
 library(lmtest)
 library(MASS)
 
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
+dataList <- readRDS("../data/Robjects/ExpressionList_QC_norm_clustered_clean.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
 
-dms <- read.csv("../data/Robjects/secondRun_2500/dm_luminal.csv")
+dms <- read.csv("../data/Robjects/dm_luminal.csv")
 pD <- right_join(pD,dms,by="barcode")
 
 #sbst m
@@ -161,4 +161,4 @@ colnames(table.diffGrad) <- gsub("hrm","HormoneSensing",colnames(table.diffGrad)
 colnames(table.diffGrad) <- gsub("alv","Secretory",colnames(table.diffGrad))
 write.csv(table.diffGrad,"../data/DE_diffGradient.csv",quote=FALSE,row.names=FALSE)
 
-saveRDS(out,"../data/Robjects/secondRun_2500/BranchDEList.rds")
+saveRDS(out,"../data/Robjects/BranchDEList.rds")

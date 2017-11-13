@@ -4,7 +4,7 @@ library(dplyr)
 library(edgeR)
 source("functions.R")
 
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
+dataList <- readRDS("../data/Robjects/ExpressionList_QC_norm_clustered_clean.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
@@ -55,7 +55,7 @@ progenitorDE <- data.frame("NullParFC"=tabNulPar$logFC,
 		      "ParousFC"=tabPar$logFC,
 		      "Gene"=tabPar$symbol)
 
-write.csv(progenitorDE,file="../data/Robjects/secondRun_2500/ProgenitorDE.csv",
+write.csv(progenitorDE,file="../data/Robjects/ProgenitorDE.csv",
 	  row.names=FALSE)
 
 # ---- DEC4vsLp ----
@@ -99,4 +99,4 @@ topTab <- resTab$table
 
 # Write DE table for supps
 topTab <- select(topTab, id, symbol, logFC, unshrunk.logFC, logCPM, PValue, FDR)
-write.csv(topTab,file="../data/Robjects/secondRun_2500/C4vsLpDE.csv", row.names=FALSE)
+write.csv(topTab,file="../data/Robjects/C4vsLpDE.csv", row.names=FALSE)

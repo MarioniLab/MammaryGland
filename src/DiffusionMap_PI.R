@@ -6,8 +6,8 @@ source("functions.R")
 
 # Load Data
 rnd_seed <- 300
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
-dmList <- readRDS("../data/Robjects/secondRun_2500/DiffusionMap_Luminal.rds")
+dataList <- readRDS("../data/Robjects/ExpressionList_QC_norm_clustered_clean.rds")
+dmList <- readRDS("../data/Robjects/DiffusionMap_Luminal.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 rm(dataList)
@@ -32,4 +32,4 @@ m.vp <- t(log(m.vp+1))
 dm.pred <- dm_predict(dmList$dm,m.vp)
 out <- data.frame(as.matrix(dm.pred[,1:4]),
 		  barcode=pD.vp$barcode)
-write.csv(out,"../data/Robjects/secondRun_2500/dm_luminal_PI.csv",row.names=FALSE)
+write.csv(out,"../data/Robjects/dm_luminal_PI.csv",row.names=FALSE)

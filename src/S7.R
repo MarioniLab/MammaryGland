@@ -12,7 +12,7 @@ source("functions.R")
 
 out <- data.frame()
 for (clust in c("Hsd","Hsp","Lp")) {
-    filen <- sprintf("../data/Robjects/secondRun_2500/%s_NPvsPI.csv",clust)
+    filen <- sprintf("../data/Robjects/%s_NPvsPI.csv",clust)
     tmp <- read.csv(file=filen,stringsAsFactors=FALSE)
     tmp$Cluster <- clust
     out <- rbind(out,tmp)
@@ -33,7 +33,7 @@ p1 <- ggplot(out, aes(x=Cluster,y=value,fill=variable)) +
 # ---- DEAnalysis4vs5 ----
 output <- data.frame()
 for (clust in c("Hsd","Hsp","Lp")) { # Lp has to be last for rest of script
-    filen <- sprintf("../data/Robjects/secondRun_2500/%s_NPvsPI.csv",clust)
+    filen <- sprintf("../data/Robjects/%s_NPvsPI.csv",clust)
     topTab <- read.csv(file=filen,stringsAsFactors=FALSE)
 
     deGenes <- topTab[topTab$FDR < 0.01 & topTab$logFC > 0,"symbol"] 
@@ -73,8 +73,8 @@ imterm <- sub.output[as.character(c(14,15,21,38,42,47,48)),1]
 lterm <- sub.output[as.character(c(11,12,20,40)),1]
 im.genes <- intersect(unlist(genesInTerm(GO.data,imterm)),deGenes)
 la.genes <- intersect(unlist(genesInTerm(GO.data,lterm)),deGenes)
-write.csv(im.genes, "../data/Robjects/secondRun_2500/ImmuneGenes.csv", row.names=FALSE, quote=FALSE)
-write.csv(la.genes, "../data/Robjects/secondRun_2500/LactationGenes.csv", row.names=FALSE, quote=FALSE)
+write.csv(im.genes, "../data/Robjects/ImmuneGenes.csv", row.names=FALSE, quote=FALSE)
+write.csv(la.genes, "../data/Robjects/LactationGenes.csv", row.names=FALSE, quote=FALSE)
 
 p2 <- ggplot(output, aes(x=Term, y=-log10(as.numeric(Fisher.classic)))) +
     geom_bar(stat="identity",color="black",fill="white") +
@@ -86,7 +86,7 @@ p2 <- ggplot(output, aes(x=Term, y=-log10(as.numeric(Fisher.classic)))) +
     facet_grid(Cluster~.,scales="free")
 
 # ---- PCAPlot ----
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
+dataList <- readRDS("../data/Robjects/ExpressionList_QC_norm_clustered_clean.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]

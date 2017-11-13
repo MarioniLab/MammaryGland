@@ -9,7 +9,7 @@ library(scran)
 source("functions.R")
 
 # Load Data
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
+dataList <- readRDS("../data/Robjects/ExpressionList_QC_norm_clustered_clean.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
@@ -69,4 +69,4 @@ p0 <- plot_cell_trajectory(cds,x=1,y=2, color_by="SubCluster", cell_size=1,show_
 pD.monoc <- pData(cds)
 monoc <- list("pD"=pD.monoc,
 	      "plot"=p0)
-saveRDS(monoc,"../data/Robjects/secondRun_2500/ExpressionList_Monocle.rds")
+saveRDS(monoc,"../data/Robjects/ExpressionList_Monocle.rds")

@@ -6,7 +6,7 @@ library(dplyr)
 # ---- ReadData ----
 
 # Read in output from cell ranger using cellrangerRkit
-gene_bc_matrix <- load_cellranger_matrix("../data/CellRangerData/secondRun_2500/MammaryGland",
+gene_bc_matrix <- load_cellranger_matrix("../data/CellRangerData/MammaryGland",
 					 genome="mm10")
 pDat <- data.frame(pData(gene_bc_matrix))
 cDat <- as.matrix(exprs(gene_bc_matrix))
@@ -41,4 +41,4 @@ fDat$TranscriptionFactor <- fDat$id %in% tfCheck$ensembl_gene_id
 # Save data
 stopifnot(identical(rownames(fDat),rownames(cDat)) & identical(colnames(cDat),pDat$barcode))
 DataList <- list("phenoData"=pDat, "featureData"=fDat, "counts"=cDat)
-saveRDS(DataList,file="../data/Robjects/secondRun_2500/ExpressionList.rds")
+saveRDS(DataList,file="../data/Robjects/ExpressionList.rds")

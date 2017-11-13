@@ -13,12 +13,12 @@ library(viridis)
 library(lmtest)
 library(gridExtra)
 
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
+dataList <- readRDS("../data/Robjects/ExpressionList_QC_norm_clustered_clean.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
 
-dms <- read.csv("../data/Robjects/secondRun_2500/dm_luminal.csv")
+dms <- read.csv("../data/Robjects/dm_luminal.csv")
 pD <- right_join(pD,dms,by="barcode")
 
 # ---- PlotWithBranchDPT -----
@@ -55,7 +55,7 @@ branches <- plot_grid(pb2,NULL,pb1,NULL,nrow=1,
 
 # ---- BranchDE ----
 
-out <- readRDS("../data/Robjects/secondRun_2500/BranchDEList.rds")
+out <- readRDS("../data/Robjects/BranchDEList.rds")
 
 # ---- Heatmap -----
 res <- list()
@@ -133,7 +133,7 @@ alv.genes <- data.frame("Branch"="Alv",
 		  "Gene"=names(res[[2]][[2]]))
 
 # uncomment to print
-# write.csv(rbind(hrm.genes,alv.genes),file="../data/Robjects/secondRun_2500/BranchDECluster.R",
+# write.csv(rbind(hrm.genes,alv.genes),file="../data/Robjects/BranchDECluster.R",
 #           row.names=FALSE)
 
 

@@ -6,7 +6,7 @@ library(org.Mm.eg.db)
 
 # ---- DEAnalysis4vs5 ----
 output <- data.frame()
-input <- read.csv("../data/Robjects/secondRun_2500/BranchDECluster.R",
+input <- read.csv("../data/Robjects/BranchDECluster.R",
 		  stringsAsFactor=FALSE)
 input$BranchCluster <- paste(input$Branch,input$Cluster,sep="-")
 
@@ -17,7 +17,7 @@ for (clust in unique(input$BranchCluster)) {
 
     # Gene universe
     if (substr(clust,1,3)=="Hrm") i <- 1 else i <- 2
-    m.smooth <- readRDS("../data/Robjects/secondRun_2500/BranchDEList.rds")[[i]][["mSmooth"]]
+    m.smooth <- readRDS("../data/Robjects/BranchDEList.rds")[[i]][["mSmooth"]]
     univrs <- rownames(m.smooth[rowMeans(m.smooth)>0.1,])
 
     # ---- Data ----

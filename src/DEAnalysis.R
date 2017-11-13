@@ -3,7 +3,7 @@
 library(scran)
 
 # Load Data
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
+dataList <- readRDS("../data/Robjects/ExpressionList_QC_norm_clustered_clean.rds")
 m <- dataList[["counts"]]
 pD <- dataList[["phenoData"]]
 fD <- dataList[["featureData"]]
@@ -57,4 +57,4 @@ for (cluster in names(out)) {
     jgc()
 }
 
-saveRDS(markers,"../data/Robjects/secondRun_2500/DEList.rds")
+saveRDS(markers,"../data/Robjects/DEList.rds")

@@ -6,7 +6,7 @@ library(knitr)
 library(gridExtra)
 source("functions.R")
 
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
+dataList <- readRDS("../data/Robjects/ExpressionList_QC_norm_clustered_clean.rds")
 # set.seed(300)
 # dataList <- subSample(dataList, cell.number=2000)
 m <- dataList[["counts"]]

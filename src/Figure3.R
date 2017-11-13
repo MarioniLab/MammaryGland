@@ -12,8 +12,8 @@ library(gridExtra)
 source("functions.R")
 
 # Load Data
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
-dms <- read.csv("../data/Robjects/secondRun_2500/dm_all.csv")
+dataList <- readRDS("../data/Robjects/ExpressionList_QC_norm_clustered_clean.rds")
+dms <- read.csv("../data/Robjects/dm_all.csv")
 pD <- dataList[[2]]
 pD <- right_join(pD,dms,by="barcode")
 
@@ -68,7 +68,7 @@ p.clust <- ggplot(pD, aes(x=DC1,y=DC2, color=SubCluster)) +
 # ggsave(filename="../paper/figures/f3_alternative.pdf",p.clust)
 
 # ---- LuminalOnly ----
-dms <- read.csv("../data/Robjects/secondRun_2500/dm_luminal.csv")
+dms <- read.csv("../data/Robjects/dm_luminal.csv")
 pD <- dataList[[2]]
 pD <- right_join(pD,dms,by="barcode")
 

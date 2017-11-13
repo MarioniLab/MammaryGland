@@ -4,7 +4,7 @@ library(dplyr)
 library(edgeR)
 source("functions.R")
 
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
+dataList <- readRDS("../data/Robjects/ExpressionList_QC_norm_clustered_clean.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
@@ -44,7 +44,7 @@ for (cname in c("Hsd","Hsp","Lp","Bsl")) {
 
     # Write DE table for supps
     topTab <- select(topTab, id, symbol, logFC, unshrunk.logFC, logCPM, PValue, FDR)
-    fname <- sprintf("../data/Robjects/secondRun_2500/%s_NPvsPI.csv",cname)
-    if (cname=="Bsl") {fname <- sprintf("../data/Robjects/secondRun_2500/%s_NPvsG.csv",cname)}
+    fname <- sprintf("../data/Robjects/%s_NPvsPI.csv",cname)
+    if (cname=="Bsl") {fname <- sprintf("../data/Robjects/%s_NPvsG.csv",cname)}
     write.csv(topTab,file=fname, row.names=FALSE)
 }

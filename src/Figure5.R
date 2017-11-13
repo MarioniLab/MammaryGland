@@ -8,18 +8,18 @@ library(reshape2)
 library(RColorBrewer)
 source("functions.R")
 # 
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered_clean.rds")
+dataList <- readRDS("../data/Robjects/ExpressionList_QC_norm_clustered_clean.rds")
 m <- dataList[[1]]
 pD <- dataList[[2]]
 fD <- dataList[[3]]
 
 # ---- LpVolcanoPlot ----
 
-topTab <- read.csv(file="../data/Robjects/secondRun_2500/Lp_NPvsPI.csv")
+topTab <- read.csv(file="../data/Robjects/Lp_NPvsPI.csv")
 
 # Highlight genes with lactation/immune annotation
-lac <- read.csv("../data/Robjects/secondRun_2500/LactationGenes.csv", stringsAsFactors=FALSE)$x
-immuno <- read.csv("../data/Robjects/secondRun_2500/ImmuneGenes.csv", stringsAsFactors=FALSE)$x
+lac <- read.csv("../data/Robjects/LactationGenes.csv", stringsAsFactors=FALSE)$x
+immuno <- read.csv("../data/Robjects/ImmuneGenes.csv", stringsAsFactors=FALSE)$x
 
 # Add some of the Csn genes that are not annotated in GO
 lac <- c(lac,"Csn1s1","Csn1s2a","Lalba","Btn1a1")
@@ -50,7 +50,7 @@ volcano <- ggplot(topTab,aes(x=logFC,y=-log10(FDR))) +
 
 # ---- ProgenitorvsLuminal ----
 
-progenitorDE <- read.csv("../data/Robjects/secondRun_2500/ProgenitorDE.csv")
+progenitorDE <- read.csv("../data/Robjects/ProgenitorDE.csv")
 # genes to highlight
 interest <- filter(progenitorDE, Gene %in% c("Aldh1a3", "Lypd3", "Prlr", "Esr1", "Pgr"))
 
@@ -147,8 +147,8 @@ subp <- plot_grid(p2,volcano,nrow=1,labels=c("a","b"),align="h")
 subp <- plot_grid(subp,leg,rel_heights=c(1,0.1),nrow=2)
 
 # ---- Lp post-involution is biased towards the alveolar fate ----
-dms1 <- read.csv("../data/Robjects/secondRun_2500/dm_luminal.csv")
-dms2 <- read.csv("../data/Robjects/secondRun_2500/dm_luminal_PI.csv")
+dms1 <- read.csv("../data/Robjects/dm_luminal.csv")
+dms2 <- read.csv("../data/Robjects/dm_luminal_PI.csv")
 dms <- rbind(dms1[,-c(6,7)],dms2)
 
 pD <- right_join(pD,dms,by="barcode")

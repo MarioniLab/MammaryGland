@@ -4,7 +4,7 @@ library(scran)
 library(dplyr)
 source("functions.R")
 
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm.rds")
+dataList <- readRDS("../data/Robjects/ExpressionList_QC_norm.rds")
 m <- dataList[["counts"]]
 pD <- dataList[["phenoData"]]
 fD <- dataList[["featureData"]]
@@ -36,6 +36,6 @@ plot_grid(p1,p2)
 
 # save
 pD.add <- pD[,c("barcode","Cluster")]
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC_norm.rds")
+dataList <- readRDS("../data/Robjects/ExpressionList_QC_norm.rds")
 dataList[["phenoData"]] <- left_join(dataList[["phenoData"]],pD.add)
-saveRDS(dataList,file="../data/Robjects/secondRun_2500/ExpressionList_QC_norm_clustered.rds")
+saveRDS(dataList,file="../data/Robjects/ExpressionList_QC_norm_clustered.rds")

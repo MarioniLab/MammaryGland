@@ -10,8 +10,8 @@ library(cowplot)
 source("functions.R")
 
 # Load Data
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
-sumDat <- read.csv("../data/CellRangerData/secondRun_2500/Summary.csv")
+dataList <- readRDS("../data/Robjects/ExpressionList_QC.rds")
+sumDat <- read.csv("../data/CellRangerData/Summary.csv")
 m <- dataList[["counts"]]
 pD <- dataList[["phenoData"]]
 fD <- dataList[["featureData"]]

@@ -9,7 +9,7 @@ library(cowplot)
 source("functions.R")
 
 # Load Data
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList.rds")
+dataList <- readRDS("../data/Robjects/ExpressionList.rds")
 m <- dataList[["counts"]]
 pD <- dataList[["phenoData"]]
 fD <- dataList[["featureData"]]
@@ -205,4 +205,4 @@ out <- list()
 out[["counts"]] <- m
 out[["phenoData"]] <- pD
 out[["featureData"]] <- fD
-saveRDS(out,file="../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
+saveRDS(out,file="../data/Robjects/ExpressionList_QC.rds")

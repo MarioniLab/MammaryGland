@@ -4,7 +4,7 @@ library(scran)
 library(Rtsne)
 source("functions.R")
 
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
+dataList <- readRDS("../data/Robjects/ExpressionList_QC.rds")
 # set.seed(300)
 # dataList <- subSample(dataList, cell.number=5000)
 m <- dataList[["counts"]]
@@ -64,10 +64,10 @@ pD$tSNE2 <- tsn$Y[,2]
 pD.add <- pD[,c("barcode","sf","tSNE1","tSNE2")]
 fD.add <- fD[,c("id","highVar","highVarFDR","highVarBiolComp")]
 
-dataList <- readRDS("../data/Robjects/secondRun_2500/ExpressionList_QC.rds")
+dataList <- readRDS("../data/Robjects/ExpressionList_QC.rds")
 dataList[["phenoData"]] <- left_join(dataList[["phenoData"]],pD.add)
 fD.new <- left_join(dataList[["featureData"]],fD.add)
 fD.new$highVar[is.na(fD.new$highVar)] <- FALSE
 dataList[["featureData"]] <- fD.new
 
-saveRDS(dataList,file="../data/Robjects/secondRun_2500/ExpressionList_QC_norm.rds")
+saveRDS(dataList,file="../data/Robjects/ExpressionList_QC_norm.rds")
