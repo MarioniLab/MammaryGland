@@ -1,4 +1,4 @@
-# Figure 1
+# Figure 2
 
 library(plyr)
 library(dplyr)
@@ -23,6 +23,7 @@ fD <- dataList[[3]]
 m <- m[,pD$keep]
 pD <- pD[pD$keep,]
 
+# Normalize
 m <- t(t(m)/pD$sf)
 
 
@@ -33,6 +34,7 @@ pD$Condition <- mapvalues(pD$Condition, from=c("NP","G","L","PI"),
 
 
 # ---- Dendrogram ----
+
 pD$SubClusterNumbers <- factor(pD$SubClusterNumbers) #drop unused levels
 out <- data.frame(numeric(nrow(m)))
 colnames(out) <- levels(pD$SubClusterNumbers)[1]
@@ -46,7 +48,6 @@ library(dendextend)
 dis <- as.dist((1-cor(out,method="spearman"))/2)
 dendr <- dis %>% hclust(.,method="ward.D2") %>% as.dendrogram %>%
     set("labels_col",values=c(3,4),k=2) %>%
-    #     set("leaves_col",c(3,4)) %>%
     set("leaves_pch",19) %>%
     set("leaves_cex",2) %>%
     set("branches_lwd",3)
@@ -58,14 +59,13 @@ dev.off()
 
 # ---- Heatmap ----
 
-# Select key genes for each cluster as well as luminal basal markers (general)
+# Select key genes for each cluster
 c1 <- c("Cited1","Prlr","Esr1","Areg")
 c2 <- c("Rspo1","Atp6v1c2","Fabp3","Thrsp","Wap","Glycam1","Olah")
 c3 <- c("Foxa1","Ly6a","Aldh1a3","Kit","Cd14")
 c5 <- c("Lypd3")
 c6 <- c("1500015O10Rik","Col7a1","Moxd1","Mia","Emid1","Pdpn","Col9a2","Fbln2","Igfbp3","Fst","Il17b")
 c7 <- c("Oxtr","Krt15","Igfbp6","Igfbp2","Tns1")
-# c8 <- c("Pip","Apod")
 c9 <- c("Gng11","Procr","Igfbp7","Nrip2","Notch3","Zeb2")
 
 # Combine in order for heatmap
@@ -84,7 +84,7 @@ ord <- filter(pD, SubCluster %in% c("Hsd-G","Avd-L")) %>%
 					   "Avp-L","Avd-G","Avd-L","Bsl","Bsl-G","Myo","Prc"))) %>%
     arrange(SubCluster,Condition)
 
-#Normalize data with sizefactors and replace ENSEMBL IDs by gene symbols
+#Replace ENSEMBL IDs by gene symbols
 rownames(m) <- fD$symbol
 
 # Prepare expression matrix for heatmap
@@ -97,9 +97,7 @@ annoCol <- data.frame("Cluster"=ord$SubCluster,
 		      "Stage"=ord$Condition)
 rownames(annoCol) <- as.character(ord$barcode)
 
-#
-############################## overly complicated and copied from old F1
-# t-SNE colored by Condition
+# ensure to have same color scheme as in figure 1
 p0 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=Condition)) +
     geom_point(size=1.5) +
     #     ggtitle("Conditions") +
@@ -114,7 +112,7 @@ condColors <- unique(arrange(forcol$data[[1]],group) %>% .[["colour"]])
 names(condColors) <- c("Nulliparous", "14.5d Gestation",
 			       "6d Lactation", "11d Post Natural Involution")
 
-# t-SNE colored by cluster
+# Cluster color scheme as in F1c
 p1 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=SubCluster)) +
     geom_point(size=1.5) +
     scale_color_manual(values=levels(pD$Colors))+
@@ -124,7 +122,6 @@ p1 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=SubCluster)) +
     theme(legend.position="bottom",legend.direction="horizontal",
 	  legend.title=element_blank())  
 
-# Cluster color scheme as in F1c
 forcol <- ggplot_build(p1)
 clustColors <- unique(arrange(forcol$data[[1]],group) %>% .[["colour"]])
 clustColors <- clustColors[as.character(levels(ord$Colors))]
@@ -134,7 +131,6 @@ names(clustColors) <- levels(ord$SubCluster)
 # Set Color schemes for annotation data frame 
 annoColors <- list("Stage"=condColors,
 		   "Cluster"=clustColors)
-#################################
 
 # Plot heatmap
 p <-  pheatmap(mheat,
@@ -148,13 +144,12 @@ p <-  pheatmap(mheat,
 	 annotation_colors=annoColors,
 	 fontsize=9)
 
-
-# Combine all plots
-
-ggsave(filename="../paper/figures/f2_a.pdf",p[[4]],width=14,height=7)
-ggsave(filename="../paper/figures/f2_b.svg",p.dendr)
 fullP <- plot_grid(p.dendr,p[[4]],nrow=2)
-dev.off()
-cairo_pdf("../paper/figures/Figure2.pdf",width=12.41,height=17.54)
-fullP
-dev.off()
+
+# uncomment to save plots
+# ggsave(filename="../paper/figures/f2_a.pdf",p[[4]],width=14,height=7)
+# ggsave(filename="../paper/figures/f2_b.svg",p.dendr)
+# dev.off()
+# cairo_pdf("../paper/figures/Figure2.pdf",width=12.41,height=17.54)
+# fullP
+# dev.off()
