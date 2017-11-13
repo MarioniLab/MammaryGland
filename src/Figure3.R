@@ -18,8 +18,8 @@ pD <- dataList[[2]]
 pD <- right_join(pD,dms,by="barcode")
 
 
-# Plot for luminal and basal cells
-# pD <- pD[sample(1:nrow(pD),nrow(pD)),]
+# ---- LuminalAndBasalCells ----
+# 3D scatterplot
 cols <- as.character(pD$Colors)
 scatterplot3d(x=pD[,"DC1"],
 	      y=-pD[,"DC2"],
@@ -35,6 +35,7 @@ scatterplot3d(x=pD[,"DC1"],
 	      zlab="-Component 3",
 	      box=FALSE)
 
+# get as grob
 g <- grab_grob()
 g <- grid.arrange(g)
 dev.off()
@@ -43,8 +44,8 @@ cols <- unique(as.character(pD$Colors))
 names(cols) <- unique(as.character(pD$SubCluster))
 cols <- cols[levels(pD$SubCluster)[levels(pD$SubCluster) %in% unique(pD$SubCluster)]]
 
-# forcLeg <- filter(pD, !cluster %in% c(4))
-clustLeg <- ggplot(pD, aes(x=tSNE1,y=tSNE2,color=SubCluster)) +
+# Add legend for 3D plot
+clustLeg <- ggplot(pD, aes(x=tSNE1,y=tSNE2,color=SubClusterNumbers)) +
     geom_point() +
     scale_color_manual(values=cols) +
     theme(legend.direction="horizontal",
@@ -52,9 +53,9 @@ clustLeg <- ggplot(pD, aes(x=tSNE1,y=tSNE2,color=SubCluster)) +
 	  legend.position="bottom")+
     guides(colour=guide_legend(nrow=2,
 			       override.aes=list(size=3)))
-
 clustLeg <- get_legend(clustLeg)
 
+# Create alternative view inlet
 p.clust <- ggplot(pD, aes(x=DC1,y=DC2, color=SubCluster)) +
     geom_point(size=2, pch=20) +
     guides(colour = guide_legend(override.aes = list(size=3))) +
@@ -63,7 +64,8 @@ p.clust <- ggplot(pD, aes(x=DC1,y=DC2, color=SubCluster)) +
     xlab("Component 1") +
     ylab("Component 2") 
 
-ggsave(filename="../paper/figures/f3_alternative.pdf",p.clust)
+# uncomment to print
+# ggsave(filename="../paper/figures/f3_alternative.pdf",p.clust)
 
 # ---- LuminalOnly ----
 dms <- read.csv("../data/Robjects/secondRun_2500/dm_luminal.csv")
@@ -83,7 +85,6 @@ p.clust <- ggplot(pD, aes(x=DC1,y=DC2, color=SubCluster)) +
 
 p.clust <- plot_grid(NULL,p.clust,NULL,ncol=1,rel_heights=c(0.3,1,0.30))
     
-
 # ---- GeneExpressionTrends ----
 
 # load data again
@@ -139,10 +140,12 @@ subPb1 <- plot_grid(subPb0,subPb1,nrow=2,rel_heights=c(0.5,1))
 subPb1b <- plot_grid(subPb1,leg,nrow=2,rel_heights=c(1,0.05))
 subPb2 <- plot_grid(p.clust,subPb1b,labels=c("b"))
 
-ggsave(filename="../paper/figures/f3_a.pdf",subPa)
-ggsave(filename="../paper/figures/f3_b.pdf",p.clust)
-ggsave(filename="../paper/figures/f3_c.pdf",subPb1b)
-
-cairo_pdf("../paper/figures/Figure3.pdf",width=8.27,height=11.69)
 plot_grid(subPa,subPb2,nrow=2)
-dev.off()
+
+# uncomment to print
+# ggsave(filename="../paper/figures/f3_a.pdf",subPa)
+# ggsave(filename="../paper/figures/f3_b.pdf",p.clust)
+# ggsave(filename="../paper/figures/f3_c.pdf",subPb1b)
+# 
+# cairo_pdf("../paper/figures/Figure3.pdf",width=8.27,height=11.69)
+# dev.off()
