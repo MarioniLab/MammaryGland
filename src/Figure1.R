@@ -1,4 +1,4 @@
-# S4 and S7
+# Figure 1
 
 library(plyr)
 library(dplyr)
@@ -29,7 +29,6 @@ pD <- pD[pD$keep,]
 # t-SNE colored by Condition
 p0 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=Condition)) +
     geom_point(size=1.5) +
-    #     ggtitle("Conditions") +
     theme_void(base_size=12) +
     guides(colour = guide_legend(override.aes = list(size=3))) +
     theme(legend.position="bottom",legend.direction="horizontal",
@@ -39,13 +38,12 @@ p0 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=Condition)) +
 p1 <- ggplot(pD, aes(x=tSNE1, y=tSNE2, color=SubClusterNumbers)) +
     geom_point(size=1.5) +
     scale_color_manual(values=levels(pD$Colors))+
-    #     ggtitle("Cluster") +
     theme_void(base_size=12) +
     guides(colour = guide_legend(override.aes = list(size=3))) +
     theme(legend.position="bottom",legend.direction="horizontal",
 	  legend.title=element_blank())  
-#     facet_wrap(~Condition)
 
+# Prepare data for expression tSNE
 m.norm <- t(t(m)/pD$sf)
 rownames(m.norm) <- fD$symbol
 
@@ -58,8 +56,11 @@ forPlot <- left_join(add,pD[,c("barcode","tSNE1","tSNE2")])
 forPlot <- melt(forPlot,id=c("barcode","tSNE1","tSNE2")) %>%
     dplyr::rename(Expression=value)
 plots <- list()
+
+# color palette as in heatmap
 pal <- colorRampPalette(rev(brewer.pal(n=7,name="RdYlBu")))(200)
 
+# Loop accross genes to create expression plots
 for(i in seq_along(genes)) {
     gene <- genes[i]
     fP <- filter(forPlot,variable==gene) %>% arrange(Expression)
@@ -76,12 +77,13 @@ s0 <- plot_grid(p0,p1,labels=c("b","c"))
 s1 <- plot_grid(plotlist=plots)
 full <- plot_grid(NULL,s0,s1,nrow=3,labels=c("a","","d"))
 
-ggsave(filename="../paper/figures/f1_b.pdf",p0)
-ggsave(filename="../paper/figures/f1_c.pdf",p1)
-ggsave(filename="../paper/figures/f1_c1.pdf",plots[[1]])
-ggsave(filename="../paper/figures/f1_c2.pdf",plots[[2]])
-
-cairo_pdf("../paper/figures/Figure1.pdf", width=8.27, height=11.69)
-full
-dev.off()
+# uncomment to save files
+# ggsave(filename="../paper/figures/f1_b.pdf",p0)
+# ggsave(filename="../paper/figures/f1_c.pdf",p1)
+# ggsave(filename="../paper/figures/f1_c1.pdf",plots[[1]])
+# ggsave(filename="../paper/figures/f1_c2.pdf",plots[[2]])
+# 
+# cairo_pdf("../paper/figures/Figure1.pdf", width=8.27, height=11.69)
+# full
+# dev.off()
 
