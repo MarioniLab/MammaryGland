@@ -1,6 +1,6 @@
-# Scripts used for the Analysis for the Bach et al. paper 
-This repository contains all files that are necessary to reproduce the results from the paper.
+# Scripts used for the Analyses reported in "Differentiation dynamics of the developing mammary gland revealed by single-cell RNA-sequencing" 
+This repository contains all scripts that are necessary to reproduce the results from the paper.
 The repository is structured as follows:
+
 - All scripts are contained in the [src](src/) folder
-- Apart from general analyses (e.g. QC, clustering) the scripts are organized according to the figures in the study
-- Some scripts produce intermeditate results that are stored in the [data](data/) folder
+- Scripts are organized in analytical scripts that produce e.g. csv outputs and scripts that were used to generate the figures of the paper

@@ -16,6 +16,7 @@ pD <- pD[keepCells,]
 
 
 #Renaming clusters and merging 7.1 and 8.1
+# 7.1 and 8.1 are merged as they have less than 10 DE genes
 
 dataList <- readRDS("../data/Robjects/ExpressionList_QC_norm_clustered.rds")
 pD <- dataList[[2]]
