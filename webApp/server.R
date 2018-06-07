@@ -37,7 +37,10 @@ output$distPlot1 <- renderPlot({
 output$downloadPlot2 <- downloadHandler(
     filename <- function() { paste(input$Gene, '.pdf', sep='') },
     content <- function(file) {
-        ggsave(file, plot = plotGeneDist(m, pD, fD, input$Gene, colorBy="Cluster"), device = "pdf")
+	p <- plotGeneDist(m, pD, fD, input$Gene, colorBy="Cluster")
+	pdf(file)
+	print(p)
+	dev.off()
     }
 )
 
@@ -53,7 +56,9 @@ output$downloadPlot1 <- downloadHandler(
 	    geom_point(size=1.5) +
 	    scale_color_viridis() +
 	    theme_void()
-	ggsave(file, plot=tsnPlot, device="pdf",width=10,height=7)
+	pdf(file,width=10,height=7)
+	print(tsnPlot)
+	dev.off()
 	}
     )
 
@@ -85,7 +90,9 @@ output$downloadPlot3 <- downloadHandler(
 	filename <- function() { paste(input$Gene, '.pdf', sep='')},
 	content <- function(file) {
 	    p <- plotTriangleExpression(input)
-	    ggsave(file,plot=p,device="pdf")
+	    pdf(file)
+	    print(p)
+	    dev.off()
 	}
 	)
 
@@ -93,7 +100,9 @@ output$downloadPlot4 <- downloadHandler(
 	filename <- function() { paste(input$Gene, '.pdf', sep='')},
 	content <- function(file) {
 	    p <- plotPseudotimeTrend(input)
-	    ggsave(file,plot=p,device="pdf")
+	    pdf(file)
+	    print(p)
+	    dev.off()
 	}
 	)
 }

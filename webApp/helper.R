@@ -143,7 +143,7 @@ plotTriangleExpression <- function(input) {
     #     browser()
     fPl <- arrange(fPlot, exps)
     p <- ggplot(fPl, aes(x=DC1,y=DC2, color=exps)) +
-	geom_point(size=2, pch=20) +
+	geom_point(size=4, pch=20) +
 	scale_color_viridis() +
 	ggtitle(feature) +
 	theme_void() +

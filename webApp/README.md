@@ -1,5 +1,5 @@
 # About
-This app can be used to interactively browse the data from the paper "Differentiation dynamics of the developing mammary gland revealed by single-cell RNA-sequencing".
+This app can be used to interactively browse the data of ["Differentiation dynamics of the developing mammary gland revealed by single-cell RNA-sequencing"](https://www.nature.com/articles/s41467-017-02001-5).
 
 ## Abstract
 Characterising the hierarchy of mammary epithelial cells (MECs) and how they are regulated
